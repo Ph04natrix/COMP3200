@@ -13,8 +13,10 @@
     "windows": [
       {
         "title": "project-audyssey",
-        "width": 800,
-        "height": 600
+        "fullscreen": false,
+        "resizable": true,
+        "width": 1600,
+        "height": 900
       }
     ],
     "security": {
