@@ -16,7 +16,18 @@
         "fullscreen": false,
         "resizable": true,
         "width": 1600,
-        "height": 900
+        "height": 900,
+        "visible": false
+      },
+      {
+        "title": "Login",
+        "url": "/login",
+        "resizable": true,
+        "width": 1600,
+        "height": 900,
+        "fullscreen": false,
+        "visible": true,
+        "focus": true
       }
     ],
     "security": {
