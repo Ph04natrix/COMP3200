@@ -20,15 +20,16 @@ pub struct Album;
 #[derive(Debug, Component)]
 pub struct SpotifyID(String);
 
-/*----- RELATIONS -----*/
+/* // todo ----- RELATIONS -----*/
 
-/* // todo
+/*
 Song --SavedBy-- User
 Song --AddedTo-- Library
 */
 
 // ? should this be multiple distinct components that are connected by an IsA relationship to build a hierarchy
-enum AudioCollection {
+#[derive(Debug, Component)]
+pub enum AudioCollection {
     Library,
     Playlist,
     Album,
