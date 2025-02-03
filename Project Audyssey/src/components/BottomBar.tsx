@@ -1,4 +1,4 @@
-import "./BottomBar.css";
+import "../styles/BottomBar.css";
 
 function BottomBar() {
 
