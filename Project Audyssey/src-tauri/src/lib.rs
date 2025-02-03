@@ -4,6 +4,7 @@ use spotify::LoginState;
 use tauri::{Builder, Manager};
 
 mod spotify;
+mod error;
 
 pub struct AppStateInner {
   ClientID: String,

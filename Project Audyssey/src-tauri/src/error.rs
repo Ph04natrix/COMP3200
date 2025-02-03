@@ -5,7 +5,7 @@ pub enum MyError {
 }
 
 // we must manually implement serde::Serialize
-impl serde::Serialize for Error {
+impl serde::Serialize for MyError {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: serde::ser::Serializer,
