@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use tokio::sync::Mutex;
 use serde::Deserialize;
 use spotify::LoginState;
 use tauri::{Builder, Manager};
@@ -49,7 +49,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            spotify::make_request, //spotify::request_access_code, spotify::start_login,
+            spotify::start_login, //spotify::request_access_code, spotify::start_login,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
