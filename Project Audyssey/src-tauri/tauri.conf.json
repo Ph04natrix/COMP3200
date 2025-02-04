@@ -25,8 +25,8 @@
         "title": "Login",
         "url": "/login",
         "resizable": true,
-        "width": 1600,
-        "height": 900,
+        "width": 800,
+        "height": 400,
         "fullscreen": false,
         "visible": true,
         "focus": true
