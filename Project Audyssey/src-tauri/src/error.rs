@@ -1,5 +1,3 @@
-use std::fmt::{self, write};
-
 use tauri_plugin_http::reqwest;
 
 pub type MyResult<T> = std::result::Result<T, MyError>;

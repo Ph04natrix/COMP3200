@@ -20,7 +20,7 @@ impl AppStateInner {
         AppStateInner {
             ClientID: "71362bad121c4dd5be0fd0794119454b".to_string(),
             ClientSecret: "f8f9676547104ee080c3b61c1276b9c6".to_string(),
-            Redirect: String::from("http://localhost:1420"),
+            Redirect: String::from("http://localhost:1420/login"),
             Login: LoginState::LoggedOut,
             AccessToken: AccessToken::default(),
             CodeVerifier: "".to_string()
