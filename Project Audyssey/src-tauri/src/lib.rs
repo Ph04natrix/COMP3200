@@ -1,6 +1,5 @@
 use tokio::sync::Mutex;
 use serde::Deserialize;
-use spotify::LoginState;
 use tauri::{Builder, Manager};
 
 mod spotify;
@@ -10,7 +9,7 @@ pub struct AppStateInner {
   ClientID: String,
   ClientSecret: String,
   Redirect: String,
-  Login: LoginState,
+  //Login: LoginState,
   AccessToken: AccessToken,
   CodeVerifier: String,
 }
@@ -21,7 +20,7 @@ impl AppStateInner {
             ClientID: "71362bad121c4dd5be0fd0794119454b".to_string(),
             ClientSecret: "f8f9676547104ee080c3b61c1276b9c6".to_string(),
             Redirect: String::from("http://localhost:1420/login"),
-            Login: LoginState::LoggedOut,
+            //Login: LoginState::LoggedOut,
             AccessToken: AccessToken::default(),
             CodeVerifier: "".to_string()
         }
@@ -48,9 +47,16 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
-            spotify::start_login, spotify::request_access_token,
+            exit_app,
+            spotify::request_auth_code, spotify::request_access_token, spotify::get_users_saved_tracks,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[tauri::command]
+async fn exit_app(app: tauri::AppHandle) {
+  app.exit(0);
 }

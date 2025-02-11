@@ -4,6 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import reactLogo from "../assets/react.svg";
 import "../styles/App.css";
 import BottomBar from "../components/BottomBar";
+import Login from "./Login";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
@@ -14,7 +15,9 @@ function App() {
     setGreetMsg(await invoke("greet", { name }));
   }
 
-  return (
+  
+  return(<Login />);
+  /*return (
     <main className="container">
       <h1>Welcome to Project Audyssey</h1>
 
@@ -48,7 +51,7 @@ function App() {
       <p>{greetMsg}</p>
       <BottomBar />
     </main>
-  );
+  );*/
 }
 
 export default App;
