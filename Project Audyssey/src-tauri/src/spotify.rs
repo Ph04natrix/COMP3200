@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use tauri::{State, Url};
 use tauri_plugin_http::reqwest::*;
 
@@ -7,14 +8,25 @@ use crate::{
     error::{MyError, MyResult}
 };
 
-pub enum LoginState {
-    LoggedOut,
-    GrantingAuth,
-    LoggedIn
+#[derive(Debug, Serialize, Deserialize)]
+pub enum SpotifyEndpoints {
+    SavedTracksEndpoint,
 }
 
-pub enum SpotifyEndpoints {
-    SavedTracks,
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SavedTracks {
+    href: Url,
+    limit: u16,
+    next: Url,
+    offset: u32,
+    previous: String,
+    total: u32,
+    items: Vec<SavedTrackObject>
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SavedTrackObject {
+    // todo fill this out
 }
 
 const SPOTIFY_API: &str = "https://api.spotify.com/v1/";
@@ -29,7 +41,7 @@ pub async fn build_request(
     state: State<'_, AppState>
 ) -> MyResult<String>{
     let specific_endpoint = match (endpoint) {
-        SpotifyEndpoints::SavedTracks => "me/tracks"
+        SpotifyEndpoints::SavedTracksEndpoint => "me/tracks"
     };
 
     let mut url: String = SPOTIFY_API.to_string();
@@ -41,35 +53,55 @@ pub async fn build_request(
     let method = Method::GET;
 
     let client = Client::new();
-    client.request(method, url).bearer_auth(token);
+    let res = client.request(method, url).bearer_auth(token).send().await?;
+    Ok(res.text().await?)
+}
 
-    Ok("Request built".to_string())
+#[tauri::command]
+pub async fn get_users_saved_tracks(state: State<'_, AppState>) -> MyResult<u32> {
+    // Check how many items are in a user's library
+    let state_lock = state.lock().await;
+    let token = &state_lock.AccessToken.access_token;
+    
+    let mut library_count_endpoint: String = SPOTIFY_API.to_string();
+    library_count_endpoint.push_str("me/tracks");
 
-  
+    let params = [
+        ("limit", "1"),
+        ("offset", "0")
+    ];
+
+    let paramUrl = Url::parse_with_params(&library_count_endpoint, params);
+
+    let client = Client::new();
+    let res = client.get(paramUrl.expect("Failed to parameterise library_count_endpoint")).bearer_auth(token).send().await?;
+
+    let library_check = res.json::<SavedTracks>().await?;
+
+    Ok(library_check.total)
 }
 
 // This function results in the user being prompted to login to their Apotify Account and grant access
-// via the OAuth protocol. //* Request User Authorization
+// via the OAuth protocol.
 #[tauri::command]
-pub async fn start_login(
+pub async fn request_auth_code(
     state: State<'_, AppState>
 ) -> MyResult<String>{ 
     let mut state_lock = state.lock().await;
     
-    let (codeVerifier, codeChallenge) = generate_pkce_code();
-    state_lock.CodeVerifier = String::from_utf8(codeVerifier).expect("Could not convert code verifier to a String");
-    let clientID = &state_lock.ClientID;
-    let redirectURI = &state_lock.Redirect;
+    let (code_verifier, code_challenge) = generate_pkce_code();
+    state_lock.CodeVerifier = String::from_utf8(code_verifier).expect("Could not convert code verifier to a String");
+    let client_id = &state_lock.ClientID;
+    let redirect_uri = &state_lock.Redirect;
 
     // Create the parameters to send off the get request which triggers the OAuth process
-    
     let params: [(&str, &str); 6] = [
-        ("client_id", clientID),
+        ("client_id", client_id),
         ("response_type", "code"),
-        ("redirect_uri", redirectURI),
-        ("scope", "user-read-private user-read-email"),
+        ("redirect_uri", redirect_uri),
+        ("scope", "user-read-private user-read-email user-library-read"),
         ("code_challenge_method", "S256"),
-        ("code_challenge", &codeChallenge),
+        ("code_challenge", &code_challenge),
     ];
 
     let auth_endpoint = "https://accounts.spotify.com/authorize".to_string();
@@ -78,48 +110,44 @@ pub async fn start_login(
     match auth_url {
         Ok(url) => Ok(url.to_string()),
         Err(err) => Err(MyError::URLParse(err))
-    }
-
-    // todo instead of changing the url of this window, open a new window so that the result can 
-    
+    }    
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn request_access_token(
     auth_code: String,
     state: State<'_, AppState>
 ) -> MyResult<String> {
     let mut state_lock = state.lock().await;
-    let redirectURI = &state_lock.Redirect;
-    let clientID = &state_lock.ClientID;
+    let redirect_uri = &state_lock.Redirect;
+    let client_id = &state_lock.ClientID;
     let code_verifier = &state_lock.CodeVerifier;
     
     let params = [
         ("grant_type", "authorization_code"),
         ("code", &auth_code),
-        ("redirect_uri", redirectURI),
-        ("client_id", clientID),
+        ("redirect_uri", redirect_uri),
+        ("client_id", client_id),
         ("code_verifier", code_verifier)
     ];
 
     let token_endpoint = "https://accounts.spotify.com/api/token".to_string();
-    println!("Parameterised Token Endpoint: {token_endpoint}");
-    
     let url = Url::parse_with_params(&token_endpoint, &params);
     
     let client = Client::new();
     let res = client
         .post(url.expect("Failed to send POST request"))
-        .header("Content-Type", "application/x-ww-form-urlencoded")
+        .header("Content-Type", "application/x-www-form-urlencoded")
         .send()
-        .await;
+        .await?;
 
-    let body = res.unwrap().json::<AccessToken>().await;
-    state_lock.AccessToken = body.expect("Failed to get content from access token request response");
+    println!("Status Code for Requesting Access Token: {}", res.status());
+
+    state_lock.AccessToken = res.json::<AccessToken>().await?;
+    let access_token = &state_lock.AccessToken.access_token;
+    println!("Access token successfully acquired: {access_token}");
     
-    print!("Access token successfully acquired");
-    
-    Ok(String::from("Thank you for granting access! Welcome to the Audyssey"))
+    Ok(state_lock.AccessToken.access_token.clone())
 }
 
 // Generates both a code verifier and a code challenge
