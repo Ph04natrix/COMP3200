@@ -90,16 +90,31 @@ pub async fn request_auth_code(
     let mut state_lock = state.lock().await;
     
     let (code_verifier, code_challenge) = generate_pkce_code();
-    state_lock.CodeVerifier = String::from_utf8(code_verifier).expect("Could not convert code verifier to a String");
-    let client_id = &state_lock.ClientID;
-    let redirect_uri = &state_lock.Redirect;
+    state_lock.code_verifier = String::from_utf8(code_verifier).expect("Could not convert code verifier to a String");
+    let client_id = &state_lock.client_id;
+    let redirect_uri = &state_lock.redirect;
+
+    let scopes = [
+        "user-read-email", //"user-read-private",
+        // Playback scopes
+        "user-read-playback-state",
+        "user-modify-playback-state",
+        "user-read-currently-playing",
+        // Playlist scopes
+        "playlist-read-private",
+        "playlist-read-collaborative",
+        "playlist-modify-private",
+        "playlist-modify-public",
+        // Library scopes
+        "user-library-modify", "user-library-read",
+    ].join(" ");
 
     // Create the parameters to send off the get request which triggers the OAuth process
     let params: [(&str, &str); 6] = [
         ("client_id", client_id),
         ("response_type", "code"),
         ("redirect_uri", redirect_uri),
-        ("scope", "user-read-private user-read-email user-library-read"),
+        ("scope", &scopes),
         ("code_challenge_method", "S256"),
         ("code_challenge", &code_challenge),
     ];
@@ -119,9 +134,9 @@ pub async fn request_access_token(
     state: State<'_, AppState>
 ) -> MyResult<String> {
     let mut state_lock = state.lock().await;
-    let redirect_uri = &state_lock.Redirect;
-    let client_id = &state_lock.ClientID;
-    let code_verifier = &state_lock.CodeVerifier;
+    let redirect_uri = &state_lock.redirect;
+    let client_id = &state_lock.client_id;
+    let code_verifier = &state_lock.code_verifier;
     
     let params = [
         ("grant_type", "authorization_code"),

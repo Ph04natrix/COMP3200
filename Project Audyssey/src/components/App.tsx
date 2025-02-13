@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
-import reactLogo from "../assets/react.svg";
 import "../styles/App.css";
 import BottomBar from "../components/BottomBar";
 import Login from "./Login";

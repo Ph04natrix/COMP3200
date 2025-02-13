@@ -6,23 +6,23 @@ mod spotify;
 mod error;
 
 pub struct AppStateInner {
-  ClientID: String,
-  ClientSecret: String,
-  Redirect: String,
+  client_id: String,
+  client_secret: String,
+  redirect: String,
   //Login: LoginState,
   AccessToken: AccessToken,
-  CodeVerifier: String,
+  code_verifier: String,
 }
 
 impl AppStateInner {
     fn default() -> Self {
         AppStateInner {
-            ClientID: "71362bad121c4dd5be0fd0794119454b".to_string(),
-            ClientSecret: "f8f9676547104ee080c3b61c1276b9c6".to_string(),
-            Redirect: String::from("http://localhost:1420/login"),
+            client_id: "71362bad121c4dd5be0fd0794119454b".to_string(),
+            client_secret: "f8f9676547104ee080c3b61c1276b9c6".to_string(),
+            redirect: String::from("http://localhost:1420/login"),
             //Login: LoginState::LoggedOut,
             AccessToken: AccessToken::default(),
-            CodeVerifier: "".to_string()
+            code_verifier: "".to_string()
         }
     }
 }
