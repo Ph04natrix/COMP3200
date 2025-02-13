@@ -6,8 +6,10 @@ pub type MyResult<T> = std::result::Result<T, MyError>;
 pub enum MyError {
   #[error(transparent)]
   Io(#[from] std::io::Error),
-  #[error("Failed to handle reqwest error")]
+  #[error(transparent)]
   Reqwest(#[from] reqwest::Error),
+  #[error(transparent)]
+  SerdeJSON(#[from] serde_json::Error),
   #[error("Failed to handle ParseError")]
   URLParse(#[from] url::ParseError)
 }
