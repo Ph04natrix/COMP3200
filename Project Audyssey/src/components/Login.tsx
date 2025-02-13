@@ -54,7 +54,7 @@ export default function Login() {
             .then((token) => {
                 console.log("Access token received: ", {token});
                 loginState.current = {status: "authorised", access_token: token};
-                invoke("get_users_saved_tracks");
+                invoke<number>("get_users_saved_tracks").then((total) => console.log(total));
             })
             .catch((err) => console.error(err));
     }
@@ -77,12 +77,6 @@ export default function Login() {
                         <li>Requesting User Authorization</li>
                         <li>Requesting User-Specific Access Token to Spotify API</li>
                     </ul>
-                </div>
-                <div>
-                    <p>2</p>
-                </div>
-                <div>
-                    <p>3</p>
                 </div>
             </div>
         </>
