@@ -1,6 +1,8 @@
+use std::str::FromStr;
+
 use serde::{Deserialize, Serialize};
 use serde_json::from_str;
-use tauri::{State, Url};
+use tauri::{http::HeaderMap, State, Url};
 use tauri_plugin_http::reqwest::*;
 
 use crate::{
@@ -11,7 +13,21 @@ use crate::{
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum SpotifyEndpoints {
-    SavedTracksEndpoint,
+    GetSavedTracks,
+    CheckSavedTracks,
+
+
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SpotifyError {
+    error: SpotifyErrorObject
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SpotifyErrorObject {
+    status: u16, // ranges from 400-599
+    message: String, // short description of cause of the error
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -128,25 +144,44 @@ const SPOTIFY_API: &str = "https://api.spotify.com/v1/";
 todo Should this return an object of type RequestBuilder? Goes from being async to more pure and simpler
 todo means that the access_token needs to be passed into the function.
 */
-#[tauri::command]
 pub async fn build_request(
     endpoint: SpotifyEndpoints,
-    state: State<'_, AppState>
+    client: Client,
+    access_token_struct: AccessToken,
 ) -> MyResult<String>{
-    let specific_endpoint = match (endpoint) {
-        SpotifyEndpoints::SavedTracksEndpoint => "me/tracks"
-    };
 
     let mut url: String = SPOTIFY_API.to_string();
+
+    let (specific_endpoint, method, headers/*, body*/) = match endpoint {
+        SpotifyEndpoints::GetSavedTracks => ("me/tracks", Method::GET, HeaderMap::new()),
+        SpotifyEndpoints::CheckSavedTracks => ("me/tracks/contains", Method::GET, HeaderMap::new()),
+    };
+    
     url += specific_endpoint;
 
-    let state_lock = state.lock().await;
-    let token = &state_lock.AccessToken.access_token;
+    let req = client
+        .request(method, url)
+        .bearer_auth(access_token_struct.access_token)
+        .headers(headers);
+        //.body(body)
+    let res = req
+        .send()
+        .await?;
 
-    let method = Method::GET;
+    match res.status() {
+        StatusCode::OK | StatusCode::CREATED | StatusCode::ACCEPTED | StatusCode::NO_CONTENT => todo!(),
+        StatusCode::BAD_REQUEST => todo!(),
+        StatusCode::UNAUTHORIZED => {
+            //refresh_access_token().await?;
+        },
+        StatusCode::FORBIDDEN => todo!(),
+        StatusCode::TOO_MANY_REQUESTS => todo!(),
+        StatusCode::INTERNAL_SERVER_ERROR => todo!(),
+        StatusCode::BAD_GATEWAY => todo!(),
+        StatusCode::SERVICE_UNAVAILABLE => todo!(),
+        _ => todo!()
+    }
 
-    let client = Client::new();
-    let res = client.request(method, url).bearer_auth(token).send().await?;
     Ok(res.text().await?)
 }
 
@@ -261,6 +296,42 @@ pub async fn request_access_token(
     println!("Access token successfully acquired: {access_token}");
     
     Ok(state_lock.AccessToken.access_token.clone())
+}
+
+// todo this should be called whenever the access token expires which is a result of a
+#[tauri::command(rename_all = "snake_case")]
+pub async fn refresh_access_token(state: State<'_, AppState>) -> MyResult<String> {
+    let mut state_lock = state.lock().await;
+    let client_id = &state_lock.client_id;
+    let client_secret = &state_lock.client_secret;
+    let refresh_token = &state_lock.AccessToken.refresh_token;
+
+    let params = [
+        ("grant_type", "refresh_token"),
+        ("refresh_token", refresh_token),
+        ("client_id", client_id),
+    ];
+
+    let token_endpoint = "https://accounts.spotify.com/api/token".to_string();
+    let url = Url::parse_with_params(&token_endpoint, &params);
+    
+    let client = Client::new();
+    let res = client
+        .post(url.expect("Failed to POST refresh token request"))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .basic_auth(client_id, Some(client_secret))
+        .send()
+        .await?;
+
+    let refreshed_token;
+    if res.status().is_success() {
+        state_lock.AccessToken = res.json::<AccessToken>().await?;
+        println!("Access token successfully refreshed!");
+        refreshed_token = &state_lock.AccessToken.access_token;
+        Ok(refreshed_token.to_string())
+    } else {
+        Err(MyError::RefreshAccess)
+    }
 }
 
 // Generates both a code verifier and a code challenge
