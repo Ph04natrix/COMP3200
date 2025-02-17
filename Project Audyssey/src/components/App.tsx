@@ -1,19 +1,23 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
-import BottomBar from "./BottomBar";
+
+import "../styles/App.css";
+import Login from "./Login";
+import Main from "./Main";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [setupDone, setSetupDone] = useState<boolean>(false);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+  if (!setupDone) {
+    return (
+      <Login
+        setupDone={setupDone}
+      />
+    );
+  } else {
+    return (<Main />);
   }
-
-  return (
+  
+  /*return (
     <main className="container">
       <h1>Welcome to Project Audyssey</h1>
 
@@ -47,7 +51,7 @@ function App() {
       <p>{greetMsg}</p>
       <BottomBar />
     </main>
-  );
+  );*/
 }
 
 export default App;

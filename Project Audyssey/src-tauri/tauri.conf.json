@@ -12,11 +12,26 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "project-audyssey",
         "fullscreen": false,
         "resizable": true,
         "width": 1600,
-        "height": 900
+        "height": 900,
+        "visible": false,
+        "decorations": false
+      },
+      {
+        "focus": true,
+        "label": "login",
+        "title": "Login",
+        "url": "/login",
+        "resizable": true,
+        "width": 800,
+        "height": 400,
+        "fullscreen": false,
+        "visible": true,
+        "decorations": false
       }
     ],
     "security": {
