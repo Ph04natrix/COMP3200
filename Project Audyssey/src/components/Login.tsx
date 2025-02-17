@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import CircleNumber from "../components/CircleNumber";
 
@@ -10,12 +10,13 @@ This function is multi-purpose based on the state of the user
     - show a progress bar to indicate that the songs are being downloaded
 */
 
-export default function Login() {
+export default function Login({setupDone}: {setupDone: boolean}) {
     type SetupState =
         | { status: "unauthorised" }
         | { status: "authorised", access_token: string};
 
     const loginState = useRef<SetupState>({status: "unauthorised"});
+    const [libraryCount, setLibraryCount] = useState<number>(0);
     
     // if we are unauthorised then we need to become authorised
     if (loginState.current.status === "unauthorised") {
@@ -35,11 +36,10 @@ export default function Login() {
             // We don't have a code or error
             // check if we have an access token
             console.log("No code or error found in url");
-            
         }    
+    } else if (loginState.current.status === "authorised") {
+        // todo what happens here?
     }
-
-    
 
     function handleClick() {
         console.log("Grant access to the Audyssey button clicked");
@@ -54,7 +54,17 @@ export default function Login() {
             .then((token) => {
                 console.log("Access token received: ", {token});
                 loginState.current = {status: "authorised", access_token: token};
-                invoke<number>("get_users_saved_tracks").then((total) => console.log(total));
+
+                requestLibraryCount();
+            })
+            .catch((err) => console.error(err));
+    }
+
+    function requestLibraryCount() {
+        invoke<number>("get_users_saved_tracks")
+            .then((total) => {
+                console.log(total);
+                setLibraryCount(total);
             })
             .catch((err) => console.error(err));
     }
@@ -72,11 +82,21 @@ export default function Login() {
             <p>{loginState.current.toString()}</p>
             <div>
                 <div>
-                    <h3>Gaining access to your library</h3>
+                    <h3>1. Authorising User</h3>
                     <ul>
                         <li>Requesting User Authorization</li>
                         <li>Requesting User-Specific Access Token to Spotify API</li>
                     </ul>
+                </div>
+                <div>
+                    <h3>2. Requesting Spotify API Access Code</h3>
+                </div>
+                <div>
+                    <h3>Updating the Audyssey</h3>
+                    <p>Any of your saved tracks that are not already in the Audyssey will be fetched from Spotify.</p>
+                    <br />
+                    <p>{libraryCount} songs found in your library</p>
+                    <p>{} of which need to be downloaded</p>
                 </div>
             </div>
         </>
