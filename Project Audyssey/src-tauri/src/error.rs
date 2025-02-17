@@ -11,7 +11,14 @@ pub enum MyError {
   #[error(transparent)]
   SerdeJSON(#[from] serde_json::Error),
   #[error("Failed to handle ParseError")]
-  URLParse(#[from] url::ParseError)
+  URLParse(#[from] url::ParseError),
+  #[error("Failed to refresh access token")]
+  RefreshAccess,
+  #[error("Spotify API request fail with error code {code:?}, because: {message:?}")]
+  SpotifyAPI {
+    code: u16,
+    message: String,
+  },
 }
 
 // we must manually implement serde::Serialize
