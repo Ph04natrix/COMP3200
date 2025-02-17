@@ -3,6 +3,7 @@ use serde::Deserialize;
 use tauri::{Builder, Manager};
 
 mod spotify;
+mod soundcharts;
 mod error;
 
 pub struct AppStateInner {
