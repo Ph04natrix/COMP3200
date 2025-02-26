@@ -1,3 +1,4 @@
+use spotify::{authorization, api};
 use tokio::sync::Mutex;
 use serde::Deserialize;
 use tauri::{Builder, Manager};
@@ -31,9 +32,9 @@ pub type AppState = Mutex<AppStateInner>;
 #[derive(Deserialize, Default)]
 struct AccessToken {
     access_token: String, // An access token that can be provided in subsequent calls
-    _token_type: String, // How the access token may be used: always "Bearer"
-    _scope: String, // A space-separated list of scopes which have been granted for this access_token
-    _expires_in: u32, // The time period (in seconds) for which the access token is valid
+    token_type: String, // How the access token may be used: always "Bearer"
+    scope: String, // A space-separated list of scopes which have been granted for this access_token
+    expires_in: u32, // The time period (in seconds) for which the access token is valid
     refresh_token: String // Used to refresh an expired access token
 }
 
@@ -42,14 +43,18 @@ pub fn run() {
     Builder::default()
         .setup(|app| {// Sets up the state for the application
             app.manage(Mutex::new(AppStateInner::default()));
+            
+            let window = app.get_webview_window("main").unwrap();
+            window.open_devtools();
+            
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             exit_app,
-            spotify::request_auth_code, spotify::request_access_token, spotify::refresh_access_token,
-            spotify::get_users_saved_tracks,
+            authorization::request_auth_code, authorization::request_access_token, authorization::refresh_access_token,
+            api::get_user_library_count, api::get_user_full_library,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -57,5 +62,6 @@ pub fn run() {
 
 #[tauri::command]
 async fn exit_app(app: tauri::AppHandle) {
+  // todo serialize songs into file
   app.exit(0);
 }
