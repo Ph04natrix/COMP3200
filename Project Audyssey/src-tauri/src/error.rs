@@ -12,8 +12,11 @@ pub enum MyError {
   SerdeJSON(#[from] serde_json::Error),
   #[error("Failed to handle ParseError")]
   URLParse(#[from] url::ParseError),
-  #[error("Failed to refresh access token")]
-  RefreshAccess,
+  #[error("Authentication error: {error:?}, {error_description:?}")]
+  SpotifyAuthError {
+    error: String,
+    error_description: String,
+  },
   #[error("Spotify API request fail with error code {code:?}, because: {message:?}")]
   SpotifyAPI {
     code: u16,
