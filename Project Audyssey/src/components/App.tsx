@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useState,useRef } from "react";
 
 import "../styles/App.css";
 import Login from "./Login";
 import Main from "./Main";
 
-function App() {
+export type SetupState = { status: "unauthorised" }
+| { status: "authorised", access_token: string};
+
+export default function App() {
+
+  const loginState = useRef<SetupState>({status: "unauthorised"});
   const [setupDone, setSetupDone] = useState<boolean>(false);
 
   if (!setupDone) {
     return (
       <Login
         setupDone={setupDone}
+        setSetupDone={setSetupDone}
+        loginState={loginState}
       />
     );
   } else {
@@ -53,5 +60,3 @@ function App() {
     </main>
   );*/
 }
-
-export default App;
