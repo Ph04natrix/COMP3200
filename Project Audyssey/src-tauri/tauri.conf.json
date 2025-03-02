@@ -28,7 +28,7 @@
         "url": "/login",
         "resizable": true,
         "width": 800,
-        "height": 400,
+        "height": 800,
         "fullscreen": false,
         "visible": true,
         "decorations": false

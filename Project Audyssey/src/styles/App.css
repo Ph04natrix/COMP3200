@@ -14,6 +14,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  --text-light: #f6f6f6;
+  --text-dark: #0f0f0f;
+  --outline-col: #f6f6f688;
 }
 
 .container {
@@ -40,8 +44,24 @@ a:hover {
   color: #535bf2;
 }
 
+body {
+  margin-top: 0;
+}
+
 h1 {
   text-align: center;
+  outline: 2px solid var(--outline-col);
+  border-radius: 0px 0px 10px 10px;
+  margin-top: 0;
+  padding: 12px 12px 12px 12px;
+  width: fit-content;
+}
+
+div.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-basis: 30%;
 }
 
 input,
@@ -105,7 +125,7 @@ button {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #f6f6f6;
+    color: var(--text-light);
     background-color: #2f2f2f;
   }
 
