@@ -44,9 +44,6 @@ pub fn run() {
         .setup(|app| {// Sets up the state for the application
             app.manage(Mutex::new(AppStateInner::default()));
             
-            let window = app.get_webview_window("main").unwrap();
-            window.open_devtools();
-            
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())

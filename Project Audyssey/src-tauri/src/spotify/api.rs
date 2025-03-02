@@ -1,34 +1,20 @@
-use std::ops::Deref;
-
 use serde::{Deserialize, Serialize};
 use serde_json::from_str;
-use tauri::{http::HeaderMap, State, Url};
+use tauri::{http::HeaderMap, AppHandle, Emitter, State, Url};
 use tauri_plugin_http::reqwest::*;
 
 use crate::{
-    AccessToken,
     AppState,
     error::{MyError, MyResult}
 };
 
 type SpotifyID = String;
-/*
-#[derive(Debug, Serialize, Deserialize)]
-struct SpotifyID(String);
-
-impl Deref for SpotifyID {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}*/
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum SpotifyEndpoints {
     GetSavedTracks {
         market: String, // should always be set to GB
-        limit: u16, // range of 0-50
+        limit: u32, // range of 0-50
         offset: u32 // 0 to infinity
     },
     CheckSavedTracks,
@@ -173,11 +159,18 @@ pub struct ImageObject {
 
 const SPOTIFY_API: &str = "https://api.spotify.com/v1/";
 
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SpotifyLibraryDownloadProgress {
+    downloaded: u32,
+    remaining: u32
+}
+
 pub async fn handle_request(
     endpoint: SpotifyEndpoints,
     client: &Client,
     access_token: &String,
-) -> MyResult<String>{
+) -> MyResult<Response>{
 
     let (
         specific_endpoint,
@@ -222,11 +215,14 @@ pub async fn handle_request(
         .await?;
 
     match res.status() {
-        StatusCode::OK | StatusCode::CREATED | StatusCode::ACCEPTED | StatusCode::NO_CONTENT =>     -odo!(), 
+        StatusCode::OK | StatusCode::CREATED | StatusCode::ACCEPTED | StatusCode::NO_CONTENT => {
+            Ok(res)
+        }, 
         // * ERROR CODES
         StatusCode::BAD_REQUEST => {// 400
             let err_msg = res.json::<SpotifyError>().await?.error.message;
-            println!("[400] Bad request: {err_msg}")
+            println!("[400] Bad request: {err_msg}");
+            Err(MyError::SpotifyAPI { code: 400, message: err_msg })
         },
         // todo emit event which causes the token to be refreshed
         StatusCode::UNAUTHORIZED => {// 401: Bad or expired token. This can happen if the user revoked a token or the access token has expired. You should re-authenticate the user.
@@ -234,24 +230,25 @@ pub async fn handle_request(
             println!("The access token is bad or expired, the user needs re-authenticating");
             println!("[401]: {err_msg:?}");
             // refresh_access_token().await?;
+            Err(MyError::SpotifyAPI { code: 401, message: err_msg })
         },
         StatusCode::FORBIDDEN => {// 403: Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...). Unfortunately, re-authenticating the user won't help here.
             let err_msg = res.json::<SpotifyError>().await?.error.message;
             println!("Bad OAuth Request (wrong consumer key, bad nonce, expired timestamp, ...)");
             println!("[403]: {err_msg:?}");
+            Err(MyError::SpotifyAPI { code: 403, message: err_msg })
         },
         StatusCode::TOO_MANY_REQUESTS => {// 429
             let err_msg = res.json::<SpotifyError>().await?.error.message;
             println!("Exceeded rate limits!");
             println!("[429]: {err_msg:?}");
+            Err(MyError::SpotifyAPI { code: 429, message: err_msg })
         },
         StatusCode::INTERNAL_SERVER_ERROR | StatusCode::BAD_GATEWAY | StatusCode::SERVICE_UNAVAILABLE => {
             panic!("Spotify server is down!")
         },
         _ => panic!("Unaccounted status code received from Spotify!")
     }
-
-    Ok(String::new())
 }
 
 #[tauri::command]
@@ -259,11 +256,6 @@ pub async fn get_user_library_count(state: State<'_, AppState>) -> MyResult<u32>
     // Check how many items are in a user's library
     let state_lock = state.lock().await;
     let token = &state_lock.AccessToken.access_token;
-
-    /*
-    let endpoint = SpotifyEndpoints::GetSavedTracks { market: "GB".to_string(), limit: 1, offset: 0 };
-    let res = build_request(endpoint, client, token).await?;
-     */
 
     let mut library_count_endpoint: String = SPOTIFY_API.to_string();
     library_count_endpoint.push_str("me/tracks");
@@ -289,36 +281,61 @@ pub async fn get_user_library_count(state: State<'_, AppState>) -> MyResult<u32>
 
 #[tauri::command]
 pub async fn get_user_full_library(
-    total: u32,
+    app: AppHandle,
+    mut total: u32,
     state: State<'_, AppState>,
-) -> MyResult<String> {
+) -> MyResult<()> {
     let state_lock = state.lock().await;
     let token = &state_lock.AccessToken.access_token;
 
     let client = Client::new();
     
-    let market = "GB".to_string();
     let mut offset = 0;
     /*
         If the total is 100 then we can set limit=50 and increment the offset by the limit after sending the request
         other wise if the total is 50 or fewer then we set limit=total and ignore increasing the offset
      */
 
+    let mut songs: Vec<SavedTracksObject> = Vec::new();
+
+    // app.emit("spotify-library-download-started", 0).unwrap(); not listening for this so ignored
     loop {
         match total {
-            n if n > 50 => {
-                let res = handle_request(
-                    SpotifyEndpoints::GetSavedTracks {
-                        market: "GB".to_string(),
-                        limit: 50,
-                        offset: offset
-                    }, &client, token
-                ).await;
+            n @ 1..=u32::MAX => {
+                let limit;
+                if n >= 50 {
+                    limit = 50;
+                } else {
+                    limit = n;
+                }
+
+                if let Ok(res) = handle_request(SpotifyEndpoints::GetSavedTracks {
+                    market: "GB".to_string(),
+                    limit: limit,
+                    offset: offset
+                }, &client, token).await {//* Response received */
+                    songs.push(res.json::<SavedTracksObject>().await?);
+                    app.emit("spotify-library-download-progress", SpotifyLibraryDownloadProgress {
+                        downloaded: limit,
+                        remaining: total,
+                    }).unwrap();
+
+                    offset += limit;
+                    total -= limit;
+                    let len = &songs.len();
+                    println!("songs.length={len}, offset={offset}, total={total}");
+                } else {//* Request to get songs failed */
+                    
+                }
             },
-            _ => todo!(),
+            0 => {
+                app.emit("spotify-library-download-finished", 0).unwrap();
+                break
+            },
         }     
     }
 
+    // todo put songs into ECS world
 
-    Ok(String::new())
+    Ok(())
 }
