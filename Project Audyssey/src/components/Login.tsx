@@ -1,27 +1,29 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen, once } from "@tauri-apps/api/event";
+
 import { useState } from "react";
+
 import ProgressBar from "./ProgressBar";
 import { SetupState } from "./App";
 
-/* // todo
-This function is multi-purpose based on the state of the user
-- not logged in -> redirect to spotify to get an authorization code
-- granted access but needs to update library -> get the access token from spotify using the authorization code in the URL
-    - show a progress bar to indicate that the songs are being downloaded
-*/
+type SpotifyLibraryDownloadProgress = {
+    downloaded: number,
+    remaining: number,
+}
 
 export default function Login({
-    setupDone, setSetupDone, loginState
+    setupDone, setSetupDone,
+    setupState, setSetupState,
 }: {
-    setupDone: boolean, setSetupDone: any, loginState: React.MutableRefObject<SetupState>
+    setupDone: boolean, setSetupDone: any,
+    setupState: SetupState, setSetupState: any
 }) {
-    const [libraryCount, setLibraryCount] = useState<number>(0);
     const [currLibraryCount, setCurrLibraryCount] = useState<number>(0);
 
     if (!setupDone) {
-        console.log(loginState);
-        switch (loginState.current.status) {
+        switch (setupState.status) {
             case "unauthorised":
+                console.log(setupState);    
                 const url = window.location.search;
                 console.log("The current url parameter(s) are: ", {url});
 
@@ -39,7 +41,21 @@ export default function Login({
                 }    
                 break;
             case "authorised":// * Skip straight to getting the library count
-                
+                switch (setupState.libState.status) {
+                    case "unknown":
+                        console.log(setupState);
+                        requestLibraryCount();
+                        break;
+                    case "known":
+                        console.log(setupState);
+                        loadUsersSavedTracks(setupState.libState.total);
+                        break;
+                    case "fetched":
+                        console.log(setupState);
+                        break
+                    case "fetching": // Switch fallthrough here, so that fetching 'defaults' in a break
+                    default: break;
+                }
                 break;
             default: break;
         }
@@ -57,9 +73,7 @@ export default function Login({
         invoke<string>("request_access_token", { auth_code: code })
             .then((token) => {
                 console.log("Access token received: ", {token});
-                loginState.current = {status: "authorised", access_token: token};
-
-                requestLibraryCount();
+                setSetupState({status: "authorised", access_token: token, libState: {status: "unknown", total: null}});
             })
             .catch((err) => console.error(err));
     }
@@ -67,22 +81,51 @@ export default function Login({
     function requestLibraryCount() {
         invoke<number>("get_user_library_count")
             .then((total) => {
-                console.log(total);
-                setLibraryCount(total);
-                setCurrLibraryCount(total - 1000);
-                loadUsersSavedTracks(total);
+                console.log("Library total: ", total);
+                setSetupState({
+                    ...setupState,
+                    libState: {
+                        status: "known",
+                        total: total
+                    }
+                });
             })
             .catch((err) => console.error(err));
     }
 
     // Kicks off the process to start requesting spotify API to get all the saved tracks
-    function loadUsersSavedTracks(total: number) {
-        invoke<string>("get_user_full_library", {total: total})
+    async function loadUsersSavedTracks(total: number) {
+        setSetupState({
+            ...setupState,
+            libState: {
+                status: "fetching",
+                total: total
+            }
+        });
+        invoke<string>("get_user_full_library", {total: total});
+
+        const unlisten = await listen<SpotifyLibraryDownloadProgress>('spotify-library-download-progress', (event) => {
+            console.log("Downloaded ", event.payload.downloaded, " songs, ", event.payload.remaining, "left to download.");
+            setCurrLibraryCount(n => n + event.payload.downloaded);
+            console.log("currLibraryCount =", currLibraryCount);
+        });
+
+        once("spotify-library-download-finished", (_event) => {
+            console.log("Finished fetching spotify songs");
+            unlisten();
+            setSetupState({
+                ...setupState,
+                libState: {
+                    status: "fetched",
+                    total: total
+                }
+            });
+        });
     }
 
     // Setup has finished, move to the main page
     function enterMainPage() {
-        setSetupDone();
+        setSetupDone(true);
     }
 
     return(
@@ -110,14 +153,30 @@ export default function Login({
                 </div>
                 <hr />
                 <div>
-                    <h3>Updating the Audyssey</h3>
+                    <h3>3. Updating the Audyssey</h3>
                     <p>Any of your saved tracks that are not already in the Audyssey will be fetched from Spotify.</p>
                     <br />
-                    <p>{libraryCount} songs found in your library, {} of which need to be downloaded</p>
-                    <ProgressBar curr={currLibraryCount} max={libraryCount} description="songs fetched from Spotify Library"/>
+                    {// Only show this when we have reached the correct state
+                        (setupState.status === "authorised" && setupState.libState.status !== "unknown") && <>
+                            <ProgressBar
+                                curr={currLibraryCount}
+                                max={setupState.libState.total}
+                                description="songs fetched from Spotify Library"
+                            />
+                        </>
+                    }
                 </div>
             </div>
-            <button type="button" onClick={enterMainPage}>Enter the Audyssey</button>
+            {
+                (
+                    setupState.status === "authorised" && setupState.libState.status === "fetched"
+                ) && <>
+                <br />
+                    <button type="button" onClick={enterMainPage}>
+                        Enter the Audyssey
+                    </button>
+                </>
+            }
         </div>
     )
 }
