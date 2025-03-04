@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use serde_json::from_str;
-use tauri::{http::HeaderMap, AppHandle, Emitter, State, Url};
+use tauri::{
+    http::HeaderMap, AppHandle, Emitter, State, Url,
+    Manager
+};
 use tauri_plugin_http::reqwest::*;
 
 use crate::{
@@ -8,7 +11,9 @@ use crate::{
     error::{MyError, MyResult}
 };
 
-type SpotifyID = String;
+use super::conversion::write_api_songs_to_file;
+
+pub type SpotifyID = String;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum SpotifyEndpoints {
@@ -51,7 +56,7 @@ pub struct SpotifyErrorObject {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SavedTracksObject {
     href: String,
-    items: Vec<SavedTrackObject>,
+    pub items: Vec<SavedTrackObject>,
     limit: u16,
     next: Option<String>,
     offset: u32,
@@ -63,61 +68,60 @@ pub struct SavedTracksObject {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SavedTrackObject {
-    added_at: String,
-    track: TrackObject,
+    pub added_at: String,
+    pub track: TrackObject,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TrackObject {
-    album: AlbumObject,
-    artists: Vec<SimplifiedArtistObject>,
+    pub album: AlbumObject,
+    pub artists: Vec<SimplifiedArtistObject>,
     // available_markets: Option<Vec<String>>,
-    disc_number: u16,
-    duration_ms: u32,
-    explicit: bool,
+    pub disc_number: u16,
+    pub duration_ms: u32,
+    pub explicit: bool,
     external_ids: ExternalIDsObject,
     external_urls: ExternalUrlsObject,
     href: String,
-    id: SpotifyID,
+    pub id: SpotifyID,
     is_local: bool,
     is_playable: bool,
     // linked_from: LinkedFromObject,
     #[serde(default)]
     restrictions: Option<RestrictionsObject>,
-    name: String,
-    popularity: u16,
+    pub name: String,
+    pub popularity: u16,
     preview_url: Option<String>,
-    track_number: u16,
+    pub track_number: u16,
     r#type: String,
     uri: String,
-    
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AlbumObject {
-    album_type: String, // one of "album", "single", "compilation"
-    total_tracks: u16,
+    pub album_type: String, // one of "album", "single", "compilation"
+    pub total_tracks: u16,
     // available_markets: Option<Vec<String>>,
     external_urls: ExternalUrlsObject,
     href: Url,
-    id: SpotifyID,
-    images: Vec<ImageObject>,
-    name: String,
-    release_date: String, // E.g "1981-12"
-    release_date_precision: String,
+    pub id: SpotifyID,
+    pub images: Vec<ImageObject>,
+    pub name: String,
+    pub release_date: String, // E.g "1981-12"
+    pub release_date_precision: String,
     #[serde(default)]
     restrictions: RestrictionsObject,
     r#type: String,
     uri: String,
-    artists: Vec<SimplifiedArtistObject>
+    pub artists: Vec<SimplifiedArtistObject>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimplifiedArtistObject {
     external_urls: ExternalUrlsObject,
-    href: String,
-    id: SpotifyID,
-    name: String,
+    pub href: String,
+    pub id: SpotifyID,
+    pub name: String,
     r#type: String,
     uri: String,
 }
@@ -284,9 +288,10 @@ pub async fn get_user_full_library(
     app: AppHandle,
     mut total: u32,
     state: State<'_, AppState>,
-) -> MyResult<()> {
+) -> MyResult<String> {
     let state_lock = state.lock().await;
     let token = &state_lock.AccessToken.access_token;
+    let app_dir = &state_lock.main_directory;
 
     let client = Client::new();
     
@@ -294,48 +299,35 @@ pub async fn get_user_full_library(
     /*
         If the total is 100 then we can set limit=50 and increment the offset by the limit after sending the request
         other wise if the total is 50 or fewer then we set limit=total and ignore increasing the offset
-     */
+    */
 
     let mut songs: Vec<SavedTracksObject> = Vec::new();
+    while total > 0 {
+        let limit = if total >= 50 {
+            50
+        } else {
+            total
+        };
 
-    // app.emit("spotify-library-download-started", 0).unwrap(); not listening for this so ignored
-    loop {
-        match total {
-            n @ 1..=u32::MAX => {
-                let limit;
-                if n >= 50 {
-                    limit = 50;
-                } else {
-                    limit = n;
-                }
+        if let Ok(res) = handle_request(SpotifyEndpoints::GetSavedTracks {
+            market: "GB".to_string(),
+            limit: limit,
+            offset: offset
+        }, &client, token).await {//* Response received */
+            songs.push(res.json::<SavedTracksObject>().await?);
+            app.emit("spotify-library-download-progress", SpotifyLibraryDownloadProgress {
+                downloaded: limit,
+                remaining: total,
+            }).unwrap();
 
-                if let Ok(res) = handle_request(SpotifyEndpoints::GetSavedTracks {
-                    market: "GB".to_string(),
-                    limit: limit,
-                    offset: offset
-                }, &client, token).await {//* Response received */
-                    songs.push(res.json::<SavedTracksObject>().await?);
-                    app.emit("spotify-library-download-progress", SpotifyLibraryDownloadProgress {
-                        downloaded: limit,
-                        remaining: total,
-                    }).unwrap();
-
-                    offset += limit;
-                    total -= limit;
-                    let len = &songs.len();
-                    println!("songs.length={len}, offset={offset}, total={total}");
-                } else {//* Request to get songs failed */
-                    
-                }
-            },
-            0 => {
-                app.emit("spotify-library-download-finished", 0).unwrap();
-                break
-            },
-        }     
+            offset += limit;
+            total -= limit;
+            let len = &songs.len();
+            println!("songs.length={len}, offset={offset}, total={total}");
+        } else {/* Request to get songs failed */}
     }
 
-    // todo put songs into ECS world
+    write_api_songs_to_file(songs, app_dir.clone()).await;
 
-    Ok(())
+    Ok(app_dir.to_str().expect("Couldn't convert app_data_dir to string").to_string())
 }

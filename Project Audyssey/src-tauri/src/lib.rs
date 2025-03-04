@@ -1,9 +1,16 @@
-use spotify::{authorization, api};
-use tokio::sync::Mutex;
+use std::path::PathBuf;
+
+use flecs_ecs::core::World;
+use tokio::sync::{Mutex, RwLock};
 use serde::Deserialize;
 use tauri::{Builder, Manager};
 
-mod spotify;
+mod api;
+use api::{authorization, spotify};
+
+mod ecs;
+use ecs::types::AudysseyModule;
+
 mod soundcharts;
 mod error;
 
@@ -13,18 +20,8 @@ pub struct AppStateInner {
   redirect: String,
   AccessToken: AccessToken,
   code_verifier: String,
-}
-
-impl AppStateInner {
-    fn default() -> Self {
-        AppStateInner {
-            client_id: "71362bad121c4dd5be0fd0794119454b".to_string(),
-            client_secret: "f8f9676547104ee080c3b61c1276b9c6".to_string(),
-            redirect: String::from("http://localhost:1420/login"),
-            AccessToken: AccessToken::default(),
-            code_verifier: "".to_string()
-        }
-    }
+  ecs_world: World,
+  main_directory: PathBuf
 }
 
 pub type AppState = Mutex<AppStateInner>;
@@ -41,17 +38,34 @@ struct AccessToken {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     Builder::default()
-        .setup(|app| {// Sets up the state for the application
-            app.manage(Mutex::new(AppStateInner::default()));
-            
-            Ok(())
-        })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_fs::init())
+        .setup(|app| {// Sets up the state for the application
+            let mut app_dir = app.path().data_dir().expect("Couldn't find app data directory");
+            app_dir.push("Project Audyssey\\audyssey_deep_storage.json");
+            
+            let state = AppStateInner {
+                client_id: "71362bad121c4dd5be0fd0794119454b".to_string(),
+                client_secret: "f8f9676547104ee080c3b61c1276b9c6".to_string(),
+                redirect: String::from("http://localhost:1420/login"),
+                AccessToken: AccessToken::default(),
+                code_verifier: "".to_string(),
+                ecs_world: World::new(),
+                main_directory: app_dir
+            };
+            state.ecs_world.import::<AudysseyModule>();
+
+            // Can put state in a RwLock to allow multiple threads to read a value at once
+            // flecs::World doesn't implement Send + Sync, so need to impl those traits due
+            // to them coming from C bindings: https://docs.rs/tokio/latest/tokio/sync/struct.RwLock.html
+            app.manage(Mutex::new(state));
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             exit_app,
             authorization::request_auth_code, authorization::request_access_token, authorization::refresh_access_token,
-            api::get_user_library_count, api::get_user_full_library,
+            spotify::get_user_library_count, spotify::get_user_full_library,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
