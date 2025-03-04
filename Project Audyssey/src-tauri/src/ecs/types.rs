@@ -1,4 +1,11 @@
+use std::{fs::File, io::{BufReader, Read}};
+
 use flecs_ecs::prelude::*;
+use tauri::State;
+
+use crate::{
+    error::MyResult, api::conversion::MinimalTrackObject, AppState
+};
 
 #[derive(Debug, Component)]
 pub struct Name(String);
@@ -19,6 +26,9 @@ pub struct Album;
 
 #[derive(Debug, Component)]
 pub struct SpotifyID(String);
+
+#[derive(Debug, Component)]
+pub struct Current;
 
 /* // todo ----- RELATIONS -----*/
 
@@ -60,6 +70,9 @@ pub struct Speechiness(f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
 pub struct Liveness(f32); // 0.0 - 1.0
+
+#[derive(Debug, Component)]
+pub struct Loudness(f32); // -60..0 dB
 
 #[derive(Debug, Component)]
 pub struct Instrumentalness(f32); // 0.0 - 1.0
@@ -131,3 +144,68 @@ impl TryFrom<i32> for Key {
 // Length of the song in milliseconds
 #[derive(Debug, Component)]
 pub struct Duration(u32);
+
+#[derive(Debug, Component)]
+pub struct AudysseyModule;
+
+impl Module for AudysseyModule {
+    fn module(world: &World) {
+        let custom_pipeline = world
+            .pipeline_named("name");
+
+        world
+            .system_named::<(&Song, &Name, &Duration)>("Get Duration")
+            .each(|(_s, name, dur)| {
+                println!("{} has duration={}",name.0, dur.0);
+
+            });
+
+        //*-------Component Registration-------*/
+        world.component::<Name>();
+        world.component::<User>();
+        world.component::<Song>();
+        world.component::<Artist>();
+        world.component::<Album>();
+        world.component::<SpotifyID>();
+        world.component::<Current>();
+
+        world.component::<AudioCollection>();
+        world.component::<Acousticness>();
+        world.component::<Danceability>();
+        world.component::<Energy>();
+        world.component::<Valence>();
+        world.component::<Tempo>();
+        world.component::<Speechiness>();
+        world.component::<Liveness>();
+        world.component::<Loudness>();
+        world.component::<Instrumentalness>();
+        world.component::<Mode>();
+        world.component::<Explicit>();
+        world.component::<TimeSignature>();
+        world.component::<Key>();
+        world.component::<Duration>();
+    }
+}
+
+#[tauri::command]
+pub async fn load_song_entities_from_file(
+    state: State<'_, AppState>
+) -> MyResult<()> {
+    let state_lock = state.lock().await;
+    let world = &state_lock.ecs_world;
+    let file_path = &state_lock.main_directory;
+
+    let file = File::open(file_path).expect("Couldn't open file");
+    let reader = BufReader::new(file);
+
+    // todo this won't work due to the way that these songs were serialized to the file in the first place
+    let songs: Vec<MinimalTrackObject> = serde_json::from_reader(reader)?;
+
+    for song in songs {
+        let s = world.entity();
+        s.add::<Song>()
+            .add::<Name>();
+    };
+
+    Ok(())
+}
