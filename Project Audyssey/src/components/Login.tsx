@@ -102,7 +102,11 @@ export default function Login({
                 total: total
             }
         });
-        invoke<string>("get_user_full_library", {total: total});
+        invoke<string>("get_user_full_library", {total: total})
+            .then((dir) => {
+                console.log("Directory that parsed songs live in is: ", dir);
+                // todo store this directory as a ref so that it can easily be passed around
+            });
 
         const unlisten = await listen<SpotifyLibraryDownloadProgress>('spotify-library-download-progress', (event) => {
             console.log("Downloaded ", event.payload.downloaded, " songs, ", event.payload.remaining, "left to download.");
@@ -123,6 +127,11 @@ export default function Login({
         });
     }
 
+    async function getSongsWithoutAttributes() {
+        
+        
+    }
+
     // Setup has finished, move to the main page
     function enterMainPage() {
         setSetupDone(true);
@@ -131,10 +140,6 @@ export default function Login({
     return(
         <div className="center">
             <h1>Welcome to Project Audyssey</h1>
-            <p>
-                To use this application, we require access to your Spotify Library.
-                This access can be granted by pressing the below button:               
-            </p>
             <div>
                 <div>
                     <h3>1. Authorising User</h3>
@@ -142,28 +147,37 @@ export default function Login({
                         For the Audyssey to access your Spotify Library, you will need to login into Spotify and grant access:
                     </p>
                     <button type="button" onClick={handleClick}>Login to Spotify</button>
-                    <ul>
-                        <li>Requesting User Authorization</li>
-                        <li>Requesting User-Specific Access Token to Spotify API</li>
-                    </ul>
                 </div>
                 <hr />
                 <div>
                     <h3>2. Requesting Spotify API Access Code</h3>
+                    <p>Now that you have granted access to your account, an access token will be fetched that is specific to your account.</p>
+                    <p>This code will be destroyed after the app is closed. If this token expires, you may be asked to re-authenticate yourself.</p>
                 </div>
                 <hr />
                 <div>
-                    <h3>3. Updating the Audyssey</h3>
-                    <p>Any of your saved tracks that are not already in the Audyssey will be fetched from Spotify.</p>
-                    <br />
+                    <h3>3. Fetching Your Library</h3>
+                    {/* <p>Fetching your saved tracks using the access token.</p>*/}
                     {// Only show this when we have reached the correct state
-                        (setupState.status === "authorised" && setupState.libState.status !== "unknown") && <>
-                            <ProgressBar
-                                curr={currLibraryCount}
-                                max={setupState.libState.total}
-                                description="songs fetched from Spotify Library"
-                            />
-                        </>
+                        (
+                            setupState.status === "authorised" && setupState.libState.status !== "unknown"
+                        ) && <ProgressBar
+                            curr={currLibraryCount}
+                            max={setupState.libState.total}
+                            description="songs fetched from Spotify Library"
+                        />
+                    }
+                </div>
+                <hr />
+                <div>
+                    <h3>4. Updating the Audyssey </h3>
+                    <p>For each song fetched from your library, attributes will be fetched from SoundCharts.</p>
+                    {
+                        (setupState.status === "authorised") && <ProgressBar
+                            curr={0}
+                            max={setupState.libState.total} // songs without attributes
+                            description="songs updated with SoundCharts attributes"
+                        />
                     }
                 </div>
             </div>
