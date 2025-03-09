@@ -8,8 +8,13 @@ export type SetupState
  = { status: "unauthorised" }
  | { status: "authorised", access_token: string, libState: LibraryState };
 
-export type LibraryStatus = "unknown" | "known" | "fetching" | "fetched"
-export type LibraryState = { status: LibraryStatus, total: number };
+export type LibraryStatus
+ = "unknown"
+ | "count_known"
+ | "fetched_spotify"
+ | "sc_count_known"
+ | "fetched_attributes"
+export type LibraryState = { status: LibraryStatus, total: number, no_attributes: number, waiting: boolean };
 
 export default function App() {
 

@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, once } from "@tauri-apps/api/event";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import ProgressBar from "./ProgressBar";
 import { SetupState } from "./App";
@@ -9,6 +9,11 @@ import { SetupState } from "./App";
 type SpotifyLibraryDownloadProgress = {
     downloaded: number,
     remaining: number,
+}
+
+type SoundChartsUpdateProgress = {
+    updated_song: string,
+    // remaining: number
 }
 
 export default function Login({
@@ -19,13 +24,15 @@ export default function Login({
     setupState: SetupState, setSetupState: any
 }) {
     const [currLibraryCount, setCurrLibraryCount] = useState<number>(0);
+    const [attrSongCount, setAttrSongCount] = useState<number>(0);
+    const songStorePath = useRef<string>("");
 
     if (!setupDone) {
         switch (setupState.status) {
             case "unauthorised":
                 console.log(setupState);    
                 const url = window.location.search;
-                console.log("The current url parameter(s) are: ", {url});
+                console.log("The current url is: ", {url});
 
                 const urlParams = new URLSearchParams(url);
                 let code = urlParams.get("code");
@@ -38,32 +45,33 @@ export default function Login({
                     console.log("ERROR: user authorisation failed: ", {error})
                 } else {
                     console.log("No code or error found in url");
-                }    
-                break;
-            case "authorised":// * Skip straight to getting the library count
-                switch (setupState.libState.status) {
-                    case "unknown":
-                        console.log(setupState);
-                        requestLibraryCount();
-                        break;
-                    case "known":
-                        console.log(setupState);
-                        loadUsersSavedTracks(setupState.libState.total);
-                        break;
-                    case "fetched":
-                        console.log(setupState);
-                        break
-                    case "fetching": // Switch fallthrough here, so that fetching 'defaults' in a break
-                    default: break;
                 }
                 break;
-            default: break;
+            case "authorised":// * Skip straight to getting the library count
+                if (!setupState.libState.waiting) {
+                    console.log(setupState);
+                    switch (setupState.libState.status) {
+                    case "unknown": 
+                        requestLibraryCount();
+                        break;
+                    case "count_known":
+                        loadUsersSavedTracks(setupState.libState.total);
+                        break;
+                    case "fetched_spotify":
+                        getNoAttributeCount(setupState.libState.total);
+                        break
+                    case "sc_count_known":
+                        fillSongAttributes();
+                        break;
+                    case "fetched_attributes":
+                        break;
+                    }
+                }
+                break;
         }
     }
 
     function handleClick() {
-        console.log("Grant access to the Audyssey button clicked");
-        
         invoke<string>("request_auth_code")
             .then((url) => window.location.replace(url))
             .catch((err) => console.error(err));
@@ -85,8 +93,10 @@ export default function Login({
                 setSetupState({
                     ...setupState,
                     libState: {
-                        status: "known",
-                        total: total
+                        status: "count_known",
+                        total: total,
+                        no_attributes: 0,
+                        waiting: false
                     }
                 });
             })
@@ -98,14 +108,16 @@ export default function Login({
         setSetupState({
             ...setupState,
             libState: {
-                status: "fetching",
-                total: total
+                status: "known",
+                total: total,
+                no_attributes: 0,
+                waiting: true
             }
         });
         invoke<string>("get_user_full_library", {total: total})
-            .then((dir) => {
-                console.log("Directory that parsed songs live in is: ", dir);
-                // todo store this directory as a ref so that it can easily be passed around
+            .then((path) => {
+                console.log("Path to parsed songs = ", path);
+                songStorePath.current = path;
             });
 
         const unlisten = await listen<SpotifyLibraryDownloadProgress>('spotify-library-download-progress', (event) => {
@@ -120,21 +132,64 @@ export default function Login({
             setSetupState({
                 ...setupState,
                 libState: {
-                    status: "fetched",
-                    total: total
+                    status: "fetched_spotify",
+                    total: total,
+                    no_attributes: 0,
+                    waiting: false
                 }
             });
         });
     }
 
-    async function getSongsWithoutAttributes() {
-        
-        
+    async function getNoAttributeCount(total: number) {
+        invoke<string>("file_to_ecs_cmd").then(msg => {
+            console.log(msg);
+            invoke<number>("song_without_attributes_count")
+                .then((no_attr_count) => {// Then query for songs without attributes, this function also s
+                    setSetupState({
+                        ...setupState,
+                        libState: {
+                            status: "sc_count_known",
+                            total: total,
+                            no_attributes: no_attr_count,
+                            waiting: false,
+                        }
+                    });
+                });
+        });
     }
 
-    // Setup has finished, move to the main page
-    function enterMainPage() {
-        setSetupDone(true);
+    async function fillSongAttributes() {
+        if (setupState.status === "authorised") {
+            setSetupState({
+                ...setupState,
+                libState: {
+                    ...setupState.libState,
+                    waiting: true
+                }
+            })
+        }
+        invoke<string>("fill_song_attributes").then((msg) => console.log(msg));
+
+        const unlisten = await listen<SoundChartsUpdateProgress>("soundcharts-update-progress", (e) => {
+            console.log(e.payload.updated_song, " successfully updated with SoundCharts attributes");
+            setAttrSongCount(n => n + 1);
+        });
+
+        once("soundcharts-update-finished", (_e) => {
+            console.log("Finished updating songs with attributes");
+            unlisten();
+            if (setupState.status === "authorised") {
+                setSetupState({
+                    ...setupState,
+                    libState: {
+                        ...setupState.libState,
+                        status: "fetched_attributes",
+                        waiting: false
+                    }
+                });
+            }
+        });
     }
 
     return(
@@ -173,9 +228,11 @@ export default function Login({
                     <h3>4. Updating the Audyssey </h3>
                     <p>For each song fetched from your library, attributes will be fetched from SoundCharts.</p>
                     {
-                        (setupState.status === "authorised") && <ProgressBar
-                            curr={0}
-                            max={setupState.libState.total} // songs without attributes
+                        (
+                            setupState.status === "authorised" && setupState.libState.no_attributes > 0
+                        ) && <ProgressBar
+                            curr={attrSongCount}
+                            max={setupState.libState.no_attributes} // songs without attributes
                             description="songs updated with SoundCharts attributes"
                         />
                     }
@@ -183,13 +240,10 @@ export default function Login({
             </div>
             {
                 (
-                    setupState.status === "authorised" && setupState.libState.status === "fetched"
-                ) && <>
-                <br />
-                    <button type="button" onClick={enterMainPage}>
-                        Enter the Audyssey
-                    </button>
-                </>
+                    setupState.status === "authorised" && setupState.libState.status === "fetched_attributes"
+                ) && <button type="button" onClick={setSetupDone(true)}>
+                    Enter the Audyssey
+                </button>
             }
         </div>
     )
