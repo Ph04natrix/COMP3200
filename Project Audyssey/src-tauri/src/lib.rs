@@ -1,18 +1,18 @@
-use std::path::PathBuf;
+use std::{fs::{File, OpenOptions}, path::PathBuf};
 
 use flecs_ecs::core::World;
 use tokio::sync::{Mutex, RwLock};
 use serde::Deserialize;
-use tauri::{Builder, Manager};
+use tauri::{Builder, Manager, State};
 
 mod api;
-use api::{authorization, spotify};
+use api::{authorization, conversion, soundcharts, spotify};
 
 mod ecs;
 use ecs::types::AudysseyModule;
 
-mod soundcharts;
 mod error;
+use error::MyResult;
 
 pub struct AppStateInner {
   client_id: String,
@@ -44,6 +44,10 @@ pub fn run() {
         .setup(|app| {// Sets up the state for the application
             let mut app_dir = app.path().data_dir().expect("Couldn't find app data directory");
             app_dir.push("Project Audyssey\\audyssey_deep_storage.json");
+
+            if let Err(_) = File::create_new(&app_dir) {
+                println!("Did not create audyssey_deep_storage.json as it already exists.")
+            };
             
             let state = AppStateInner {
                 client_id: "71362bad121c4dd5be0fd0794119454b".to_string(),
@@ -66,13 +70,24 @@ pub fn run() {
             exit_app,
             authorization::request_auth_code, authorization::request_access_token, authorization::refresh_access_token,
             spotify::get_user_library_count, spotify::get_user_full_library,
+            conversion::file_to_ecs_cmd,
+            soundcharts::song_without_attributes_count, soundcharts::fill_song_attributes
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 #[tauri::command]
-async fn exit_app(app: tauri::AppHandle) {
-  // todo serialize songs into file
-  app.exit(0);
+async fn exit_app(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>
+) -> MyResult<()> {
+    let state_lock = state.lock().await;
+    let world = &state_lock.ecs_world;
+    let file_path = &state_lock.main_directory;
+
+    // todo serialize songs into file
+    let mut file = OpenOptions::new().write(true).open(file_path)?;
+
+    Ok(app.exit(0))
 }
