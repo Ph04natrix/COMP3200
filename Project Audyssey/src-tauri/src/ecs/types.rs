@@ -1,14 +1,12 @@
-use std::{fs::File, io::{BufReader, Read}};
-
 use flecs_ecs::prelude::*;
-use tauri::State;
 
-use crate::{
-    error::MyResult, api::conversion::MinimalTrackObject, AppState
-};
+use crate::api::{conversion::{AlbumType, ReleaseDatePrecision}, soundcharts::SCGenreObject, spotify::{self, ImageObject}};
 
 #[derive(Debug, Component)]
-pub struct Name(String);
+pub struct Name(pub String);
+
+#[derive(Debug, Component)]
+pub struct AddedAt(pub String); //todo "Convert from Utc string to data structure"
 
 // ----- IDENTIFIERS ----- //
 
@@ -25,16 +23,20 @@ pub struct Artist;
 pub struct Album;
 
 #[derive(Debug, Component)]
-pub struct SpotifyID(String);
+pub struct SpotifyID(pub String);
 
 #[derive(Debug, Component)]
 pub struct Current;
 
-/* // todo ----- RELATIONS -----*/
+#[derive(Debug, Component)]
+pub struct MissingAttributes;
+
+//*------- RELATIONS -------*/
 
 /*
-Song --SavedBy-- User
-Song --AddedTo-- Library
+Song --AddedTo-- AudioCollection::Library
+Artist --Created-- Song
+Song
 */
 
 // ? should this be multiple distinct components that are connected by an IsA relationship to build a hierarchy
@@ -42,40 +44,42 @@ Song --AddedTo-- Library
 pub enum AudioCollection {
     Library,
     Playlist,
-    Album,
-    Compilation,
-    Ep,
-    Single,
+    Album {
+        alb_type: AlbumType,
+        release_date: String,
+        rel_date_precision: ReleaseDatePrecision,
+        images: Vec<ImageObject>
+    },
 }
 
 // ----- Song attributes ----- //
 
 #[derive(Debug, Component)]
-pub struct Acousticness(f32); // 0.0 - 1.0
+pub struct Acousticness(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
-pub struct Danceability(f32); // 0.0 - 1.0
+pub struct Danceability(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
-pub struct Energy(f32); // 0.0 - 1.0
+pub struct Energy(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
-pub struct Valence(f32); // 0.0 - 1.0
+pub struct Valence(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
-pub struct Tempo(f32); // 0.0 - 1.0
+pub struct Tempo(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
-pub struct Speechiness(f32); // 0.0 - 1.0
+pub struct Speechiness(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
-pub struct Liveness(f32); // 0.0 - 1.0
+pub struct Liveness(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
-pub struct Loudness(f32); // -60..0 dB
+pub struct Loudness(pub f32); // -60..0 dB
 
 #[derive(Debug, Component)]
-pub struct Instrumentalness(f32); // 0.0 - 1.0
+pub struct Instrumentalness(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
 pub enum Mode {
@@ -96,10 +100,10 @@ impl TryFrom<u32> for Mode {
 }
 
 #[derive(Debug, Component)]
-pub struct Explicit(bool);
+pub struct Explicit(pub bool);
 
 #[derive(Debug, Component)]
-pub struct TimeSignature(u32); // 3, 4, 5, 6, 7
+pub struct TimeSignature(pub u32); // 3, 4, 5, 6, 7
 
 #[derive(Debug, Component)]
 pub enum Key {
@@ -143,7 +147,15 @@ impl TryFrom<i32> for Key {
 
 // Length of the song in milliseconds
 #[derive(Debug, Component)]
-pub struct Duration(u32);
+pub struct Duration(pub u32);
+
+#[derive(Debug, Component)]
+pub struct Popularity(pub u16);
+
+#[derive(Debug, Component)]
+pub struct Genres(pub Vec<SCGenreObject>);
+
+//*------- End of Component Definitions -------*/
 
 #[derive(Debug, Component)]
 pub struct AudysseyModule;
@@ -156,7 +168,7 @@ impl Module for AudysseyModule {
         world
             .system_named::<(&Song, &Name, &Duration)>("Get Duration")
             .each(|(_s, name, dur)| {
-                println!("{} has duration={}",name.0, dur.0);
+                // println!("{} has duration={}",name.0, dur.0);
 
             });
 
@@ -170,6 +182,8 @@ impl Module for AudysseyModule {
         world.component::<Current>();
 
         world.component::<AudioCollection>();
+
+        world.component::<MissingAttributes>();
         world.component::<Acousticness>();
         world.component::<Danceability>();
         world.component::<Energy>();
@@ -184,28 +198,8 @@ impl Module for AudysseyModule {
         world.component::<TimeSignature>();
         world.component::<Key>();
         world.component::<Duration>();
+
+        world.component::<Genres>();
+        world.component::<Popularity>();
     }
-}
-
-#[tauri::command]
-pub async fn load_song_entities_from_file(
-    state: State<'_, AppState>
-) -> MyResult<()> {
-    let state_lock = state.lock().await;
-    let world = &state_lock.ecs_world;
-    let file_path = &state_lock.main_directory;
-
-    let file = File::open(file_path).expect("Couldn't open file");
-    let reader = BufReader::new(file);
-
-    // todo this won't work due to the way that these songs were serialized to the file in the first place
-    let songs: Vec<MinimalTrackObject> = serde_json::from_reader(reader)?;
-
-    for song in songs {
-        let s = world.entity();
-        s.add::<Song>()
-            .add::<Name>();
-    };
-
-    Ok(())
 }
