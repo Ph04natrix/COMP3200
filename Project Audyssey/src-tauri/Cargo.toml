@@ -31,4 +31,5 @@ tokio = "1.43.0"
 url = "2.5.4"
 tauri-plugin-process = "2.2.0"
 tauri-plugin-fs = "2.2.0"
+ureq = {version="3.0.8", features= ["json"] }
 
