@@ -192,6 +192,11 @@ export default function Login({
         });
     }
 
+    function finishSetup() {
+        
+        setSetupDone(true);
+    }
+
     return(
         <div className="center">
             <h1>Welcome to Project Audyssey</h1>
@@ -241,7 +246,7 @@ export default function Login({
             {
                 (
                     setupState.status === "authorised" && setupState.libState.status === "fetched_attributes"
-                ) && <button type="button" onClick={setSetupDone(true)}>
+                ) && <button type="button" onClick={finishSetup}>
                     Enter the Audyssey
                 </button>
             }
