@@ -80,12 +80,11 @@ pub async fn request_access_token(
     ];
 
     let token_endpoint = "https://accounts.spotify.com/api/token".to_string();
-    let url = Url::parse_with_params(&token_endpoint, &params);
     
     let client = Client::new();
     let res = client
-        .post(url.expect("Failed to send POST request"))
-        .header("Content-Type", "application/x-www-form-urlencoded")
+        .post(token_endpoint)
+        .form(&params)
         .send()
         .await?;
 
@@ -119,12 +118,11 @@ pub async fn refresh_access_token(state: State<'_, AppState>) -> MyResult<String
     ];
 
     let token_endpoint = "https://accounts.spotify.com/api/token".to_string();
-    let url = Url::parse_with_params(&token_endpoint, &params)?;
     
     let client = Client::new();
     let res = client
-        .post(url)
-        .header("Content-Type", "application/x-www-form-urlencoded")
+        .post(token_endpoint)
+        .form(&params)
         .basic_auth(client_id, Some(client_secret))
         .send()
         .await?;
