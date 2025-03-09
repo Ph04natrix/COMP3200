@@ -22,6 +22,11 @@ pub enum MyError {
     code: u16,
     message: String,
   },
+  #[error("Could not convert from {source} to {target}")]
+  ConversionError {
+    r#source: String,
+    target: String
+  }
 }
 
 // we must manually implement serde::Serialize
