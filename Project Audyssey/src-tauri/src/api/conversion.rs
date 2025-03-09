@@ -1,48 +1,163 @@
-use std::{fs::File, io::BufWriter, path::PathBuf};
+use std::{fs::{File, OpenOptions}, io::{BufReader, BufWriter}, path::PathBuf};
 
+use flecs_ecs::core::World;
 use serde::{Serialize, Deserialize};
+use tauri::State;
 
-use super::{soundcharts::{self, get_song_audio_attributes, SCGenreObject}, spotify::{AlbumObject, ImageObject, SavedTrackObject, SavedTracksObject, SimplifiedArtistObject, SpotifyID}};
+use crate::{
+    ecs::types::{
+        Acousticness, Danceability, Duration, Energy, Explicit, Genres, Instrumentalness, Key, Liveness, Loudness, MissingAttributes, Mode, Name, Popularity, Song, Speechiness, SpotifyID, Tempo, TimeSignature, Valence
+    }, error::{MyError, MyResult}, AppState
+};
 
-pub async fn write_api_songs_to_file(
-    songs: Vec<SavedTracksObject>,
-    app_dir_path: PathBuf
-) {
-    let mut trimmed_spotify_songs: Vec<MinimalTrackObject> = Vec::new();
-    
-    for saved_tracks_obj in songs {
-        for track_obj in saved_tracks_obj.items {
-            let trimmed_track: MinimalTrackObject = track_obj.into();
-            println!("Stripped down song: {}", &trimmed_track.name);
-            trimmed_spotify_songs.push(trimmed_track);
-        }
+use super::{
+    soundcharts::{self, SCGenreObject},
+    spotify::{
+        AlbumObject, ImageObject, SavedTrackObject, SimplifiedArtistObject
     }
+};
 
-    let updated_songs = get_song_audio_attributes(trimmed_spotify_songs, 1).await.expect("Couldn't add SoundCharts attributes to tracks");
+#[tauri::command]
+pub async fn file_to_ecs_cmd(
+    state: State<'_, AppState>,
+) -> MyResult<String> {
+    let locked_state = state.lock().await;
+    let file_path = &locked_state.main_directory;
+    let world = &locked_state.ecs_world;
 
-    let file = File::create(app_dir_path).expect("Couldn't create parse_spotify_songs.json");
+    if let Ok(minimal_tracks) = file_to_minimal_objects(file_path) {
+        let _a = minimal_tracks_to_ecs(minimal_tracks, world);
+        
+        Ok(String::from("Converted songs from file to ecs"))
+    } else {
+        Err(MyError::ConversionError {
+            r#source: "File of MinimalTrackObject structs".to_string(),
+            target: "Entity Component System".to_string()
+        })
+    }
+}
+
+pub fn file_to_minimal_objects(
+    file_path: &PathBuf
+) -> MyResult<Vec<MinimalTrackObject>> {
+    let file = File::open(file_path).expect("Couldn't open file");
+    let reader = BufReader::new(file);
+
+    Ok(serde_json::from_reader::<_, Vec<MinimalTrackObject>>(reader)?)
+}
+
+pub fn minimal_tracks_to_ecs(
+    minimal_tracks: Vec<MinimalTrackObject>,
+    world: &World
+) {
+    let artist_parent = world.entity_named("Artist");
+    let created_rel = world.entity_named("Created");
+    let has_rel = world.entity_named("Has");
+
+    for song in minimal_tracks {
+        let song_ent = world.entity()
+            .add::<Song>()
+            .set(Name(song.name))
+            .set(SpotifyID(song.spotify_id))
+            .set(Duration(song.duration_ms))
+            .set(Explicit(song.explicit))
+            .set(Popularity(song.popularity))
+            // todo .set the playlists the song belongs to
+        ;
+        song_ent.get::<&Name>(|name| println!("Created song entity for song: {}", name.0));
+
+        // ! below was commented out as it cause a stack overflow
+        /*------- Artist Entity -------
+        for artist in song.artists {
+            let _artist_ent = world
+                .entity_named(format!("Artist::{}", artist.name).as_str())
+                .child_of_id(artist_parent)
+                .set(Name(artist.name))
+                .set(SpotifyID(artist.spotify_id))
+                .add_id((created_rel, song_ent))
+            ;
+        }
+
+        //*------- Album Entity -------*/
+        // Might not work due to albums having the same name
+        // They should have a unique SpotifyID though, so that is used as their name instead
+        let alb_ent = world
+            .entity_named(format!("Album::{}", song.album.spotify_id).as_str()) // Creates new entity or returns the entity with the name if it already exists
+            .set(Name(song.album.name))
+            .set(AudioCollection::Album {
+                alb_type: song.album.album_type,
+                release_date: song.album.release_date,
+                rel_date_precision: song.album.release_date_precision,
+                images: song.album.images,
+            })
+            .set(SpotifyID(song.album.spotify_id))
+            .add_id((has_rel, song_ent))
+        ; 
+
+        for alb_artist in song.album.artists {
+            let _alb_artist_ent = world
+                .entity_named(format!("Artist::{}", alb_artist.name).as_str())
+                .child_of_id(artist_parent)
+                .set(Name(alb_artist.name))
+                .set(SpotifyID(alb_artist.spotify_id))
+                .add_id((created_rel, alb_ent))
+            ;
+        } */
+
+        match song.attributes {
+            None => song_ent
+                .add::<MissingAttributes>(),
+            Some(attrs) => song_ent
+                .set(Acousticness(attrs.acousticness))
+                .set(Danceability(attrs.danceability))
+                .set(Energy(attrs.energy))
+                .set(Valence(attrs.valence))
+                .set(Tempo(attrs.tempo))
+                .set(Speechiness(attrs.speechiness))
+                .set(Liveness(attrs.liveness))
+                .set(Loudness(attrs.loudness))
+                .set(Instrumentalness(attrs.instrumentalness))
+                .set(Mode::try_from(attrs.mode).expect("Mode is not 0 or 1"))
+                .set(TimeSignature(attrs.time_signature))
+                .set(Key::try_from(attrs.key).expect("Key is not in range 3..7"))
+                .set(Genres(attrs.genres)) // ? do we need a better data structure for the genres of a song
+        };
+    };
+}
+
+pub fn ecs_to_minimal_objects() {
+    todo!();
+}
+
+pub fn minimal_tracks_to_file(
+    file_path: &PathBuf,
+    songs: Vec<MinimalTrackObject>
+) -> MyResult<String> {//* Needs to be run before the application closes */
+    println!("Beginning writing of MinimalTrackObjects to file system");
+
+    let file = OpenOptions::new().write(true).truncate(true).open(file_path).expect("Couldn't open file to overwrite contents");
     let writer = BufWriter::new(file);
 
-    serde_json::to_writer_pretty(writer, &updated_songs).expect("Failed to write serialized song to file");
+    serde_json::to_writer_pretty(writer, &songs).expect("Failed to serialize songs to file");
 
-    // todo parse file into ECS
+    Ok(String::from("MinimalObjects serialized to file successfully"))
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Attributes {
-    acousticness: f32,
-    danceability: f32,
-    energy: f32,
-    valence: f32,
-    tempo: f32,
-    speechiness: f32,
-    liveness: f32,
-    loudness: f32,
-    instrumentalness: f32,
-    mode: u32,
-    time_signature: u32,
-    key: i32,
-    genres: Vec<SCGenreObject>
+    pub acousticness: f32,
+    pub danceability: f32,
+    pub energy: f32,
+    pub valence: f32,
+    pub tempo: f32,
+    pub speechiness: f32,
+    pub liveness: f32,
+    pub loudness: f32,
+    pub instrumentalness: f32,
+    pub mode: u32,
+    pub time_signature: u32,
+    pub key: i32,
+    pub genres: Vec<SCGenreObject>
 }
 
 impl From<soundcharts::SongObject> for Attributes {
@@ -70,16 +185,16 @@ pub struct MinimalTrackObject {
     pub name: String,
     // Timestamp is returned in ISO 8601 format as Coordinated Universal Time (UTC) with a zero offset
     // YYYY-MM-DDTHH:MM:SSZ
-    timestamp: String,
-    duration_ms: u32, // in milliseconds
-    explicit: bool,
+    pub timestamp: String,
+    pub duration_ms: u32, // in milliseconds
+    pub explicit: bool,
     pub spotify_id: String,
-    popularity: u16,
+    pub popularity: u16,
     //* Disc and track number may be redundant */
     disc_number: u16,
     track_number: u16,
-    album: MinimalAlbumObject,
-    artists: Vec<MinimalArtistObject>,
+    pub album: MinimalAlbumObject,
+    pub artists: Vec<MinimalArtistObject>,
     pub attributes: Option<Attributes>
 }
 
@@ -104,14 +219,14 @@ impl From<SavedTrackObject> for MinimalTrackObject {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MinimalAlbumObject {
-    album_type: AlbumType,
-    total_tracks: u16,
-    spotify_id: SpotifyID,
-    images: Vec<ImageObject>,
-    name: String,
-    release_date: String, // E.g "1981-12"
-    release_date_precision: ReleaseDatePrecision,
-    artists: Vec<MinimalArtistObject>
+    pub album_type: AlbumType,
+    pub total_tracks: u16,
+    pub spotify_id: String,
+    pub images: Vec<ImageObject>,
+    pub name: String,
+    pub release_date: String, // E.g "1981-12"
+    pub release_date_precision: ReleaseDatePrecision,
+    pub artists: Vec<MinimalArtistObject>
 }
 
 impl From<AlbumObject> for MinimalAlbumObject {
@@ -156,9 +271,9 @@ pub enum ReleaseDatePrecision {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MinimalArtistObject {
-    href: String,
-    spotify_id: SpotifyID,
-    name: String,
+    pub href: String,
+    pub spotify_id: String,
+    pub name: String,
 }
 
 impl From<SimplifiedArtistObject> for MinimalArtistObject {
