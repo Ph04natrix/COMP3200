@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::from_str;
 use tauri::{
-    http::HeaderMap, AppHandle, Emitter, State, Url,
-    Manager
+    http::HeaderMap, AppHandle, Emitter, State, Url
 };
 use tauri_plugin_http::reqwest::*;
 
@@ -11,9 +10,7 @@ use crate::{
     error::{MyError, MyResult}
 };
 
-use super::conversion::write_api_songs_to_file;
-
-pub type SpotifyID = String;
+use super::conversion::{minimal_tracks_to_file, MinimalTrackObject};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum SpotifyEndpoints {
@@ -24,10 +21,10 @@ pub enum SpotifyEndpoints {
     },
     CheckSavedTracks,
     SaveTracks {
-        ids: Vec<SpotifyID> // max 50 Spotify IDs
+        ids: Vec<String> // max 50 Spotify IDs
     },
     UnsaveTracks {
-        ids: Vec<SpotifyID> // max 50
+        ids: Vec<String> // max 50
     },
     GetPlaybackState,
     GetCurrentlyPlayingTrack,
@@ -83,7 +80,7 @@ pub struct TrackObject {
     external_ids: ExternalIDsObject,
     external_urls: ExternalUrlsObject,
     href: String,
-    pub id: SpotifyID,
+    pub id: String,
     is_local: bool,
     is_playable: bool,
     // linked_from: LinkedFromObject,
@@ -104,7 +101,7 @@ pub struct AlbumObject {
     // available_markets: Option<Vec<String>>,
     external_urls: ExternalUrlsObject,
     href: Url,
-    pub id: SpotifyID,
+    pub id: String,
     pub images: Vec<ImageObject>,
     pub name: String,
     pub release_date: String, // E.g "1981-12"
@@ -120,7 +117,7 @@ pub struct AlbumObject {
 pub struct SimplifiedArtistObject {
     external_urls: ExternalUrlsObject,
     pub href: String,
-    pub id: SpotifyID,
+    pub id: String,
     pub name: String,
     r#type: String,
     uri: String,
@@ -145,7 +142,7 @@ pub struct ExternalUrlsObject {
 pub struct LinkedFromObject {
     external_urls: ExternalUrlsObject,
     href: String,
-    id: SpotifyID,
+    id: String,
     uri: String
 }
 
@@ -291,7 +288,7 @@ pub async fn get_user_full_library(
 ) -> MyResult<String> {
     let state_lock = state.lock().await;
     let token = &state_lock.AccessToken.access_token;
-    let app_dir = &state_lock.main_directory;
+    let file_path = &state_lock.main_directory;
 
     let client = Client::new();
     
@@ -301,33 +298,39 @@ pub async fn get_user_full_library(
         other wise if the total is 50 or fewer then we set limit=total and ignore increasing the offset
     */
 
-    let mut songs: Vec<SavedTracksObject> = Vec::new();
+    let mut minimal_songs: Vec<MinimalTrackObject> = Vec::new();
     while total > 0 {
-        let limit = if total >= 50 {
-            50
-        } else {
-            total
-        };
+        let limit = if total >= 50 { 50 } else { total };
 
-        if let Ok(res) = handle_request(SpotifyEndpoints::GetSavedTracks {
+        let parsed_songs = handle_request(SpotifyEndpoints::GetSavedTracks {
             market: "GB".to_string(),
             limit: limit,
             offset: offset
-        }, &client, token).await {//* Response received */
-            songs.push(res.json::<SavedTracksObject>().await?);
-            app.emit("spotify-library-download-progress", SpotifyLibraryDownloadProgress {
-                downloaded: limit,
-                remaining: total,
-            }).unwrap();
+        }, &client, token).await?.json::<SavedTracksObject>().await?;
 
-            offset += limit;
-            total -= limit;
-            let len = &songs.len();
-            println!("songs.length={len}, offset={offset}, total={total}");
-        } else {/* Request to get songs failed */}
-    }
+        for track_obj in parsed_songs.items {
+            minimal_songs.push(MinimalTrackObject::from(track_obj));
 
-    write_api_songs_to_file(songs, app_dir.clone()).await;
+            // * Note that the minimal tracks could be directly converted to ECS here, but
+            // * world can't be used after an awit due to not implementing Send + Sync
+        }
 
-    Ok(app_dir.to_str().expect("Couldn't convert app_data_dir to string").to_string())
+        app.emit("spotify-library-download-progress", SpotifyLibraryDownloadProgress {
+            downloaded: limit,
+            remaining: total,
+        }).unwrap();
+        
+        offset += limit;
+        total -= limit;
+        println!("offset={offset}, total={total}");  
+    };
+
+    match minimal_tracks_to_file(file_path, minimal_songs) {
+        Ok(msg) => println!("{msg}"),
+        Err(err) => println!("{err}")
+    };
+
+    app.emit("spotify-library-download-finished", 0).unwrap();
+
+    Ok(file_path.to_str().expect("Couldn't convert app_data_dir to string").to_string())
 }
