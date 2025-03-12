@@ -45,7 +45,7 @@ pub async fn fill_song_attributes(
         .build()
     ;
 
-    let mut limit = 2;
+    let mut limit = 10;
     let base_endpoint = "https://customer.api.soundcharts.com/api/v2.25/song/by-platform/spotify";
     
     world.defer(|| {
@@ -75,20 +75,20 @@ pub async fn fill_song_attributes(
                                     
                                     // dbg!(world.is_deferred());
                                     song_ent
-                                    .set(Acousticness(attrs.acousticness))
-                                    .set(Danceability(attrs.danceability))
-                                    .set(Energy(attrs.energy))
-                                    .set(Valence(attrs.valence))
-                                    .set(Tempo(attrs.tempo))
-                                    .set(Speechiness(attrs.speechiness))
-                                    .set(Liveness(attrs.liveness))
-                                    .set(Loudness(attrs.loudness))
-                                    .set(Instrumentalness(attrs.instrumentalness))
-                                    .set(Mode::try_from(attrs.mode).expect("Mode is not 0 or 1"))
-                                    .set(TimeSignature(attrs.time_signature))
-                                    .set(Key::try_from(attrs.key).expect("Key is not in range 3..7"))
-                                    .set(Genres(attrs.genres))
-                                    .remove::<MissingAttributes>()
+                                        .set(Acousticness(attrs.acousticness))
+                                        .set(Danceability(attrs.danceability))
+                                        .set(Energy(attrs.energy))
+                                        .set(Valence(attrs.valence))
+                                        .set(Tempo(attrs.tempo))
+                                        .set(Speechiness(attrs.speechiness))
+                                        .set(Liveness(attrs.liveness))
+                                        .set(Loudness(attrs.loudness))
+                                        .set(Instrumentalness(attrs.instrumentalness))
+                                        .set(Mode::try_from(attrs.mode).expect("Mode is not 0 or 1"))
+                                        .set(TimeSignature(attrs.time_signature))
+                                        .set(Key::try_from(attrs.key).expect("Key is not in range 3..7"))
+                                        .set(Genres(attrs.genres))
+                                        .remove::<MissingAttributes>()
                                     ;
                                     // dbg!(song_ent.has::<MissingAttributes>());
                                     println!("Received attributes for {}, limit={limit}", name[i].0);
@@ -96,7 +96,7 @@ pub async fn fill_song_attributes(
                                     app.emit("soundcharts-update-progress", SoundChartsUpdateProgress {
                                         updated_song: name[i].0.clone(),
                                     }).expect("Couldn't emit event: soundcharts-update-progress");
-                                    },
+                                },
                                 StatusCode::BAD_REQUEST | StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN | StatusCode::NOT_FOUND | StatusCode::GONE=> {
                                     let err_res = res
                                         .into_body()
