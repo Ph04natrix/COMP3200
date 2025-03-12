@@ -1,7 +1,7 @@
 //import React from "react";
 import ReactDOM from "react-dom/client";
 
-import App from "./components/App";
+import App from "./App";
 
 // Add React.StrictMode to render twice to check for development only bugs.
 

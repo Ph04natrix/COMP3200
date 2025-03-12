@@ -1,0 +1,8 @@
+h1 {
+    text-align: center;
+    outline: 2px solid var(--outline-col);
+    border-radius: 0px 0px 10px 10px;
+    margin-top: 0;
+    padding: 12px 12px 12px 12px;
+    width: fit-content;
+}
