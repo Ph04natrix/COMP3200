@@ -67,7 +67,7 @@ pub struct Energy(pub f32); // 0.0 - 1.0
 pub struct Valence(pub f32); // 0.0 - 1.0
 
 #[derive(Debug, Component)]
-pub struct Tempo(pub f32); // 0.0 - 1.0
+pub struct Tempo(pub f32); // 
 
 #[derive(Debug, Component)]
 pub struct Speechiness(pub f32); // 0.0 - 1.0

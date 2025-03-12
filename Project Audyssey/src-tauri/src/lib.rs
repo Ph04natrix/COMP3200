@@ -1,12 +1,12 @@
 use std::{fs::{File, OpenOptions}, path::PathBuf};
 
 use flecs_ecs::core::World;
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::Mutex;
 use serde::Deserialize;
 use tauri::{Builder, Manager, State};
 
 mod api;
-use api::{authorization, conversion, soundcharts, spotify};
+use api::{authorization, conversion::{self, ecs_to_minimal_objects, minimal_tracks_to_file}, soundcharts, spotify};
 
 mod ecs;
 use ecs::types::AudysseyModule;
@@ -85,6 +85,9 @@ async fn exit_app(
     let state_lock = state.lock().await;
     let world = &state_lock.ecs_world;
     let file_path = &state_lock.main_directory;
+
+    let songs = ecs_to_minimal_objects(world)?;
+    let min_tracks = minimal_tracks_to_file(file_path, songs)?;
 
     // todo serialize songs into file
     let mut file = OpenOptions::new().write(true).open(file_path)?;

@@ -50,9 +50,9 @@ pub fn minimal_tracks_to_ecs(
     minimal_tracks: Vec<MinimalTrackObject>,
     world: &World
 ) {
-    let artist_parent = world.entity_named("Artist");
-    let created_rel = world.entity_named("Created");
-    let has_rel = world.entity_named("Has");
+    //let artist_parent = world.entity_named("Artist");
+    //let created_rel = world.entity_named("Created");
+    //let has_rel = world.entity_named("Has");
 
     for song in minimal_tracks {
         let song_ent = world.entity()
@@ -125,7 +125,9 @@ pub fn minimal_tracks_to_ecs(
     };
 }
 
-pub fn ecs_to_minimal_objects() {
+pub fn ecs_to_minimal_objects(
+    world: &World
+) -> MyResult<Vec<MinimalTrackObject>>{
     todo!();
 }
 
