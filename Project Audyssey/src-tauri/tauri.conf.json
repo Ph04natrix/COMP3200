@@ -19,7 +19,8 @@
         "width": 1600,
         "height": 900,
         "visible": false,
-        "decorations": false
+        "decorations": false,
+        "dragDropEnabled": false
       },
       {
         "focus": true,
@@ -31,7 +32,8 @@
         "height": 900,
         "fullscreen": false,
         "visible": true,
-        "decorations": false
+        "decorations": false,
+        "dragDropEnabled": false
       }
     ],
     "security": {
