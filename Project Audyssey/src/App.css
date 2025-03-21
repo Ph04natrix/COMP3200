@@ -4,8 +4,8 @@
   line-height: 24px;
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: var(--main-light);
+  background-color: var(--grey);
 
   margin-top: 30px;
 
@@ -15,9 +15,35 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
-  --text-light: #f6f6f6;
-  --text-dark: #0f0f0f;
-  --outline-col: #f6f6f688;
+  --main-light: #f6f6f6;
+  --main-dark: #222020;
+  --grey: #2f2f2f;
+  --outline-col: #686e75;
+
+  --primary: #329ea3;
+  --accent: rgb(228, 110, 0);
+
+  --body-height: calc(100vh - 30px); /* take away the height of the titlebar */
+  --bottom-bar-height: (100px);
+}
+
+#root {
+  height: var(--body-height);
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: stretch;
+}
+
+#upper-main-section {
+  height: calc(var(--body-height) - var(--bottom-bar-height));
+  flex-grow: 1;
+}
+
+#bottom-bar {
+  height: var(--bottom-bar-height);
+  border-top: 2px solid var(--outline-col);
+  flex-grow: 1;
 }
 
 .container {
@@ -32,20 +58,6 @@
 .row {
   display: flex;
   justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin-top: 0;
 }
 
 h1 {
@@ -64,16 +76,15 @@ div.center {
   flex-basis: 30%;
 }
 
-input,
-button {
+input[type="button"], button {
   border-radius: 8px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  padding: 2em 2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
+  color: var(--main-light);
+  background-color: var(--main-dark);
   transition: border-color 0.25s;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
 }
@@ -83,25 +94,21 @@ button {
 }
 
 button:hover {
-  border-color: #396cd8;
+  border-color: var(--primary);
 }
+
 button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
+  border-color: var(--primary);
+  background-color: var(--main-dark);
 }
 
-input,
-button {
+input, button {
   outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
 }
 
 .titlebar {
   height: 30px;
-  background: #329ea3;
+  background: var(--primary);
   user-select: none;
   display: flex;
   justify-content: flex-end;
@@ -123,22 +130,6 @@ button {
   background: #5bbec3;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: var(--text-light);
-    background-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
+/* @media (prefers-color-scheme: dark) {
+  add this if a user has a specific dark mode preference
 }
