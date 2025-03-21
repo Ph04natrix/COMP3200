@@ -3,18 +3,9 @@ import { listen, once } from "@tauri-apps/api/event";
 
 import { useRef, useState } from "react";
 
+import { SetupState } from "../../App";
 import ProgressBar from "./ProgressBar";
-import { SetupState } from "../App";
-
-type SpotifyLibraryDownloadProgress = {
-    downloaded: number,
-    remaining: number,
-}
-
-type SoundChartsUpdateProgress = {
-    updated_song: string,
-    // remaining: number
-}
+import { SpotifyLibraryDownloadProgress, SoundChartsUpdateProgress } from "../../types/tauriEvent";
 
 export default function Login({
     setupDone, setSetupDone,
@@ -217,39 +208,32 @@ export default function Login({
                 <hr />
                 <div>
                     <h3>3. Fetching Your Library</h3>
-                    {/* <p>Fetching your saved tracks using the access token.</p>*/}
-                    {// Only show this when we have reached the correct state
-                        (
-                            setupState.status === "authorised" && setupState.libState.status !== "unknown"
-                        ) && <ProgressBar
-                            curr={currLibraryCount}
-                            max={setupState.libState.total}
-                            description="songs fetched from Spotify Library"
-                        />
-                    }
+                    {(
+                        setupState.status === "authorised" && setupState.libState.status !== "unknown"
+                    ) && <ProgressBar
+                        curr={currLibraryCount}
+                        max={setupState.libState.total}
+                        description="songs fetched from Spotify Library"
+                    />}
                 </div>
                 <hr />
                 <div>
                     <h3>4. Updating the Audyssey </h3>
                     <p>For each song fetched from your library, attributes will be fetched from SoundCharts.</p>
-                    {
-                        (
-                            setupState.status === "authorised" && setupState.libState.no_attributes > 0
-                        ) && <ProgressBar
-                            curr={attrSongCount}
-                            max={setupState.libState.no_attributes} // songs without attributes
-                            description="songs updated with SoundCharts attributes"
-                        />
-                    }
+                    {(
+                        setupState.status === "authorised" && setupState.libState.no_attributes > 0
+                    ) && <ProgressBar
+                        curr={attrSongCount}
+                        max={setupState.libState.no_attributes} // songs without attributes
+                        description="songs updated with SoundCharts attributes"
+                    />}
                 </div>
             </div>
-            {
-                (
-                    setupState.status === "authorised" && setupState.libState.status === "fetched_attributes"
-                ) && <button type="button" onClick={finishSetup}>
-                    Enter the Audyssey
-                </button>
-            }
+            {(
+                setupState.status === "authorised" && setupState.libState.status === "fetched_attributes"
+            ) && <button type="button" onClick={finishSetup}>
+                Enter the Audyssey
+            </button>}
         </div>
     )
 }
