@@ -1,12 +1,12 @@
 use std::{fs::{File, OpenOptions}, io::{BufReader, BufWriter}, path::PathBuf};
 
-use flecs_ecs::core::World;
+use flecs_ecs::{core::World, prelude::{Builder, QueryAPI, QueryBuilderImpl}};
 use serde::{Serialize, Deserialize};
 use tauri::State;
 
 use crate::{
     ecs::types::{
-        Acousticness, Danceability, Duration, Energy, Explicit, Genres, Instrumentalness, Key, Liveness, Loudness, MissingAttributes, Mode, Name, Popularity, Song, Speechiness, SpotifyID, Tempo, TimeSignature, Valence
+        Acousticness, AddedAt, Album, Artist, Danceability, Duration, Energy, Explicit, Genres, Instrumentalness, Key, Liveness, Loudness, MissingAttributes, Mode, Name, Popularity, Song, Speechiness, SpotifyID, Tempo, TimeSignature, Valence
     }, error::{MyError, MyResult}, AppState
 };
 
@@ -58,13 +58,18 @@ pub fn minimal_tracks_to_ecs(
         let song_ent = world.entity()
             .add::<Song>()
             .set(Name(song.name))
+            .set(AddedAt(song.timestamp))
             .set(SpotifyID(song.spotify_id))
             .set(Duration(song.duration_ms))
             .set(Explicit(song.explicit))
             .set(Popularity(song.popularity))
             // todo .set the playlists the song belongs to
+            .set(Artist(song.artists))
+            .set(Album(song.album))
         ;
         song_ent.get::<&Name>(|name| println!("Created song entity for song: {}", name.0));
+
+        // * can add artist and album to a hashmap to then turn it into a thingy
 
         // ! below was commented out as it cause a stack overflow
         /*------- Artist Entity -------
@@ -128,7 +133,63 @@ pub fn minimal_tracks_to_ecs(
 pub fn ecs_to_minimal_objects(
     world: &World
 ) -> MyResult<Vec<MinimalTrackObject>>{
-    todo!();
+    let mut minimal_tracks: Vec<MinimalTrackObject> = vec![];
+    
+    let q = world.query::<(
+        &Name, &AddedAt, &SpotifyID, &Duration, &Explicit,
+        &Popularity, &Artist, &Album
+    )>().with::<&Song>().build();
+
+    q.each_entity(|e, (
+        name, added_at, s_id, dur, exp,
+        pop, art, alb
+    )| {
+        // * can get around query limit by doing entity.get
+        let mut song: MinimalTrackObject = MinimalTrackObject {
+            name: (*name.0).to_string(), // this is the same as doing .clone()
+            timestamp: added_at.0.clone(),
+            duration_ms: dur.0,
+            explicit: exp.0,
+            spotify_id: s_id.0.clone(),
+            popularity: pop.0,
+            attributes: None,
+            artists: art.0.clone(),
+            album: alb.0.clone(),
+            disc_number: 0,
+            track_number: 0,
+        };
+
+        e.get::<(
+            &Acousticness, &Danceability, &Energy, &Valence, &Tempo,
+            &Speechiness, &Liveness, &Loudness, &Instrumentalness,
+            &Mode, &TimeSignature, &Key, &Genres
+        )>(|(
+            ac, dan, energy, val, tempo,
+            speech, live, loud, instr,
+            mode, time_s, key, g
+        )| {
+            song.attributes = Some(Attributes {
+                acousticness: ac.0,
+                danceability: dan.0,
+                energy: energy.0,
+                valence: val.0,
+                tempo: tempo.0,
+                speechiness: speech.0,
+                liveness: live.0,
+                loudness: loud.0,
+                instrumentalness: instr.0,
+                mode: u32::from(*mode),
+                time_signature: time_s.0,
+                key: i32::from(*key),
+                genres: g.0.clone(),
+            })
+
+        });
+
+        minimal_tracks.push(song);
+    });
+
+    Ok(minimal_tracks)
 }
 
 pub fn minimal_tracks_to_file(
@@ -219,7 +280,7 @@ impl From<SavedTrackObject> for MinimalTrackObject {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MinimalAlbumObject {
     pub album_type: AlbumType,
     pub total_tracks: u16,
@@ -257,21 +318,21 @@ impl From<AlbumObject> for MinimalAlbumObject {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum AlbumType {
     Album,
     Single,
     Compilation
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ReleaseDatePrecision {
     Year,
     Month,
     Day
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MinimalArtistObject {
     pub href: String,
     pub spotify_id: String,

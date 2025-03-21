@@ -1,6 +1,8 @@
 use flecs_ecs::prelude::*;
+use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Emitter, State};
 
-use crate::api::{conversion::{AlbumType, ReleaseDatePrecision}, soundcharts::SCGenreObject, spotify::{self, ImageObject}};
+use crate::{api::{conversion::{AlbumType, MinimalAlbumObject, MinimalArtistObject, ReleaseDatePrecision}, soundcharts::SCGenreObject, spotify::{self, ImageObject}}, error::MyResult, AppState};
 
 #[derive(Debug, Component)]
 pub struct Name(pub String);
@@ -17,10 +19,10 @@ pub struct User;
 pub struct Song;
 
 #[derive(Debug, Component)]
-pub struct Artist;
+pub struct Artist(pub Vec<MinimalArtistObject>);
 
 #[derive(Debug, Component)]
-pub struct Album;
+pub struct Album(pub MinimalAlbumObject);
 
 #[derive(Debug, Component)]
 pub struct SpotifyID(pub String);
@@ -81,7 +83,7 @@ pub struct Loudness(pub f32); // -60..0 dB
 #[derive(Debug, Component)]
 pub struct Instrumentalness(pub f32); // 0.0 - 1.0
 
-#[derive(Debug, Component)]
+#[derive(Debug, Component, Clone, Copy)]
 pub enum Mode {
     Minor, // 0 from API
     Major, // 1 from API
@@ -99,13 +101,22 @@ impl TryFrom<u32> for Mode {
     }
 }
 
+impl From<Mode> for u32 {
+    fn from(value: Mode) -> Self {
+        match value {
+            Mode::Minor => 0,
+            Mode::Major => 1
+        }
+    }
+}
+
 #[derive(Debug, Component)]
 pub struct Explicit(pub bool);
 
 #[derive(Debug, Component)]
 pub struct TimeSignature(pub u32); // 3, 4, 5, 6, 7
 
-#[derive(Debug, Component)]
+#[derive(Debug, Component, Clone, Copy)]
 pub enum Key {
     None, // -1
     C, // 0
@@ -145,6 +156,26 @@ impl TryFrom<i32> for Key {
     }
 }
 
+impl From<Key> for i32 {
+    fn from(value: Key) -> Self {
+        match value {
+            Key::None => -1,
+            Key::C => 0,
+            Key::CSharp => 1,
+            Key::D => 2,
+            Key::DSharp => 3,
+            Key::E => 4,
+            Key::F => 5,
+            Key::FSharp => 6,
+            Key::G => 7,
+            Key::GSharp => 8,
+            Key::A => 9,
+            Key::ASharp => 10,
+            Key::B => 11,
+        }
+    }
+}
+
 // Length of the song in milliseconds
 #[derive(Debug, Component)]
 pub struct Duration(pub u32);
@@ -162,15 +193,7 @@ pub struct AudysseyModule;
 
 impl Module for AudysseyModule {
     fn module(world: &World) {
-        let custom_pipeline = world
-            .pipeline_named("name");
-
-        world
-            .system_named::<(&Song, &Name, &Duration)>("Get Duration")
-            .each(|(_s, name, dur)| {
-                // println!("{} has duration={}",name.0, dur.0);
-
-            });
+        // let custom_pipeline = world.pipeline_named("name");
 
         //*-------Component Registration-------*/
         world.component::<Name>();
