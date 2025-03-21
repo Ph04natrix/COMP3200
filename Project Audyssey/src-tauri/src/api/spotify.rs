@@ -151,7 +151,7 @@ pub struct RestrictionsObject {
     reason: String, // One of "market", "product", "explicit"
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ImageObject {
     url: String,
     height: u16,

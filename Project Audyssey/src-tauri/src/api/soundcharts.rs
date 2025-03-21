@@ -185,7 +185,7 @@ pub struct SCArtistObject {
     imageUrl: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SCGenreObject {
     root: String,
     sub: Vec<String>,

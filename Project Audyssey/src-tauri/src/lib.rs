@@ -9,7 +9,7 @@ mod api;
 use api::{authorization, conversion::{self, ecs_to_minimal_objects, minimal_tracks_to_file}, soundcharts, spotify};
 
 mod ecs;
-use ecs::types::AudysseyModule;
+use ecs::types::{self, AudysseyModule};
 
 mod error;
 use error::MyResult;
@@ -71,7 +71,8 @@ pub fn run() {
             authorization::request_auth_code, authorization::request_access_token, authorization::refresh_access_token,
             spotify::get_user_library_count, spotify::get_user_full_library,
             conversion::file_to_ecs_cmd,
-            soundcharts::song_without_attributes_count, soundcharts::fill_song_attributes
+            soundcharts::song_without_attributes_count, soundcharts::fill_song_attributes,
+            types::get_songs_for_static_graph
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -87,10 +88,9 @@ async fn exit_app(
     let file_path = &state_lock.main_directory;
 
     let songs = ecs_to_minimal_objects(world)?;
-    let min_tracks = minimal_tracks_to_file(file_path, songs)?;
 
-    // todo serialize songs into file
-    let mut file = OpenOptions::new().write(true).open(file_path)?;
-
-    Ok(app.exit(0))
+    match minimal_tracks_to_file(file_path, songs) {
+        Ok(..) => Ok(app.exit(0)),
+        Err(err) => Err(err)
+    }
 }

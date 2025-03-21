@@ -222,7 +222,58 @@ impl Module for AudysseyModule {
         world.component::<Key>();
         world.component::<Duration>();
 
+        world.component::<AddedAt>();
         world.component::<Genres>();
         world.component::<Popularity>();
     }
+}
+
+#[tauri::command]
+pub async fn get_songs_for_static_graph(
+    state: State<'_, AppState>,
+    app: tauri::AppHandle
+) -> MyResult<String> {
+    let state_lock = state.lock().await;
+    let world = &state_lock.ecs_world;
+
+    let cont_metric_query = world.query::<(
+        &Name, &Acousticness, &Danceability, &Energy, &Valence, &Tempo, &Speechiness, &Liveness, &Loudness, &Instrumentalness, &Duration
+    )>().with::<&Song>()
+        .build()
+    ;
+
+    cont_metric_query.each(|(name, acc, dance, energy, val, tempo, speech, live, loud, instr, dur)| {
+        app.emit("song-cont-metric-progress", SongContMetricPayload {
+            name: name.0.clone(),
+            acousticness: acc.0,
+            danceability: dance.0,
+            energy: energy.0,
+            valence: val.0,
+            tempo: tempo.0,
+            speechiness: speech.0,
+            liveness: live.0,
+            loudness: loud.0,
+            instrumentalness: instr.0,
+            duration: dur.0,
+        }).expect("Failed to emit event: song-cont-metric-progress");
+    });
+
+    app.emit("song-cont-metric-finished", 0).expect("Failed to emit event: song-cont-metric-finished");
+
+    Ok(String::from("Started get_songs_for_static_graph"))
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SongContMetricPayload {
+    name: String,
+    acousticness: f32,
+    danceability: f32,
+    energy: f32,
+    valence: f32,
+    tempo: f32,
+    speechiness: f32,
+    liveness: f32,
+    loudness: f32,
+    instrumentalness: f32,
+    duration: u32
 }
