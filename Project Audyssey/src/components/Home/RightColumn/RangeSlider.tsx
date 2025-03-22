@@ -1,29 +1,48 @@
-import { useState } from "react"
+import { ChangeEventHandler, useEffect, useState } from "react"
+import "../RightColumn/RangeSlider.css";
+import { ContinuousMetric } from "../../../types/audioResources";
 
+type RangeSliderProps = {
+    min: number,
+    max: number,
+    range: {
+        currMin: number,
+        currMax: number
+    }
+    attr: ContinuousMetric,
+    updateRange: any
+}
 
 export default function RangeSlider(
-    {min, max}: {min : number, max: number}
+    {min, max, range, attr, updateRange}: RangeSliderProps
 ) {
-    const [minValue, setMinValue] = useState<number>(min);
-    const [maxValue, setMaxValue] = useState<number>(max);
-    const step = 0;
+    const [minValue, setMinValue] = useState<number>(range ? range.currMin : min);
+    const [maxValue, setMaxValue] = useState<number>(range ? range.currMax : max);
+    const step = 0.01;
     
-    const handleMinChange = (event: any) => {
+    useEffect(() => {
+        if (range) {
+            setMinValue(range.currMin);
+            setMaxValue(range.currMax);
+        }
+    }, [range]);
+
+    const handleMinChange: ChangeEventHandler<HTMLInputElement> = (event) => {
         event.preventDefault();
         const value = parseFloat(event.target.value);
-        
-        // 0 should be changed with the step prop
+
         const newMinVal = Math.min(value, maxValue - step);
-        setMinValue(newMinVal);
+        if (!range) setMinValue(newMinVal);
+        updateRange(newMinVal, maxValue, attr); // prop which changes the state of the value which is all the way at the parent
     }
 
     const handleMaxChange = (event: any) => {
         event.preventDefault();
         const value = parseFloat(event.target.value);
         
-        // 0 should be changed with the step prop
         const newMaxVal = Math.max(value, minValue + step);
-        setMaxValue(newMaxVal);
+        if (!range) setMaxValue(newMaxVal);
+        updateRange(minValue, newMaxVal, attr);
     }
 
     // overlaying the sliders over each other
@@ -31,7 +50,7 @@ export default function RangeSlider(
     const maxPos = ((maxValue - min) / (max - min)) * 100;
 
     return(
-        <div className="wrapper">
+        <div className="range-slider">
             <div className="input-wrapper">
                 <input
                     type="range"
