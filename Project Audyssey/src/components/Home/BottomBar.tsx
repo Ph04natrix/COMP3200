@@ -4,7 +4,7 @@ function BottomBar() {
 
 
     return(
-        <div className="outline">
+        <div id="bottom-bar">
             <div className="ActiveSong"></div>
             <div className="PlaybackControl"></div>
             <div className="SettingsAndFaff">{/* List of buttons, including the settings button*/}

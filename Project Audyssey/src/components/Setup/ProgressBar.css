@@ -26,3 +26,11 @@ progress[value] {
     flex-direction: column;
     align-content: stretch;  
 }
+
+#container > p {
+    margin: 4px;
+}
+
+h3 {
+    margin-bottom: 12px;
+}

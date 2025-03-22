@@ -1,8 +1,0 @@
-:root {
-    /*height: 30px; */
-    width: 100%;
-}
-
-.outline {
-    border-top: 2px solid var(--outline-col);
-}
