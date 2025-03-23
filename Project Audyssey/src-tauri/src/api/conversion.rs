@@ -18,6 +18,17 @@ use super::{
 };
 
 #[tauri::command]
+pub async fn serialize_ecs_to_file(
+    state: State<'_, AppState>,
+) -> MyResult<String> {
+    let locked_state = state.lock().await;
+    let file_path = &locked_state.main_directory;
+    let world = &locked_state.ecs_world;
+
+    minimal_tracks_to_file(file_path, ecs_to_minimal_objects(world)?)
+}
+
+#[tauri::command]
 pub async fn file_to_ecs_cmd(
     state: State<'_, AppState>,
 ) -> MyResult<String> {

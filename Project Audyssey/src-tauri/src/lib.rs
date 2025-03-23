@@ -70,7 +70,7 @@ pub fn run() {
             exit_app,
             authorization::request_auth_code, authorization::request_access_token, authorization::refresh_access_token,
             spotify::get_user_library_count, spotify::get_user_full_library, spotify::compare_library_with_ecs,
-            conversion::file_to_ecs_cmd,
+            conversion::file_to_ecs_cmd, conversion::serialize_ecs_to_file,
             soundcharts::song_without_attributes_count, soundcharts::fill_song_attributes,
             types::get_songs_for_static_graph
         ])
