@@ -6,7 +6,7 @@ use tauri::State;
 
 use crate::{
     ecs::types::{
-        Acousticness, AddedAt, Album, Artist, Danceability, Duration, Energy, Explicit, Genres, Instrumentalness, Key, Liveness, Loudness, MissingAttributes, Mode, Name, Popularity, Song, Speechiness, SpotifyID, Tempo, TimeSignature, Valence
+        Acousticness, AddedAt, Album, Artist, Current, Danceability, Duration, Energy, Explicit, Genres, Instrumentalness, Key, Liveness, Loudness, MissingAttributes, Mode, Name, Popularity, Song, Speechiness, SpotifyID, Tempo, TimeSignature, Valence
     }, error::{MyError, MyResult}, AppState
 };
 
@@ -26,7 +26,7 @@ pub async fn file_to_ecs_cmd(
     let world = &locked_state.ecs_world;
 
     if let Ok(minimal_tracks) = file_to_minimal_objects(file_path) {
-        let _a = minimal_tracks_to_ecs(minimal_tracks, world);
+        let _a = minimal_tracks_to_ecs(minimal_tracks, world, false);
         
         Ok(String::from("Converted songs from file to ecs"))
     } else {
@@ -48,7 +48,8 @@ pub fn file_to_minimal_objects(
 
 pub fn minimal_tracks_to_ecs(
     minimal_tracks: Vec<MinimalTrackObject>,
-    world: &World
+    world: &World,
+    current: bool
 ) {
     //let artist_parent = world.entity_named("Artist");
     //let created_rel = world.entity_named("Created");
@@ -67,9 +68,7 @@ pub fn minimal_tracks_to_ecs(
             .set(Artist(song.artists))
             .set(Album(song.album))
         ;
-        song_ent.get::<&Name>(|name| println!("Created song entity for song: {}", name.0));
-
-        // * can add artist and album to a hashmap to then turn it into a thingy
+        if current { song_ent.add::<Current>(); }
 
         // ! below was commented out as it cause a stack overflow
         /*------- Artist Entity -------
@@ -127,6 +126,8 @@ pub fn minimal_tracks_to_ecs(
                 .set(Key::try_from(attrs.key).expect("Key is not in range 3..7"))
                 .set(Genres(attrs.genres)) // ? do we need a better data structure for the genres of a song
         };
+
+        song_ent.get::<&Name>(|name| println!("Created song entity for song: {}", name.0));
     };
 }
 
@@ -206,7 +207,7 @@ pub fn minimal_tracks_to_file(
     Ok(String::from("MinimalObjects serialized to file successfully"))
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Attributes {
     pub acousticness: f32,
     pub danceability: f32,
@@ -222,7 +223,6 @@ pub struct Attributes {
     pub key: i32,
     pub genres: Vec<SCGenreObject>
 }
-
 impl From<soundcharts::SongObject> for Attributes {
     fn from(sc: soundcharts::SongObject) -> Self {
         Self {
@@ -243,7 +243,7 @@ impl From<soundcharts::SongObject> for Attributes {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct MinimalTrackObject {
     pub name: String,
     // Timestamp is returned in ISO 8601 format as Coordinated Universal Time (UTC) with a zero offset
@@ -260,7 +260,6 @@ pub struct MinimalTrackObject {
     pub artists: Vec<MinimalArtistObject>,
     pub attributes: Option<Attributes>
 }
-
 impl From<SavedTrackObject> for MinimalTrackObject {
     fn from(s_t_obj: SavedTrackObject) -> Self {
         let t = s_t_obj.track;
@@ -280,7 +279,7 @@ impl From<SavedTrackObject> for MinimalTrackObject {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct MinimalAlbumObject {
     pub album_type: AlbumType,
     pub total_tracks: u16,
@@ -291,7 +290,6 @@ pub struct MinimalAlbumObject {
     pub release_date_precision: ReleaseDatePrecision,
     pub artists: Vec<MinimalArtistObject>
 }
-
 impl From<AlbumObject> for MinimalAlbumObject {
     fn from(alb_obj: AlbumObject) -> Self {
         Self {
@@ -318,27 +316,26 @@ impl From<AlbumObject> for MinimalAlbumObject {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum AlbumType {
     Album,
     Single,
     Compilation
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub enum ReleaseDatePrecision {
     Year,
     Month,
     Day
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct MinimalArtistObject {
     pub href: String,
     pub spotify_id: String,
     pub name: String,
 }
-
 impl From<SimplifiedArtistObject> for MinimalArtistObject {
     fn from(art_obj: SimplifiedArtistObject) -> Self {
         Self { href: art_obj.href, spotify_id: art_obj.id, name: art_obj.name }

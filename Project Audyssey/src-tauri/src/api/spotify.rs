@@ -1,3 +1,4 @@
+use flecs_ecs::prelude::{Builder, QueryAPI, QueryBuilderImpl};
 use serde::{Deserialize, Serialize};
 use serde_json::from_str;
 use tauri::{
@@ -6,11 +7,13 @@ use tauri::{
 use tauri_plugin_http::reqwest::*;
 
 use crate::{
-    AppState,
-    error::{MyError, MyResult}
+    ecs::types::{
+        Current, Song, SpotifyID
+    },
+    error::{MyError, MyResult}, AppState
 };
 
-use super::conversion::{minimal_tracks_to_file, MinimalTrackObject};
+use super::conversion::{file_to_minimal_objects, minimal_tracks_to_ecs, minimal_tracks_to_file, MinimalTrackObject};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum SpotifyEndpoints {
@@ -151,7 +154,7 @@ pub struct RestrictionsObject {
     reason: String, // One of "market", "product", "explicit"
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ImageObject {
     url: String,
     height: u16,
@@ -253,7 +256,9 @@ pub async fn handle_request(
 }
 
 #[tauri::command]
-pub async fn get_user_library_count(state: State<'_, AppState>) -> MyResult<u32> {
+pub async fn get_user_library_count(
+    state: State<'_, AppState>
+) -> MyResult<u32> {
     // Check how many items are in a user's library
     let state_lock = state.lock().await;
     let token = &state_lock.AccessToken.access_token;
@@ -293,12 +298,8 @@ pub async fn get_user_full_library(
     let client = Client::new();
     
     let mut offset = 0;
-    /*
-        If the total is 100 then we can set limit=50 and increment the offset by the limit after sending the request
-        other wise if the total is 50 or fewer then we set limit=total and ignore increasing the offset
-    */
 
-    let mut minimal_songs: Vec<MinimalTrackObject> = Vec::new();
+    let mut minimal_songs_from_api: Vec<MinimalTrackObject> = Vec::new();
     while total > 0 {
         let limit = if total >= 50 { 50 } else { total };
 
@@ -309,10 +310,10 @@ pub async fn get_user_full_library(
         }, &client, token).await?.json::<SavedTracksObject>().await?;
 
         for track_obj in parsed_songs.items {
-            minimal_songs.push(MinimalTrackObject::from(track_obj));
+            minimal_songs_from_api.push(MinimalTrackObject::from(track_obj));
 
             // * Note that the minimal tracks could be directly converted to ECS here, but
-            // * world can't be used after an awit due to not implementing Send + Sync
+            // * world can't be used after an await due to not implementing Send + Sync
         }
 
         app.emit("spotify-library-download-progress", SpotifyLibraryDownloadProgress {
@@ -325,7 +326,10 @@ pub async fn get_user_full_library(
         println!("offset={offset}, total={total}");  
     };
 
-    match minimal_tracks_to_file(file_path, minimal_songs) {
+    // todo convert minimal tracks to ecs and then compare them and add current tag
+    // * so that the attributes aren't overwritten
+
+    match minimal_tracks_to_file(file_path, minimal_songs_from_api) {
         Ok(msg) => println!("{msg}"),
         Err(err) => println!("{err}")
     };
@@ -333,4 +337,43 @@ pub async fn get_user_full_library(
     app.emit("spotify-library-download-finished", 0).unwrap();
 
     Ok(file_path.to_str().expect("Couldn't convert app_data_dir to string").to_string())
+}
+
+#[tauri::command]
+pub async fn compare_library_with_ecs(
+    state: State<'_, AppState>,
+) -> MyResult<String> {
+    let state_lock = state.lock().await;
+    let world = &state_lock.ecs_world;
+    let file_path = &state_lock.main_directory;
+
+    let mut new_song_minimal_objects = file_to_minimal_objects(file_path)?;
+    new_song_minimal_objects.sort_by(|a, b| {
+        a.spotify_id.cmp(&b.spotify_id)
+    });
+    let mut preexisting_song_count = 0;
+
+    let existing_songs_query = world.query::<&SpotifyID>()
+        .with::<&Song>()
+        .order_by::<SpotifyID>(|_e1, s_id1: &SpotifyID, _e2, s_id2: &SpotifyID| {
+            (s_id1.0 > s_id2.0) as i32 - (s_id1.0 < s_id2.0) as i32
+        })
+        .build()
+    ;
+
+    world.defer(|| {
+        existing_songs_query.each_entity(|ent, s_id| {
+            new_song_minimal_objects.retain(|min_obj| {
+                if min_obj.spotify_id == s_id.0 {
+                    ent.add::<Current>();
+                    preexisting_song_count += 1;
+                    false // can remove element
+                } else { true }
+            });
+        });
+    });
+
+    minimal_tracks_to_ecs(new_song_minimal_objects, world, true);
+
+    Ok(format!("{preexisting_song_count} songs already in Audyssey Database"))
 }
