@@ -195,6 +195,7 @@ export default function Login({
 
     function finishSetup() {
         console.log("Setup is completed");
+        invoke("serialize_ecs_to_file");
         setSetupDone(true);
     }
 
@@ -240,6 +241,7 @@ export default function Login({
                         description="songs updated with SoundCharts attributes"
                     />}
                 </div>
+                <hr />
             </div>
             {(
                 setupState.status === "authorised" && setupState.libState.status === "fetched_attributes"
