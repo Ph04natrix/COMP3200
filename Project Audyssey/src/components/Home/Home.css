@@ -1,3 +1,7 @@
+:root {
+    --overlap-dist: -32px;
+}
+
 div.flex-row {
     display: flex;
     flex-flow: row nowrap;
@@ -5,14 +9,62 @@ div.flex-row {
     column-gap: 10px;
 }
 
-#leftColumn {
-    flex-grow: 1;
+#centerColumn {
+    flex-shrink: 0;
+    flex-basis: 50%;
+    display: flex;
+    flex-flow: column nowrap;
+    row-gap: 10px;
 }
 
-#centerColumn {
-    flex-grow: 3;
+.view-container {
+    flex-grow: 1;
+    flex-basis: 60%;
+    width: 95%;
+}
+
+.sidebox {
+    border-top: 2px solid var(--outline-col);
+    margin-top: 0;
+    /* top right bottom left */
+    padding: 12px 12px calc(12px - Var(--overlap-dist)) 12px;
+}
+
+#leftColumn {
+    flex-basis: 30%;
+    flex-grow: 0;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+#leftColumn > .sidebox {
+    border-top-right-radius: 24px;
+    border-right: 2px solid var(--outline-col);
+    flex-grow: 1;
 }
 
 #rightColumn {
+    flex-basis: 30%;
+    flex-grow: 0;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+#rightColumn > .sidebox {
+    border-top-left-radius: 24px;
+    border-left: 2px solid var(--outline-col);
     flex-grow: 1;
+}
+
+.sidebox:nth-child(1) {
+    margin-bottom: var(--overlap-dist);
+}
+
+.unused-attr-container {
+    width: 80%;
+    padding: 10px;
+
+    display: flex;
+    flex-flow: column nowrap;
+    row-gap: 2px;
 }
