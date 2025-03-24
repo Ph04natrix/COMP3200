@@ -21,31 +21,47 @@ export default function StaticGraph(props: {
     const gridWidth = 100;
 
     const cachedAxisMetrics: {
-        x: ContinuousMetric,
-        y: ContinuousMetric,
-        z: ContinuousMetric
+        x: AttrSelect,
+        y: AttrSelect,
+        z: AttrSelect
     } = useMemo(() => {
-        let x; let y; let z;
+        let x: AttrSelect = {
+            attr: ContinuousMetric.Acousticness,
+            use: SpatialDimension.X,
+            active: false, min: 0, range: { currMin: 0, currMax: 0 }, max: 0, step: 1
+        };
+        let y: AttrSelect = {
+            attr: ContinuousMetric.Danceability,
+            use: SpatialDimension.Y,
+            active: false, min: 0, range: { currMin: 0, currMax: 0 }, max: 0, step: 1
+        };
+        let z: AttrSelect = {
+            attr: ContinuousMetric.Energy,
+            use: SpatialDimension.Z,
+            active: false, min: 0, range: { currMin: 0, currMax: 0 }, max: 0, step: 1
+        };
+
         props.currentAttrs.map((attrSel) => {
             switch (attrSel.use) {
-                case SpatialDimension.X: return x = attrSel.attr
-                case SpatialDimension.Y: return y = attrSel.attr
-                case SpatialDimension.Z: return z = attrSel.attr
-                case "Unused": return attrSel.attr
+                case SpatialDimension.X: return x = attrSel
+                case SpatialDimension.Y: return y = attrSel
+                case SpatialDimension.Z: return z = attrSel
+                case "Unused": return attrSel
             }
-        })
+        });
+
         return {
-            x: x ? x : ContinuousMetric.Acousticness,
-            y: y ? y : ContinuousMetric.Danceability,
-            z: z ? z : ContinuousMetric.Energy
+            x: x,
+            y: y,
+            z: z
         }
     }, [props.currentAttrs]);
 
     const songCoords: Pick<Song, "coords">[] = useMemo(
         () => {
-            const xAttr = (cachedAxisMetrics.x as string).toLowerCase() as LowercaseAttr;
-            const yAttr = (cachedAxisMetrics.y as string).toLowerCase() as LowercaseAttr;
-            const zAttr = (cachedAxisMetrics.z as string).toLowerCase() as LowercaseAttr;
+            const xAttr = (cachedAxisMetrics.x.attr as string).toLowerCase() as LowercaseAttr;
+            const yAttr = (cachedAxisMetrics.y.attr as string).toLowerCase() as LowercaseAttr;
+            const zAttr = (cachedAxisMetrics.z.attr as string).toLowerCase() as LowercaseAttr;
             // cursed method of getting the right attribute property value on song by converting
             // from ContinuousMetric to a string which is then used to index on Song
 
@@ -56,8 +72,7 @@ export default function StaticGraph(props: {
                     z: song[zAttr]
                 } }
             })
-        },
-        [props.songs, cachedAxisMetrics]
+        }, [props.songs, cachedAxisMetrics]
     );
 
     const orthoCameraEndVector: [number, number, number] = useMemo(()=>{
@@ -81,6 +96,8 @@ export default function StaticGraph(props: {
     const arrConeRadius = 1.6;
     const arrConeHeight = 3.0;
     const axisColor = 0x808080;
+
+    const textScale = 8;
     
     return(<>
     <div className="vis-container">
@@ -130,14 +147,12 @@ export default function StaticGraph(props: {
                     position={(props.cameraState === StaticCamera.NoY)
                         ? [gridWidth/2, 0, -5]
                         : [gridWidth/2, -4, 0]} 
-                    scale={8}
+                    scale={textScale}
                     rotation={(props.cameraState === StaticCamera.NoY)
                         ? [Math.PI/2, Math.PI, Math.PI]
                         : [0,0,0]
                     }
-                >
-                    {cachedAxisMetrics.x}
-                </drei.Text>
+                >{cachedAxisMetrics.x.attr}</drei.Text>
                 <mesh position={[gridWidth/2,0,0]} rotation={[0, 0, Math.PI/-2]}>
                     <cylinderGeometry args={[arrConeRadius/3, arrConeRadius/3, gridWidth]}/>
                     <meshBasicMaterial color={axisColor}/>
@@ -146,6 +161,14 @@ export default function StaticGraph(props: {
                     <coneGeometry args={[arrConeRadius, arrConeHeight]}/>
                     <meshBasicMaterial color={axisColor}/>
                 </mesh>
+                <drei.Text
+                    color={axisColor}
+                    position={[gridWidth+(arrConeHeight/2)+5, 0, 0]}
+                    rotation={(props.cameraState === StaticCamera.NoY)
+                        ? [Math.PI/2, Math.PI, Math.PI]
+                        : [0,0,0]}
+                    scale={textScale}
+                >{cachedAxisMetrics.x.max}</drei.Text>
             </group>
             <group name="y-axis-line" layers={yLayers}>
                 <drei.Text
@@ -154,14 +177,12 @@ export default function StaticGraph(props: {
                         ? [0, gridWidth/2,-5]
                         : [-4, gridWidth/2,0]
                     }
-                    scale={8}
+                    scale={textScale}
                     rotation={(props.cameraState === StaticCamera.NoX)
                         ? [Math.PI/-2,Math.PI/2,0]
                         : [0,0,Math.PI/2]
                     }
-                >
-                    {cachedAxisMetrics.y}
-                </drei.Text>
+                >{cachedAxisMetrics.y.attr}</drei.Text>
                 <mesh position={[0, gridWidth/2, 0]} rotation={[0, 0, Math.PI]}>
                     <cylinderGeometry args={[arrConeRadius/3, arrConeRadius/3, gridWidth]}/>
                     <meshBasicMaterial color={axisColor}/>
@@ -170,6 +191,18 @@ export default function StaticGraph(props: {
                     <coneGeometry args={[arrConeRadius, arrConeHeight]}/>
                     <meshBasicMaterial color={axisColor}/>
                 </mesh>
+                <drei.Text
+                    color={axisColor}
+                    position={(props.cameraState === StaticCamera.NoX)
+                        ? [0, gridWidth+(arrConeHeight/2) + 5, -5]
+                        : [0, gridWidth+(arrConeHeight/2) +5, 0]
+                    }
+                    scale={textScale}
+                    rotation={(props.cameraState === StaticCamera.NoX)
+                        ? [Math.PI/-2,Math.PI/2,0]
+                        : [0,0,0]
+                    }
+                >{cachedAxisMetrics.y.max}</drei.Text>
             </group>
             <group name="z-axis-line" layers={zLayers}>
                 <drei.Text
@@ -182,9 +215,7 @@ export default function StaticGraph(props: {
                         ? [Math.PI/-2, 0, Math.PI/2]
                         : [0, Math.PI/2, 0]
                     }
-                >
-                    {cachedAxisMetrics.z}
-                </drei.Text>
+                >{cachedAxisMetrics.z.attr}</drei.Text>
                 <mesh position={[0, 0, gridWidth/2]} rotation={[Math.PI/2, 0, 0]}>
                     <cylinderGeometry args={[arrConeRadius/3, arrConeRadius/3, gridWidth]}/>
                     <meshBasicMaterial color={axisColor}/>
@@ -193,10 +224,18 @@ export default function StaticGraph(props: {
                     <coneGeometry args={[arrConeRadius, arrConeHeight]}/>
                     <meshBasicMaterial color={axisColor}/>
                 </mesh>
+                <drei.Text
+                    color={axisColor}
+                    position={(props.cameraState === StaticCamera.NoY)
+                        ? [0, 0, gridWidth+(arrConeHeight/2)+5]
+                        : [0, 0, gridWidth+(arrConeHeight/2)+5]}
+                    scale={8}
+                    rotation={(props.cameraState === StaticCamera.NoY)
+                        ? [Math.PI/-2, 0, Math.PI/2]
+                        : [0, Math.PI/2, 0]
+                    }
+                >{cachedAxisMetrics.z.max}</drei.Text>
             </group>
-            {
-                // todo add number indicators on the graph
-            }
         </Canvas>
     </div>
     </>)
