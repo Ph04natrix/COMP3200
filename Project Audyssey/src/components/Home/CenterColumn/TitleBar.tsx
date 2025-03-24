@@ -1,16 +1,16 @@
 import { AudioResource, SongColType } from "../../../types/audioResources";
 import "./TitleBar.css";
 
-export default function TitleBar(
-    {activeAudioResource}: {activeAudioResource: AudioResource}
-) {
+export default function TitleBar(props: {
+    activeAudioResource: AudioResource
+}) {
     return(
         <h1>
             {
-                activeAudioResource.type === SongColType.Library
+                props.activeAudioResource.type === SongColType.Library
                  ? "Your Library"
                  : (
-                    activeAudioResource.type + ": " + activeAudioResource.name
+                    props.activeAudioResource.type + ": " + props.activeAudioResource.name
                 )
             }
         </h1>
