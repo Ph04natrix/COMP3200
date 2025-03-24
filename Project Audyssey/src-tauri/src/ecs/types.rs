@@ -239,6 +239,7 @@ pub async fn get_songs_for_static_graph(
     let cont_metric_query = world.query::<(
         &Name, &Acousticness, &Danceability, &Energy, &Valence, &Tempo, &Speechiness, &Liveness, &Loudness, &Instrumentalness, &Duration
     )>().with::<&Song>()
+        .with::<&Current>()
         .build()
     ;
 

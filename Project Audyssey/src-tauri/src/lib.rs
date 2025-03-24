@@ -81,16 +81,6 @@ pub fn run() {
 #[tauri::command]
 async fn exit_app(
     app: tauri::AppHandle,
-    state: State<'_, AppState>
 ) -> MyResult<()> {
-    let state_lock = state.lock().await;
-    let world = &state_lock.ecs_world;
-    let file_path = &state_lock.main_directory;
-
-    let songs = ecs_to_minimal_objects(world)?;
-
-    match minimal_tracks_to_file(file_path, songs) {
-        Ok(..) => Ok(app.exit(0)),
-        Err(err) => Err(err)
-    }
+    Ok(app.exit(0))
 }

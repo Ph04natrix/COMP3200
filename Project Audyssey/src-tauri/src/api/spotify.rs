@@ -373,6 +373,8 @@ pub async fn compare_library_with_ecs(
         });
     });
 
+    dbg!(new_song_minimal_objects.len());
+
     minimal_tracks_to_ecs(new_song_minimal_objects, world, true);
 
     Ok(format!("{preexisting_song_count} songs already in Audyssey Database"))
