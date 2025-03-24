@@ -85,3 +85,17 @@ export type AttrSelect = {
     },
     max: 1 | 120,
 }
+
+export enum StaticCamera {
+    All="XYZ",
+    NoX="YZ",
+    NoY="XZ",
+    NoZ="XY"
+}
+
+export enum StaticLayers {
+    All = 0,
+    X = 1,
+    Y = 2,
+    Z = 3
+}
