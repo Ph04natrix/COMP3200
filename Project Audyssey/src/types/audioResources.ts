@@ -24,7 +24,7 @@ export type Song = {
     }
 }
 
-export type LowercaseAttr = keyof Omit<Song, "type" | "name" | "duration" | "coords">;
+export type LowercaseAttr = keyof Omit<Song, "type" | "name" | "coords">;
 
 export type SongCollection = {
     type: SongColType,
@@ -63,7 +63,7 @@ export enum ContinuousMetric {
     // value between 0.0 and 120.0
     Tempo="Tempo",
     // value between 0 and infinity?
-    // todo Duration="Duration"
+    Duration="Duration"
 }
 
 export enum DiscreteMetric {
@@ -78,12 +78,13 @@ export type AttrSelect = {
     attr: ContinuousMetric,
     use: "Unused" | SpatialDimension,
     active: boolean
-    min: 0,
+    min: 0 | -60,
     range: {
         currMin: number,
         currMax: number,
     },
-    max: 1 | 120,
+    max: number, //1 | 120 | 0,
+    step: 0.01 | 0.1 | 1
 }
 
 export enum StaticCamera {

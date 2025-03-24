@@ -10,15 +10,15 @@ type RangeSliderProps = {
         currMax: number
     }
     attr: ContinuousMetric,
-    updateRange: any
+    updateRange: any,
+    step: number
 }
 
 export default function RangeSlider(
-    {min, max, range, attr, updateRange}: RangeSliderProps
+    {min, max, range, attr, updateRange, step}: RangeSliderProps
 ) {
     const [minValue, setMinValue] = useState<number>(range ? range.currMin : min);
     const [maxValue, setMaxValue] = useState<number>(range ? range.currMax : max);
-    const step = 0.01;
     
     useEffect(() => {
         if (range) {

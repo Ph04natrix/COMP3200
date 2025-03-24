@@ -83,39 +83,43 @@ export default function Home() {
     const [attrSelectors, setAttrSelectors] = useState<AttrSelect[]>([
         {
             attr: ContinuousMetric.Acousticness, use: SpatialDimension.X, active: true,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1
+            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
             attr: ContinuousMetric.Danceability, use: SpatialDimension.Y, active: true,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1
+            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
             attr: ContinuousMetric.Energy, use: SpatialDimension.Z, active: true,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1
+            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
             attr: ContinuousMetric.Instrumental, use: "Unused", active: false,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1
+            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
             attr: ContinuousMetric.Liveness, use: "Unused", active: false,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1
+            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
             attr: ContinuousMetric.Loudness, use: "Unused", active: false,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1
+            min: -60, range: { currMin: -60, currMax: 0 }, max: 0, step: 0.1
         },
         {
             attr: ContinuousMetric.Speechiness, use: "Unused", active: false,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1
+            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
             attr: ContinuousMetric.Valence, use: "Unused", active: false,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1
+            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
             attr: ContinuousMetric.Tempo, use: "Unused", active: false,
-            min: 0, range: { currMin: 0, currMax: 120 }, max: 120
+            min: 0, range: { currMin: 0, currMax: 120 }, max: 120, step: 0.1
+        },
+        {
+            attr: ContinuousMetric.Duration, use: "Unused", active: false,
+            min: 0, range: { currMin: 0, currMax: 500000 }, max: 500000, step: 1
         }
     ]);
 
@@ -194,10 +198,10 @@ export default function Home() {
                             />
                             <AxisContainer
                                 thisAttr={attrSelectors.filter(attr => { return attr.use === SpatialDimension.Z })[0]}
-                            allAttrs={attrSelectors}
-                            updateAttrSelects={setAttrSelectors}
-                            updateRange={updateRange}
-                            cameraState={cameraState}
+                                allAttrs={attrSelectors}
+                                updateAttrSelects={setAttrSelectors}
+                                updateRange={updateRange}
+                                cameraState={cameraState}
                                 setCameraState={setCameraState}
                             />
                         </div>

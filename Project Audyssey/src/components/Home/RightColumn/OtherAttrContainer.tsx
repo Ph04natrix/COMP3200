@@ -5,7 +5,6 @@ export default function OtherAttrContainer(props: {
     attrSelectors: AttrSelect[],
     updateRange: any
 }) {
-    
 
     return(<div
         className="unused-attr-container"

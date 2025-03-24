@@ -27,6 +27,7 @@ export default function DragAttr(props: {
             range={props.attrSelect.range}
             attr={props.attrSelect.attr}
             updateRange={props.updateRange}
+            step={props.attrSelect.step}
         />
     </div>)
 }
