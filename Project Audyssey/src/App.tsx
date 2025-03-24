@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import "./App.css";
 import Login from "./components/Setup/Login";
-import Main from "./components/Home/Home";
+import Home from "./components/Home/Home";
 
 export type SetupState
  = { status: "unauthorised" }
@@ -20,9 +20,23 @@ export default function App() {
 
   const [setupState, setSetupState] = useState<SetupState>({status: "unauthorised"});
   const [setupDone, setSetupDone] = useState<boolean>(false);
+  
+  /*
+  const [setupState, setSetupState] = useState<SetupState>({
+    status: "authorised",
+    access_token: "",
+    libState: {
+      status: "fetched_attributes",
+      total: 10,
+      no_attributes: 10,
+      waiting: false
+    }
+  });
+  const [setupDone, setSetupDone] = useState<boolean>(true);*/
+  // todo set setupDone back to false after done messing with ui
 
   return (setupDone && setupState.status === "authorised") ? (
-    <Main />
+    <Home />
   ) : (
     <Login
       setupDone={setupDone} setSetupDone={setSetupDone}
