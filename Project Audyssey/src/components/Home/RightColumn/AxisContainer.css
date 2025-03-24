@@ -1,3 +1,12 @@
+.main-axis-container {
+    width: 100%;
+
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    row-gap: 8px;
+}
+
 .axis-container {
     width: 100%;
 
@@ -7,16 +16,20 @@
     align-items: center;
     column-gap: 8px;
 
-    background: var(--main-dark);
+    border: 1px solid var(--outline-col);
+    border-radius: 12px;
+}
+
+.unselected {
+    opacity: 0.3;
 }
 
 button#axis {
     text-align: center;
     flex-basis: 5%;
-    border: 1px solid var(--outline-col);
     padding: 12px;
 
-    border-radius: 0%;
+    border-radius: 14px;
 }
 
 .draggable-metric {
@@ -29,9 +42,10 @@ button#axis {
     column-gap: 16px;
     
     padding-right: 16px;
-    padding-left: 8px;
+    padding-left: 12px;
     
-    border: 1px solid var(--outline-col);
+    background: var(--main-dark);
+    border-radius: 14px;
 }
 
 .draggable-metric:-webkit-drag {
@@ -40,7 +54,7 @@ button#axis {
 
 #attr-name {
     text-align: center;
-    flex-basis: 30%;
+    flex-basis: 35%;
 }
 
 .range-slider {
