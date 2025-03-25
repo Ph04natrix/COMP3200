@@ -36,16 +36,17 @@ export default function InstancedPoints(props: {
         const zMetric = props.axisMetrics.z.attr.toLowerCase() as LowercaseAttr;
 
         for (let i = 0; i < numPoints; i++) {
-            if (props.songs[i] === props.selectedSong) {
-                scratchColor.set(SELECTED_COLOR);
-            } else if ((
+            if ((// Song sphere is within range
                 props.songs[i][xMetric] >= xRange.currMin && props.songs[i][xMetric] <= xRange.currMax
             ) && (
                 props.songs[i][yMetric] >= yRange.currMin && props.songs[i][yMetric] <= yRange.currMax
             ) && (
                 props.songs[i][zMetric] >= zRange.currMin && props.songs[i][zMetric] <= zRange.currMax
             )) {
-                scratchColor.set(DEFAULT_COLOR);
+                (props.songs[i] === props.selectedSong) //check if we selected it
+                    ? scratchColor.set(SELECTED_COLOR)
+                    : scratchColor.set(DEFAULT_COLOR)
+                ;
             } else {
                 scratchColor.set(FILTERED_COLOR);
             }
@@ -97,7 +98,7 @@ export default function InstancedPoints(props: {
         console.log(clickedSong.name, " was selected");
 
         if (clickedSong === props.selectedSong) {
-            // do nothing
+            props.setSelectedSong(undefined)
         } else {
             props.setSelectedSong(clickedSong)
         }
@@ -112,29 +113,12 @@ export default function InstancedPoints(props: {
         // and set its position to be (screenXPos, screenYPos)
     }
 
-    function rescale(
+    function rescale(// convert the coordinate's range to currMin..currMax
         coord: number,
         attrSel: AttrSelect
     ): number {
-        switch (attrSel.attr) {
-            case ContinuousMetric.Duration: return(
-                coord / attrSel.max
-            )
-            case ContinuousMetric.Tempo: return (
-                coord/240
-            )// between [0..240] -> [0..1]
-            case ContinuousMetric.Loudness: return (
-                (coord/60) + 1
-            )// between [-60..0] -> [0..1]
-            case ContinuousMetric.Acousticness:
-            case ContinuousMetric.Danceability:
-            case ContinuousMetric.Energy:
-            case ContinuousMetric.Valence:
-            case ContinuousMetric.Speechiness:
-            case ContinuousMetric.Liveness:
-            case ContinuousMetric.Instrumental:
-            default: return coord
-        }
+        const maxSubMin = attrSel.range.currMax - attrSel.range.currMin;
+        return (coord - attrSel.range.currMin)/ maxSubMin
     }
 
     return(
