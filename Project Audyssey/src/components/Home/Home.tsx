@@ -16,6 +16,7 @@ import OtherAttrContainer from "./RightColumn/OtherAttrContainer";
 import { invoke } from "@tauri-apps/api/core";
 import { SongContMetricProgress } from "../../types/tauriEvent";
 import { listen, once } from "@tauri-apps/api/event";
+import DetailedSong from "./LeftColumn/DetailedSong";
 
 export default function Home() {
     const [activeAudioResource, setActiveAudioResource] = useState<SongCollection>({
@@ -53,16 +54,20 @@ export default function Home() {
             newSongs.push({
                 type: "Song",
                 name: payload.name,
-                duration: payload.duration,
-                acousticness: payload.acousticness,
-                danceability: payload.danceability,
-                energy: payload.energy,
-                valence: payload.valence,
-                tempo: payload.tempo,
-                speechiness: payload.speechiness,
-                liveness: payload.liveness,
-                loudness: payload.loudness,
-                instrumentalness: payload.instrumentalness,
+                contMetrics: {
+                    duration: payload.duration,
+                    acousticness: payload.acousticness,
+                    danceability: payload.danceability,
+                    energy: payload.energy,
+                    valence: payload.valence,
+                    tempo: payload.tempo,
+                    speechiness: payload.speechiness,
+                    liveness: payload.liveness,
+                    loudness: payload.loudness,
+                    instrumentalness: payload.instrumentalness,
+                    popularity: payload.popularity,
+                    timestamp: new Date(payload.timestamp).getTime()
+                },
                 coords: {
                     x: 0,
                     y: 0,
@@ -83,7 +88,7 @@ export default function Home() {
 
     const [attrSelectors, setAttrSelectors] = useState<AttrSelect[]>([
         {
-            attr: ContinuousMetric.Acousticness, use: SpatialDimension.X, active: true,
+            attr: ContinuousMetric.Acousticness, use: "Unused", active: false,
             min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
@@ -103,7 +108,7 @@ export default function Home() {
             min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
-            attr: ContinuousMetric.Loudness, use: "Unused", active: false,
+            attr: ContinuousMetric.Loudness, use: SpatialDimension.X, active: true,
             min: -60, range: { currMin: -60, currMax: 0 }, max: 0, step: 0.1
         },
         {
@@ -121,7 +126,15 @@ export default function Home() {
         {
             attr: ContinuousMetric.Duration, use: "Unused", active: false,
             min: 0, range: { currMin: 0, currMax: 500000 }, max: 500000, step: 1
-        }
+        },
+        {
+            attr: ContinuousMetric.Popularity, use: "Unused", active: false,
+            min: 0, range: { currMin: 0, currMax: 100 }, max: 100, step: 1
+        },
+        {
+            attr: ContinuousMetric.Timestamp, use: "Unused", active: false,
+            min: 0, range: { currMin: 0, currMax: Date.now() }, max: Date.now(), step: 10 // seconds
+        } // todo set these to be the earliest and latest times of the library, to the nearest something
     ]);
 
     function updateRange(newMin: number , newMax: number, attr: ContinuousMetric) {
@@ -159,7 +172,9 @@ export default function Home() {
     return(<>
     <div id="upper-main-section" className="flex-row">
         <div id="leftColumn">
-            <div className="sidebox">Selected song is {selectedSong?.name}</div>
+            <div className="sidebox">
+                <DetailedSong selectedSong={selectedSong}/>
+            </div>
             <div className="sidebox">Bottom left box</div>
         </div>
         <div id="centerColumn" className="center">

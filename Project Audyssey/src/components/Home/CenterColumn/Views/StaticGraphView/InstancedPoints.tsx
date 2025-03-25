@@ -36,12 +36,13 @@ export default function InstancedPoints(props: {
         const zMetric = props.axisMetrics.z.attr.toLowerCase() as LowercaseAttr;
 
         for (let i = 0; i < numPoints; i++) {
+            const songContMetrics = props.songs[i].contMetrics;
             if ((// Song sphere is within range
-                props.songs[i][xMetric] >= xRange.currMin && props.songs[i][xMetric] <= xRange.currMax
+                songContMetrics[xMetric] >= xRange.currMin && songContMetrics[xMetric] <= xRange.currMax
             ) && (
-                props.songs[i][yMetric] >= yRange.currMin && props.songs[i][yMetric] <= yRange.currMax
+                songContMetrics[yMetric] >= yRange.currMin && songContMetrics[yMetric] <= yRange.currMax
             ) && (
-                props.songs[i][zMetric] >= zRange.currMin && props.songs[i][zMetric] <= zRange.currMax
+                songContMetrics[zMetric] >= zRange.currMin && songContMetrics[zMetric] <= zRange.currMax
             )) {
                 (props.songs[i] === props.selectedSong) //check if we selected it
                     ? scratchColor.set(SELECTED_COLOR)

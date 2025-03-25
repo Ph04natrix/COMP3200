@@ -7,6 +7,15 @@ export type AudioResource = Song | SongCollection;
 export type Song = {
     type: "Song"
     name: string,
+    contMetrics: SongContMetric,
+    coords: {
+        x: number,
+        y: number,
+        z: number
+    }
+}
+
+export type SongContMetric = {
     duration: number,
     acousticness: number,
     danceability: number,
@@ -17,14 +26,74 @@ export type Song = {
     liveness: number,
     loudness: number,
     instrumentalness: number,
-    coords: {
-        x: number,
-        y: number,
-        z: number
+    // todo
+    popularity: number,
+    timestamp: number, //Date converted into milliseconds
+}
+
+export type LowercaseAttr = keyof SongContMetric;
+
+export type SongExtras = {
+    album: Album,
+    artists: Artist[],
+    discrete_metrics: {
+        explicit: boolean,
+        mode: Mode,
+        time_signature: 3 | 4 | 5 | 6 | 7,
+        key: Key,
+        genres: Genre[]
     }
 }
 
-export type LowercaseAttr = keyof Omit<Song, "type" | "name" | "coords">;
+export type Album = {
+    type: "Album" | "Single" | "Compilation",
+    total_tracks: number,
+    name: string,
+    release_date: {
+        date: string,
+        precision: "Year" | "Month" | "Day",
+    }
+    artists: Artist[],
+    images: {
+        url: string,
+        height: number,
+        width: number
+    }[]
+}
+
+export type Artist = {
+    href: string,
+    spotify_id: string,
+    name: string,
+}
+
+export enum Mode {
+    Minor,
+    Major
+}
+
+export enum Key {
+    None="None",
+    C="C",
+    CSharp="C#",
+    D="D",
+    DSharp="D#",
+    E="E",
+    F="F",
+    FSharp="F#",
+    G="G",
+    GSharp="G#",
+    A="A",
+    ASharp="A#",
+    B="B",
+}
+
+export type Genre = {
+    root: string,
+    sub: string[]
+}
+
+export type FullSong = Song & SongExtras;
 
 export type SongCollection = {
     type: SongColType,
@@ -51,7 +120,6 @@ export enum SpatialDimension { X="X", Y="Y", Z="Z" }
 export type Metric = ContinuousMetric | DiscreteMetric
 
 export enum ContinuousMetric {
-    // value between 0.0 and 1.0
     Acousticness="Acousticness",
     Danceability="Danceability",
     Energy="Energy",
@@ -59,11 +127,12 @@ export enum ContinuousMetric {
     Speechiness="Speechiness",
     Liveness="Liveness",
     Loudness="Loudness",
-    Instrumental="Instrumental",
-    // value between 0.0 and 120.0
+    Instrumental="Instrumentalness",
     Tempo="Tempo",
-    // value between 0 and infinity?
-    Duration="Duration"
+    Duration="Duration",
+    // TODO
+    Popularity="Popularity",
+    Timestamp="Timestamp"
 }
 
 export enum DiscreteMetric {
@@ -84,7 +153,7 @@ export type AttrSelect = {
         currMax: number,
     },
     max: number, //1 | 120 | 0,
-    step: 0.01 | 0.1 | 1
+    step: 0.01 | 0.1 | 1 | 10
 }
 
 export enum StaticCamera {

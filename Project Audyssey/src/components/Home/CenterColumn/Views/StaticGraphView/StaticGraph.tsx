@@ -28,17 +28,17 @@ export default function StaticGraph(props: {
         let x: AttrSelect = {
             attr: ContinuousMetric.Acousticness,
             use: SpatialDimension.X,
-            active: false, min: 0, range: { currMin: 0, currMax: 0 }, max: 0, step: 1
+            active: false, min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
         };
         let y: AttrSelect = {
             attr: ContinuousMetric.Danceability,
             use: SpatialDimension.Y,
-            active: false, min: 0, range: { currMin: 0, currMax: 0 }, max: 0, step: 1
+            active: false, min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
         };
         let z: AttrSelect = {
             attr: ContinuousMetric.Energy,
             use: SpatialDimension.Z,
-            active: false, min: 0, range: { currMin: 0, currMax: 0 }, max: 0, step: 1
+            active: false, min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
         };
 
         props.currentAttrs.map((attrSel) => {
@@ -50,11 +50,7 @@ export default function StaticGraph(props: {
             }
         });
 
-        return {
-            x: x,
-            y: y,
-            z: z
-        }
+        return { x: x, y: y, z: z }
     }, [props.currentAttrs]);
 
     const songCoords: Pick<Song, "coords">[] = useMemo(
@@ -67,9 +63,10 @@ export default function StaticGraph(props: {
 
             return props.songs.map((song) => {
                 //console.log("[Co-ords] x: ", song[xAttr],", y: ", song[yAttr],", z: ", song[zAttr]);
-                return { coords: { x: song[xAttr],
-                    y: song[yAttr],
-                    z: song[zAttr]
+                return { coords: {
+                    x: song.contMetrics[xAttr],
+                    y: song.contMetrics[yAttr],
+                    z: song.contMetrics[zAttr]
                 } }
             })
         }, [props.songs, cachedAxisMetrics]

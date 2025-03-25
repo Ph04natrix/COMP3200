@@ -20,4 +20,6 @@ export type SongContMetricProgress = {
     loudness: number,
     instrumentalness: number,
     duration: number
+    popularity: number,
+    timestamp: string
 }

@@ -4,8 +4,8 @@ use tauri::{Emitter, State};
 
 use crate::{
     api::{
-        conversion::{AlbumType, MinimalAlbumObject, MinimalArtistObject, ReleaseDatePrecision},
-        soundcharts::SCGenreObject, spotify::ImageObject
+        conversion::{MinimalAlbumObject, MinimalArtistObject},
+        soundcharts::SCGenreObject, spotify::ImageObject,
     }, error::MyResult, AppState
 };
 
@@ -44,7 +44,7 @@ pub struct MissingAttributes;
 Song --AddedTo-- AudioCollection::Library
 Artist --Created-- Song
 Song
-*/
+
 
 // ? should this be multiple distinct components that are connected by an IsA relationship to build a hierarchy
 #[derive(Debug, Component)]
@@ -58,6 +58,7 @@ pub enum AudioCollection {
         images: Vec<ImageObject>
     },
 }
+*/
 
 // ----- Song attributes ----- //
 
@@ -181,6 +182,26 @@ impl From<Key> for i32 {
     }
 }
 
+impl From<Key> for String {
+    fn from(value: Key) -> Self {
+        String::from(match value {
+            Key::None => "None",
+            Key::C => "C",
+            Key::CSharp => "C#",
+            Key::D => "D",
+            Key::DSharp => "D#",
+            Key::E => "E",
+            Key::F => "F",
+            Key::FSharp => "F#",
+            Key::G => "G",
+            Key::GSharp => "G#",
+            Key::A => "A",
+            Key::ASharp => "A#",
+            Key::B => "B",
+        })
+    }
+}
+
 // Length of the song in milliseconds
 #[derive(Debug, Component)]
 pub struct Duration(pub u32);
@@ -209,7 +230,7 @@ impl Module for AudysseyModule {
         world.component::<SpotifyID>();
         world.component::<Current>();
 
-        world.component::<AudioCollection>();
+        //world.component::<AudioCollection>();
 
         world.component::<MissingAttributes>();
         world.component::<Acousticness>();
@@ -242,13 +263,19 @@ pub async fn get_songs_for_static_graph(
     let world = &state_lock.ecs_world;
 
     let cont_metric_query = world.query::<(
-        &Name, &Acousticness, &Danceability, &Energy, &Valence, &Tempo, &Speechiness, &Liveness, &Loudness, &Instrumentalness, &Duration
+        &Name, &Acousticness, &Danceability, &Energy, &Valence,
+        &Tempo, &Speechiness, &Liveness, &Loudness, &Instrumentalness,
+        &Duration, &Popularity, &AddedAt
     )>().with::<&Song>()
         .with::<&Current>()
         .build()
     ;
 
-    cont_metric_query.each(|(name, acc, dance, energy, val, tempo, speech, live, loud, instr, dur)| {
+    cont_metric_query.each(|(
+        name, acc, dance, energy, val,
+        tempo, speech, live, loud, instr,
+        dur, pop, time
+    )| {
         app.emit("song-cont-metric-progress", SongContMetricPayload {
             name: name.0.clone(),
             acousticness: acc.0,
@@ -261,6 +288,8 @@ pub async fn get_songs_for_static_graph(
             loudness: loud.0,
             instrumentalness: instr.0,
             duration: dur.0,
+            popularity: pop.0,
+            timestamp: time.0.clone()
         }).expect("Failed to emit event: song-cont-metric-progress");
     });
 
@@ -281,5 +310,81 @@ pub struct SongContMetricPayload {
     liveness: f32,
     loudness: f32,
     instrumentalness: f32,
-    duration: u32
+    duration: u32,
+    popularity: u16,
+    timestamp: String
+}
+
+#[tauri::command]
+pub async fn get_song_extras(
+    state: State<'_, AppState>,
+    name: String
+) -> MyResult<SongExtras> {
+    let state_lock = state.lock().await;
+    let world = &state_lock.ecs_world;
+
+    let find_song = world.query::<&Name>().with::<&Song>().build();
+
+    let mut res: SongExtras = SongExtras::default();
+
+    let song_ent = find_song.find(|ent_name| ent_name.0 == name).expect("Couldn't find song.");
+    song_ent.get::<(
+        &Album, &Artist, &Explicit, &Mode,
+        &TimeSignature, &Key, &Genres
+    )>(|(
+        alb, art, expl, mode,
+        time_sig, key, genres
+    )| {
+        res.album = AlbumPayload::from(alb.0.clone());
+        res.artists = art.0.clone();
+        res.discrete_metrics = DiscreteMetrics {
+            explicit: expl.0,
+            mode: u32::from(*mode),
+            time_signature: time_sig.0,
+            key: String::from(*key),
+            genres: genres.0.clone(),
+        }
+    });
+    
+    Ok(res)
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct SongExtras {
+    album: AlbumPayload,
+    artists: Vec<MinimalArtistObject>,
+    discrete_metrics: DiscreteMetrics
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct AlbumPayload {
+    r#type: String, // "Album" | "Single" | "Compilation",
+    total_tracks: u16,
+    name: String,
+    release_date: String,
+    release_date_precision: String, // "Year" | "Month" | "Day",
+    artists: Vec<MinimalArtistObject>,
+    images: Vec<ImageObject>
+}
+impl From<MinimalAlbumObject> for AlbumPayload {
+    fn from(input: MinimalAlbumObject) -> Self {
+        Self {
+            r#type: String::from(input.album_type),
+            total_tracks: input.total_tracks,
+            name: input.name,
+            release_date: input.release_date,
+            release_date_precision: String::from(input.release_date_precision),
+            artists: input.artists,
+            images: input.images
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct DiscreteMetrics {
+    explicit: bool,
+    mode: u32, // either 0 or 1
+    time_signature: u32,
+    key: String,
+    genres: Vec<SCGenreObject>
 }

@@ -290,7 +290,7 @@ impl From<SavedTrackObject> for MinimalTrackObject {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 pub struct MinimalAlbumObject {
     pub album_type: AlbumType,
     pub total_tracks: u16,
@@ -327,18 +327,38 @@ impl From<AlbumObject> for MinimalAlbumObject {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 pub enum AlbumType {
+    #[default]
     Album,
     Single,
     Compilation
 }
+impl From<AlbumType> for String {
+    fn from(value: AlbumType) -> Self {
+        String::from(match value {
+            AlbumType::Album => "Album",
+            AlbumType::Single => "Single",
+            AlbumType::Compilation => "Compilation",
+        })
+    }
+}
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 pub enum ReleaseDatePrecision {
+    #[default]
     Year,
     Month,
     Day
+}
+impl From<ReleaseDatePrecision> for String {
+    fn from(value: ReleaseDatePrecision) -> Self {
+        String::from(match value {
+            ReleaseDatePrecision::Year => "Year",
+            ReleaseDatePrecision::Month => "Month",
+            ReleaseDatePrecision::Day => "Day",
+        })
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

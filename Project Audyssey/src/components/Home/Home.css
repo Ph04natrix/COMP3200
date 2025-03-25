@@ -26,8 +26,7 @@ div.flex-row {
 .sidebox {
     border-top: 2px solid var(--outline-col);
     margin-top: 0;
-    /* top right bottom left */
-    padding: 12px 12px calc(12px - Var(--overlap-dist)) 12px;
+    padding: 12px;
 }
 
 #leftColumn {
