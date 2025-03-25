@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useMemo } from "react";
-import { AttrSelect, ContinuousMetric, SpatialDimension, StaticCamera } from "../../../types/audioResources";
+import { AttrSelect, ContinuousMetric, StaticCamera } from "../../../types/audioResources";
 import "./AxisContainer.css";
 import DragAttr from "./DragAttr";
 

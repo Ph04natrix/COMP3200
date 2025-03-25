@@ -1,7 +1,7 @@
 import "./Home.css";
 import "./RightColumn/AxisContainer.css";
 import { useEffect, useRef, useState } from "react";
-import { AttrSelect, AudioResource, ContinuousMetric, Song, SongCollection, SongColType, SongColView, SpatialDimension, StaticCamera } from "../../types/audioResources";
+import { AttrSelect, ContinuousMetric, Song, SongCollection, SongColType, SongColView, SpatialDimension, StaticCamera } from "../../types/audioResources";
 
 import BottomBar from "./BottomBar";
 import TitleBar from "./CenterColumn/TitleBar";
@@ -12,6 +12,7 @@ import DynamicGraph from "./CenterColumn/Views/DynamicGraph";
 import Table from "./CenterColumn/Views/TableView/Table";
 import AxisContainer from "./RightColumn/AxisContainer";
 import OtherAttrContainer from "./RightColumn/OtherAttrContainer";
+
 import { invoke } from "@tauri-apps/api/core";
 import { SongContMetricProgress } from "../../types/tauriEvent";
 import { listen, once } from "@tauri-apps/api/event";
@@ -25,7 +26,7 @@ export default function Home() {
 
     const fetchedSongs = useRef<boolean>(false);
     const [songs, setSongs] = useState<Song[]>(null!); // todo invoke backend to fetch these songs
-    const [selectedSong, setSelectedSong] = useState<Song>(null!);
+    const [selectedSong, setSelectedSong] = useState<Song>();
 
     const [cameraState, setCameraState] = useState<StaticCamera>(StaticCamera.NoX);
 
@@ -115,7 +116,7 @@ export default function Home() {
         },
         {
             attr: ContinuousMetric.Tempo, use: "Unused", active: false,
-            min: 0, range: { currMin: 0, currMax: 120 }, max: 120, step: 0.1
+            min: 0, range: { currMin: 0, currMax: 240 }, max: 240, step: 0.1
         },
         {
             attr: ContinuousMetric.Duration, use: "Unused", active: false,

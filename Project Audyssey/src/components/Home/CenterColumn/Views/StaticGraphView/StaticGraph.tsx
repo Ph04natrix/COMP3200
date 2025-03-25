@@ -14,8 +14,8 @@ extend(THREE as any)
 export default function StaticGraph(props: {
     songs: Song[],
     currentAttrs: AttrSelect[],
-    selectedSong: Song,
-    setSelectedSong: Dispatch<SetStateAction<Song>>,
+    selectedSong: Song | undefined,
+    setSelectedSong: Dispatch<SetStateAction<Song | undefined>>,
     cameraState: StaticCamera
 }) {
     const gridWidth = 100;
@@ -163,12 +163,12 @@ export default function StaticGraph(props: {
                 </mesh>
                 <drei.Text
                     color={axisColor}
-                    position={[gridWidth+(arrConeHeight/2)+5, 0, 0]}
+                    position={[gridWidth+(arrConeHeight/2)+5, -5, 0]}
                     rotation={(props.cameraState === StaticCamera.NoY)
                         ? [Math.PI/2, Math.PI, Math.PI]
                         : [0,0,0]}
                     scale={textScale}
-                >{cachedAxisMetrics.x.max}</drei.Text>
+                >{cachedAxisMetrics.x.range.currMax}</drei.Text>
             </group>
             <group name="y-axis-line" layers={yLayers}>
                 <drei.Text
@@ -202,7 +202,7 @@ export default function StaticGraph(props: {
                         ? [Math.PI/-2,Math.PI/2,0]
                         : [0,0,0]
                     }
-                >{cachedAxisMetrics.y.max}</drei.Text>
+                >{cachedAxisMetrics.y.range.currMax}</drei.Text>
             </group>
             <group name="z-axis-line" layers={zLayers}>
                 <drei.Text
@@ -228,13 +228,13 @@ export default function StaticGraph(props: {
                     color={axisColor}
                     position={(props.cameraState === StaticCamera.NoY)
                         ? [0, 0, gridWidth+(arrConeHeight/2)+5]
-                        : [0, 0, gridWidth+(arrConeHeight/2)+5]}
+                        : [0, -5, gridWidth+(arrConeHeight/2)+5]}
                     scale={8}
                     rotation={(props.cameraState === StaticCamera.NoY)
-                        ? [Math.PI/-2, 0, Math.PI/2]
+                        ? [Math.PI/-2, 0, 0]
                         : [0, Math.PI/2, 0]
                     }
-                >{cachedAxisMetrics.z.max}</drei.Text>
+                >{cachedAxisMetrics.z.range.currMax}</drei.Text>
             </group>
         </Canvas>
     </div>

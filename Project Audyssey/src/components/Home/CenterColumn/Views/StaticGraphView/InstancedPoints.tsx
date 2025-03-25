@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useRef } from "react"
 import { Color, InstancedBufferAttribute, InstancedMesh, Object3D } from "three";
-import { AttrSelect, ContinuousMetric, LowercaseAttr, Song } from "../../../../../types/audioResources";
+import { AttrSelect, LowercaseAttr, Song } from "../../../../../types/audioResources";
 import { ThreeEvent } from "@react-three/fiber";
 
 // re-use for instance copmutations
@@ -16,8 +16,8 @@ export default function InstancedPoints(props: {
     data: Pick<Song, "coords">[],
     songs: Song[],
     gridWidth: number,
-    selectedSong: Song,
-    setSelectedSong: Dispatch<SetStateAction<Song>>,
+    selectedSong: Song | undefined,
+    setSelectedSong: Dispatch<SetStateAction<Song | undefined>>,
     axisMetrics: {x: AttrSelect, y: AttrSelect, z: AttrSelect}
 }) {
     const meshRef = useRef<InstancedMesh>(null!);

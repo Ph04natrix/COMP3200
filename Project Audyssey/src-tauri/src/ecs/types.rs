@@ -1,8 +1,13 @@
 use flecs_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{Emitter, State};
 
-use crate::{api::{conversion::{AlbumType, MinimalAlbumObject, MinimalArtistObject, ReleaseDatePrecision}, soundcharts::SCGenreObject, spotify::{self, ImageObject}}, error::MyResult, AppState};
+use crate::{
+    api::{
+        conversion::{AlbumType, MinimalAlbumObject, MinimalArtistObject, ReleaseDatePrecision},
+        soundcharts::SCGenreObject, spotify::ImageObject
+    }, error::MyResult, AppState
+};
 
 #[derive(Debug, Component)]
 pub struct Name(pub String);

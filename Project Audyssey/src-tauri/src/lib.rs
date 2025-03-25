@@ -1,12 +1,12 @@
-use std::{fs::{File, OpenOptions}, path::PathBuf};
+use std::{fs::File, path::PathBuf};
 
 use flecs_ecs::core::World;
 use tokio::sync::Mutex;
 use serde::Deserialize;
-use tauri::{Builder, Manager, State};
+use tauri::{Builder, Manager};
 
 mod api;
-use api::{authorization, conversion::{self, ecs_to_minimal_objects, minimal_tracks_to_file}, soundcharts, spotify};
+use api::{authorization, conversion, soundcharts, spotify};
 
 mod ecs;
 use ecs::types::{self, AudysseyModule};
