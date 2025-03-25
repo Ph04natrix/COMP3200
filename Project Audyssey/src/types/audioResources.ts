@@ -126,12 +126,12 @@ export enum ContinuousMetric {
     Valence="Valence",
     Speechiness="Speechiness",
     Liveness="Liveness",
-    Loudness="Loudness",
     Instrumental="Instrumentalness",
+    Popularity="Popularity",
+    // range not between 0 and 1
+    Loudness="Loudness",
     Tempo="Tempo",
     Duration="Duration",
-    // TODO
-    Popularity="Popularity",
     Timestamp="Timestamp"
 }
 

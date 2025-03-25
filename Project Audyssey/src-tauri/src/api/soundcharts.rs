@@ -38,10 +38,8 @@ pub async fn fill_song_attributes(
     let state_lock = state.lock().await;
     let world = &state_lock.ecs_world;
 
-    let q = world
-        .query::<(&SpotifyID, &Name)>()
-        .with::<&Song>()
-        .with::<MissingAttributes>()
+    let q = world.query::<(&SpotifyID, &Name)>()
+        .with::<(&Song, MissingAttributes)>()
         .build()
     ;
 

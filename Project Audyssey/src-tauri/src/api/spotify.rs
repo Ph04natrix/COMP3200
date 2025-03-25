@@ -313,7 +313,7 @@ pub async fn get_user_full_library(
             minimal_songs_from_api.push(MinimalTrackObject::from(track_obj));
 
             // * Note that the minimal tracks could be directly converted to ECS here, but
-            // * world can't be used after an await due to not implementing Send + Sync
+            // * world can't be used after an await due to not implementing Sync (NonNull specifically)
         }
 
         app.emit("spotify-library-download-progress", SpotifyLibraryDownloadProgress {
