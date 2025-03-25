@@ -1,4 +1,14 @@
+#detailed-song {
+    display: flex;
+    flex-flow: column nowrap;
+
+    height: 100%;
+}
+
 #song-img-container {
+    flex-grow: 0;
+    flex-basis: content;
+
     display: flex;
     flex-direction: row;
     column-gap: 8px;
@@ -27,7 +37,31 @@
     flex-basis: 60%;
 }
 
+#artist-container {
+    display: flex;
+    flex-flow: row nowrap;
+    column-gap: 4px;
+}
+
 #song-artist {
     color: var(--bright-grey);
-    
+
+}
+
+code.explicit {
+    background-color: var(--bright-grey);
+    color: var(--main-light);
+
+    border-radius: 2px;
+    padding: 0 4px 0 4px;
+
+    flex-basis: content;
+    flex-grow: 0;
+}
+
+.radial-chart {
+    flex-grow: 0;
+    flex-basis: 45%;
+
+    width: 100%;
 }
