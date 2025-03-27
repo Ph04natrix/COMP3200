@@ -1,3 +1,5 @@
+import { Album, Artist, Key, Mode } from "./audioResources"
+
 export type SpotifyLibraryDownloadProgress = {
     downloaded: number,
     remaining: number,
@@ -22,4 +24,16 @@ export type SongContMetricProgress = {
     duration: number
     popularity: number,
     timestamp: string
+}
+
+export type IRowProgress = SongContMetricProgress & {
+    artists: Artist[];
+    album: Album;
+    //
+    key: Key,
+    mode: Mode,
+    time_signature: number,
+    //
+    popularity: number;
+    explicit: boolean;
 }
