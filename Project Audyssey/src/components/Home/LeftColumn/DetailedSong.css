@@ -1,3 +1,8 @@
+:root {
+    --mode-light: #d8d8d8;
+    --mode-dark: #2e2e2e;
+}
+
 #detailed-song {
     display: flex;
     flex-flow: column nowrap;
@@ -7,34 +12,66 @@
 
 #song-img-container {
     flex-grow: 0;
-    flex-basis: content;
+    WIDTH: 100%;
 
     display: flex;
-    flex-direction: row;
-    column-gap: 8px;
+    flex-flow: row nowrap;
+    gap: 8px;
     align-items: center;
 }
 
 #album-image {
     flex-grow: 0;
 
-    --alb-image-size: 84px;
+    --alb-image-size: 86px;
     height: var(--alb-image-size);
     width: var(--alb-image-size);
+
+    flex-basis: var(--alb-image-size);
 }
 
 #name-artist-container {
     flex-grow: 1;
+    height: 84px;
+    width: 100%;
+    flex-basis: 50%;
 
     display: flex;
     flex-direction: column;
+    gap: 3px;
+
+    padding-top: 6px;
 }
 
-#song-name {
+.x-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    max-width: 90%;
+    display: flex;
+}
+
+p { margin: 0; }
+
+p#song-name {
     font-size: larger;
     color: var(--main-light);
 
-    flex-basis: 60%;
+    width: 80%;
+    height: 24px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+::-webkit-scrollbar {
+    scrollbar-width: thin;
+    display: none;
+}
+
+#name-container {
+
 }
 
 #artist-container {
@@ -46,14 +83,22 @@
 #song-artist {
     color: var(--bright-grey);
 
+    width: 80%;
+    height: 24px;
+    
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+code {
+    border-radius: 2px;
+    padding: 0 4px 0 4px;
 }
 
 code.explicit {
-    background-color: var(--bright-grey);
-    color: var(--main-light);
-
-    border-radius: 2px;
-    padding: 0 4px 0 4px;
+    background-color: #8002028a;
+    color: var(--bright-grey);
 
     flex-basis: content;
     flex-grow: 0;
@@ -61,7 +106,27 @@ code.explicit {
 
 .radial-chart {
     flex-grow: 0;
-    flex-basis: 45%;
+    flex-basis: 50%;
 
     width: 100%;
+}
+
+#other-song-info {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+}
+
+.flex-column {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+code.song-key {
+    background-color: var(--bright-grey);
+    color: var(--main-light);
+}
+
+#key-mode-container {
+    font-size: large;
 }

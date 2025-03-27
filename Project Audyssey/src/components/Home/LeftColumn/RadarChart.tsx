@@ -4,7 +4,7 @@ import * as drei from "@react-three/drei";
 const radius = 100;
 
 export function RadarChart(props: {
-    radialData: {name: string, value: number}[]
+    radialData: {name: string, value: number, color: number | string}[]
 }) {
     return(<div className="radial-chart">
         <Canvas>
@@ -30,7 +30,7 @@ export function RadarChart(props: {
                             (Math.PI * ((2*idx) + 3))/props.radialData.length, // thetaStart
                             Math.PI/props.radialData.length * 2 // thetaLength
                         ]}/>
-                        <meshBasicMaterial color={[idx*0.125, idx*0.125, idx*0.125]}/>
+                        <meshBasicMaterial color={attr.color}/>
                     </mesh>
                     <drei.Text
                         scale={15}

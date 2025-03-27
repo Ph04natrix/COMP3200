@@ -1,7 +1,7 @@
 import "./DetailedSong.css";
 
 import { useEffect, useMemo, useState } from "react";
-import { FullSong, Mode, Song, SongExtras } from "../../../types/audioResources";
+import { FullSong, Key, Mode, Song, SongExtras } from "../../../types/audioResources";
 import { invoke } from "@tauri-apps/api/core";
 import { RadarChart } from "./RadarChart";
 
@@ -41,16 +41,34 @@ export default function DetailedSong(props: {
 
     const radialData = useMemo(() => {
         return detailedSong ? [
-            { name: "Ac", value: detailedSong.contMetrics.acousticness },
-            { name: "Da", value: detailedSong.contMetrics.danceability },
-            { name: "En", value: detailedSong.contMetrics.energy },
-            { name: "Val", value: detailedSong.contMetrics.valence },
-            { name: "Sp", value: detailedSong.contMetrics.speechiness },
-            { name: "Li", value: detailedSong.contMetrics.liveness },
-            { name: "In", value: detailedSong.contMetrics.instrumentalness },
-            { name: "Pop", value: detailedSong.contMetrics.popularity/100 },
+            { name: "Ac", value: detailedSong.contMetrics.acousticness, color: "saddlebrown" },
+            { name: "Da", value: detailedSong.contMetrics.danceability, color: "purple" },
+            { name: "En", value: detailedSong.contMetrics.energy, color: "forestgreen" },
+            { name: "Val", value: detailedSong.contMetrics.valence, color: "firebrick" },
+            { name: "Sp", value: detailedSong.contMetrics.speechiness, color: "brown" },
+            { name: "Li", value: detailedSong.contMetrics.liveness, color: 0xabcdef },
+            { name: "In", value: detailedSong.contMetrics.instrumentalness, color: 0xabcdef },
+            { name: "Pop", value: detailedSong.contMetrics.popularity/100, color: "darkcyan" },
         ] : []
     }, [detailedSong]);
+
+    function keyToBgColor(key: Key): string {
+        switch (key) {
+            case Key.None: return "transparent"
+            case Key.C: return "#f94144"
+            case Key.CSharp: return "#f3722c"
+            case Key.D: return "#f8961e"
+            case Key.DSharp: return "#f9844a"
+            case Key.E: return "#f9c74f"
+            case Key.F: return "#8ac926"
+            case Key.FSharp: return "#90be6d"
+            case Key.G: return "#43aa8b"
+            case Key.GSharp: return "#4d908e"
+            case Key.A: return "#577590"
+            case Key.ASharp: return "#277da1"
+            case Key.B: return "#1d4e89"
+        }
+    }
 
     if (detailedSong) {return(<div id="detailed-song">
     <div id="song-img-container">
@@ -60,19 +78,38 @@ export default function DetailedSong(props: {
             alt={detailedSong.album.name}
         />
         <div id="name-artist-container">
-            <div id="song-name">{detailedSong.name}</div>
-            <div id="artist-container">
-                {detailedSong.discrete_metrics.explicit && <code className="explicit">E</code>}
-                <div id="song-artist">{detailedSong.artists[0].name}</div>
+            <div id="name-container" className="x-scroll-container">
+                <p id="song-name">{
+                    detailedSong.discrete_metrics.explicit && <code className="explicit">E</code>
+                } {
+                    detailedSong.name
+                }</p>
             </div>
+            <div id="artist-container" className="x-scroll-container">
+                <p id="song-artist">{detailedSong.artists.map(art => art.name).join(", ")}</p>
+            </div>
+            <div id="key-mode-container"><code className="song-key" style={{
+                backgroundColor: keyToBgColor(detailedSong.discrete_metrics.key)
+            }}>{
+                detailedSong.discrete_metrics.key
+            }</code><code style={{
+                backgroundColor: detailedSong.discrete_metrics.mode == Mode.Major
+                    ? "black"
+                    : "var(--mode-light)",
+                color: detailedSong.discrete_metrics.mode == Mode.Major
+                    ? "var(--mode-light)"
+                    : "var(--mode-dark)",
+            }}>{
+                detailedSong.discrete_metrics.mode == Mode.Major ? "Major" : "Minor"
+            }</code> in {
+                detailedSong.discrete_metrics.time_signature
+            }/4</div>
         </div>
     </div>
     <RadarChart radialData={radialData}/>
-    
-    <div>Key: {detailedSong.discrete_metrics.key}</div>
-    <div>Mode: {detailedSong.discrete_metrics.mode == Mode.Major ? "Major" : "Minor"}</div>
-    <div>Time Signature: {detailedSong.discrete_metrics.time_signature}/4</div>
-    <div>Genre_0: {/*detailedSong.discrete_metrics.genres[0].root*/}</div>
+    <div id="other-song-info">
+        <div>Genres: TODO{/*detailedSong.discrete_metrics.genres[0].root*/}</div>
+    </div>
     </div>
     )} else { return(<></>) }
 }
