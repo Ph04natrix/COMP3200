@@ -6,10 +6,6 @@ import { ThreeEvent } from "@react-three/fiber";
 // re-use for instance copmutations
 const scratchObject3D = new Object3D();
 
-const SELECTED_COLOR = "#d14f08";
-const DEFAULT_COLOR = "#00ffea";
-const FILTERED_COLOR = "#736b67";
-
 const scratchColor = new Color();
 
 export default function InstancedPoints(props: {
@@ -46,10 +42,10 @@ export default function InstancedPoints(props: {
             )) {
                 (props.songs[i] === props.selectedSong) //check if we selected it
                     ? scratchColor.set(SELECTED_COLOR)
-                    : scratchColor.set(DEFAULT_COLOR)
+                    : scratchColor.set(DEFAULT_SONG_COLOR)
                 ;
             } else {
-                scratchColor.set(FILTERED_COLOR);
+                scratchColor.set(GREYED_COLOR);
             }
 
             scratchColor.toArray(colorArray, i*3);
