@@ -28,17 +28,17 @@ export default function StaticGraph(props: {
         let x: AttrSelect = {
             attr: ContinuousMetric.Acousticness,
             use: SpatialDimension.X,
-            active: false, min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
+            values: [], min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
         };
         let y: AttrSelect = {
             attr: ContinuousMetric.Danceability,
             use: SpatialDimension.Y,
-            active: false, min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
+            values: [], min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
         };
         let z: AttrSelect = {
             attr: ContinuousMetric.Energy,
             use: SpatialDimension.Z,
-            active: false, min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
+            values: [], min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 1
         };
 
         props.currentAttrs.map((attrSel) => {

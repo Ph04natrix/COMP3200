@@ -146,14 +146,14 @@ export enum DiscreteMetric {
 export type AttrSelect = {
     attr: ContinuousMetric,
     use: "Unused" | SpatialDimension,
-    active: boolean
     min: 0 | -60,
     range: {
         currMin: number,
         currMax: number,
     },
     max: number, //1 | 120 | 0,
-    step: 0.01 | 0.1 | 1 | 10
+    step: 0.01 | 0.1 | 1 | 10,
+    values: number[]
 }
 
 export enum StaticCamera {

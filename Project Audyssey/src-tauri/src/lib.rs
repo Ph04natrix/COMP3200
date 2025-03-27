@@ -72,7 +72,7 @@ pub fn run() {
             spotify::get_user_library_count, spotify::get_user_full_library, spotify::compare_library_with_ecs,
             conversion::file_to_ecs_cmd, conversion::serialize_ecs_to_file,
             soundcharts::song_without_attributes_count, soundcharts::fill_song_attributes,
-            types::get_songs_for_static_graph, types::get_song_extras
+            types::get_songs_for_static_graph, types::get_song_extras, types::get_cont_metric_values
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

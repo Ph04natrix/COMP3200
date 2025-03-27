@@ -1,6 +1,7 @@
 use flecs_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
 use tauri::{Emitter, State};
+use chrono::prelude::*;
 
 use crate::{
     api::{
@@ -387,4 +388,121 @@ pub struct DiscreteMetrics {
     time_signature: u32,
     key: String,
     genres: Vec<SCGenreObject>
+}
+
+#[tauri::command]
+pub async fn get_cont_metric_values(
+    state: State<'_, AppState>,
+    metric: String
+) -> MyResult<Vec<f32>> {
+    // println!("Starting command get_cont_metric_values");
+    let state_lock = state.lock().await;
+    let world = &state_lock.ecs_world;
+
+    let q = world.query::<(
+        &Acousticness, &Danceability, &Energy, &Valence,
+        &Speechiness, &Liveness, &Instrumentalness,
+        &Popularity, &Loudness, &Tempo, &Duration, &AddedAt,
+        &SpotifyID
+    )>()
+        .with::<(
+            &Song,
+            &Current
+        )>()
+        .order_by::<SpotifyID>(|_e1, s_id1: &SpotifyID, _e2, s_id2: &SpotifyID| {
+            (s_id1.0 > s_id2.0) as i32 - (s_id1.0 < s_id2.0) as i32
+        })
+        .build()
+    ;
+
+    let mut res = vec![];
+
+    q.each(|(
+        ac, dan, en,
+        val, sp, li,
+        instr, pop, lo,
+        tem, dur, time, _s_id
+    )| {
+        dbg!(res.push(match metric.as_str() {
+            "Acousticness" => ac.0,
+            "Danceability" => dan.0,
+            "Energy" => en.0,
+            "Valence" => val.0,
+            "Speechiness" => sp.0,
+            "Liveness" => li.0,
+            "Instrumentalness" => instr.0,
+            "Popularity" => pop.0 as f32,
+            // range not between 0 and 1
+            "Loudness" => lo.0,
+            "Tempo" => tem.0,
+            "Duration" => dur.0 as f32,
+            "Timestamp" => time.0.parse::<DateTime<Utc>>().unwrap().timestamp() as f32,
+            _ => panic!("Invalid continuous metric name received")
+        }));
+    });
+
+    // println!("Finished command get_cont_metric_values");
+    Ok(res)
+
+}
+
+#[tauri::command]
+pub async fn get_songs_for_table(
+    state: State<'_, AppState>,
+    app: tauri::AppHandle
+) -> MyResult<String> {
+    let state_lock = state.lock().await;
+    let world = &state_lock.ecs_world;
+
+    let cont_metric_query = world.query::<(
+        &Name, &Acousticness, &Danceability, &Energy, &Valence,
+        &Tempo, &Speechiness, &Liveness, &Loudness, &Instrumentalness,
+        &Duration, &Popularity, &AddedAt
+    )>().with::<&Song>()
+        .with::<&Current>()
+        .build()
+    ;
+
+    cont_metric_query.each(|(
+        name, acc, dance, energy, val,
+        tempo, speech, live, loud, instr,
+        dur, pop, time
+    )| {
+        app.emit("song-cont-metric-progress", SongContMetricPayload {
+            name: name.0.clone(),
+            acousticness: acc.0,
+            danceability: dance.0,
+            energy: energy.0,
+            valence: val.0,
+            tempo: tempo.0,
+            speechiness: speech.0,
+            liveness: live.0,
+            loudness: loud.0,
+            instrumentalness: instr.0,
+            duration: dur.0,
+            popularity: pop.0,
+            timestamp: time.0.clone()
+        }).expect("Failed to emit event: song-cont-metric-progress");
+    });
+
+    app.emit("song-cont-metric-finished", 0).expect("Failed to emit event: song-cont-metric-finished");
+
+    Ok(String::from("Started get_songs_for_static_graph"))
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SongContMetricPayload {
+    name: String,
+    acousticness: f32,
+    danceability: f32,
+    energy: f32,
+    valence: f32,
+    tempo: f32,
+    speechiness: f32,
+    liveness: f32,
+    loudness: f32,
+    instrumentalness: f32,
+    duration: u32,
+    popularity: u16,
+    timestamp: String
 }

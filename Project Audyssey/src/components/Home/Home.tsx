@@ -88,39 +88,39 @@ export default function Home() {
 
     const [attrSelectors, setAttrSelectors] = useState<AttrSelect[]>([
         {
-            attr: ContinuousMetric.Acousticness, use: "Unused", active: false,
+            attr: ContinuousMetric.Acousticness, use: "Unused", values: [],
+            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01,
+        },
+        {
+            attr: ContinuousMetric.Danceability, use: SpatialDimension.Y, values: [],
             min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
-            attr: ContinuousMetric.Danceability, use: SpatialDimension.Y, active: true,
+            attr: ContinuousMetric.Energy, use: SpatialDimension.Z, values: [],
             min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
-            attr: ContinuousMetric.Energy, use: SpatialDimension.Z, active: true,
+            attr: ContinuousMetric.Instrumental, use: "Unused", values: [],
             min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
-            attr: ContinuousMetric.Instrumental, use: "Unused", active: false,
+            attr: ContinuousMetric.Liveness, use: "Unused", values: [],
             min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
-            attr: ContinuousMetric.Liveness, use: "Unused", active: false,
-            min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
-        },
-        {
-            attr: ContinuousMetric.Loudness, use: SpatialDimension.X, active: true,
+            attr: ContinuousMetric.Loudness, use: SpatialDimension.X, values: [],
             min: -60, range: { currMin: -60, currMax: 0 }, max: 0, step: 0.1
         },
         {
-            attr: ContinuousMetric.Speechiness, use: "Unused", active: false,
+            attr: ContinuousMetric.Speechiness, use: "Unused", values: [],
             min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
-            attr: ContinuousMetric.Valence, use: "Unused", active: false,
+            attr: ContinuousMetric.Valence, use: "Unused", values: [],
             min: 0, range: { currMin: 0, currMax: 1 }, max: 1, step: 0.01
         },
         {
-            attr: ContinuousMetric.Tempo, use: "Unused", active: false,
+            attr: ContinuousMetric.Tempo, use: "Unused", values: [],
             min: 0, range: { currMin: 0, currMax: 240 }, max: 240, step: 0.1
         },
         {
@@ -128,14 +128,41 @@ export default function Home() {
             min: 0, range: { currMin: 0, currMax: 500000 }, max: 500000, step: 1
         },
         {
-            attr: ContinuousMetric.Popularity, use: "Unused", active: false,
+            attr: ContinuousMetric.Popularity, use: "Unused", values: [],
             min: 0, range: { currMin: 0, currMax: 100 }, max: 100, step: 1
         },
         {
-            attr: ContinuousMetric.Timestamp, use: "Unused", active: false,
+            attr: ContinuousMetric.Timestamp, use: "Unused", values: [],
             min: 0, range: { currMin: 0, currMax: Date.now() }, max: Date.now(), step: 10 // seconds
         } // todo set these to be the earliest and latest times of the library, to the nearest something
     ]);
+
+    const fillAttrValues = async () => {
+        let attrSels: ContinuousMetric[] = attrSelectors.map(attrSel => attrSel.attr)
+
+        const values = await Promise.all(
+            attrSels.map(async (attr) => {
+                return invoke<number[]>(
+                    "get_cont_metric_values",
+                    {metric: attr.toString()}
+                ).then(values => {
+                    console.log(values);
+                    return values
+                })
+            })
+        );
+
+        const valuesFilled = attrSelectors.map((attrSel, i) => {
+            return {
+                ...attrSel,
+                values: values[i]
+            }
+        })
+
+        console.log(valuesFilled);
+
+        setAttrSelectors(valuesFilled);
+    }
 
     function updateRange(newMin: number , newMax: number, attr: ContinuousMetric) {
         setAttrSelectors(attrSelectors.map(attrSelect => attrSelect.attr === attr

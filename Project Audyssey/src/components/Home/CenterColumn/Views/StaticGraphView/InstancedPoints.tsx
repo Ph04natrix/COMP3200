@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, useEffect, useRef } from "react"
 import { Color, InstancedBufferAttribute, InstancedMesh, Object3D } from "three";
 import { AttrSelect, LowercaseAttr, Song } from "../../../../../types/audioResources";
 import { ThreeEvent } from "@react-three/fiber";
+import { SELECTED_COLOR, DEFAULT_SONG_COLOR, GREYED_COLOR } from "../../../../../types/colors";
 
 // re-use for instance copmutations
 const scratchObject3D = new Object3D();
