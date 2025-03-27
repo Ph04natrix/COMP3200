@@ -1,7 +1,9 @@
 import "./Home.css";
 import "./RightColumn/AxisContainer.css";
-import { useEffect, useRef, useState } from "react";
-import { AttrSelect, ContinuousMetric, Song, SongCollection, SongColType, SongColView, SpatialDimension, StaticCamera } from "../../types/audioResources";
+import { useState } from "react";
+import {
+    AttrSelect, ContinuousMetric, Song, SongCollection, SongColType, SongColView, SpatialDimension, StaticCamera
+} from "../../types/audioResources";
 
 import BottomBar from "./BottomBar";
 import TitleBar from "./CenterColumn/TitleBar";
@@ -14,9 +16,17 @@ import AxisContainer from "./RightColumn/AxisContainer";
 import OtherAttrContainer from "./RightColumn/OtherAttrContainer";
 
 import { invoke } from "@tauri-apps/api/core";
-import { SongContMetricProgress } from "../../types/tauriEvent";
-import { listen, once } from "@tauri-apps/api/event";
 import DetailedSong from "./LeftColumn/DetailedSong";
+// import RangeSliderChart from "./LeftColumn/RangeSliderChart/RangeSliderChart";
+
+import {
+    ModuleRegistry,
+    AllCommunityModule,
+} from 'ag-grid-community';
+
+ModuleRegistry.registerModules([
+    AllCommunityModule,
+]);
 
 export default function Home() {
     const [activeAudioResource, setActiveAudioResource] = useState<SongCollection>({
@@ -24,67 +34,10 @@ export default function Home() {
         name: "",
         view: "Dashboard"
     });
-
-    const fetchedSongs = useRef<boolean>(false);
-    const [songs, setSongs] = useState<Song[]>(null!); // todo invoke backend to fetch these songs
+    
     const [selectedSong, setSelectedSong] = useState<Song>();
 
     const [cameraState, setCameraState] = useState<StaticCamera>(StaticCamera.NoX);
-
-    useEffect(() => {
-        if (!fetchedSongs.current) {// main func
-            loadSongs().then(songs => {
-                fetchedSongs.current = true;
-                setSongs(songs);
-                setSelectedSong(songs[0]);
-            });
-        };
-
-        return () => {// cleanup function
-            fetchedSongs.current = false;
-        };
-    }, [fetchedSongs])
-
-    async function loadSongs() {
-        const newSongs: Song[] = [];
-
-        const unlisten = await listen<SongContMetricProgress>("song-cont-metric-progress", (e) => {
-            const payload = e.payload;
-            console.log(payload);
-            newSongs.push({
-                type: "Song",
-                name: payload.name,
-                contMetrics: {
-                    duration: payload.duration,
-                    acousticness: payload.acousticness,
-                    danceability: payload.danceability,
-                    energy: payload.energy,
-                    valence: payload.valence,
-                    tempo: payload.tempo,
-                    speechiness: payload.speechiness,
-                    liveness: payload.liveness,
-                    loudness: payload.loudness,
-                    instrumentalness: payload.instrumentalness,
-                    popularity: payload.popularity,
-                    timestamp: new Date(payload.timestamp).getTime()
-                },
-                coords: {
-                    x: 0,
-                    y: 0,
-                    z: 0
-                }
-            });
-        });
-
-        invoke("get_songs_for_static_graph").then(msg => console.log(msg));
-
-        once("song-cont-metric-finished", (_e) => {
-            console.log("Finished fetching songs from backend with continuous metrics");
-            unlisten();
-        });
-
-        return newSongs
-    }
 
     const [attrSelectors, setAttrSelectors] = useState<AttrSelect[]>([
         {
@@ -124,7 +77,7 @@ export default function Home() {
             min: 0, range: { currMin: 0, currMax: 240 }, max: 240, step: 0.1
         },
         {
-            attr: ContinuousMetric.Duration, use: "Unused", active: false,
+            attr: ContinuousMetric.Duration, use: "Unused", values: [],
             min: 0, range: { currMin: 0, currMax: 500000 }, max: 500000, step: 1
         },
         {
@@ -182,11 +135,10 @@ export default function Home() {
         switch (viewType) {
             case "Dashboard": return <Dashboard />
             case "Table": return <Table // todo pull from songs state
-                theadData={["Song"]}
-                tbodyData={[["From the start"]]}
+                // theadData={["Song"]}
+                // tbodyData={[["From the start"]]}
             />
             case "StaticGraph": return <StaticGraph
-                songs={songs}
                 currentAttrs={attrSelectors.filter(attrSelect => attrSelect.use !== "Unused")}
                 selectedSong={selectedSong}
                 setSelectedSong={setSelectedSong}
@@ -198,11 +150,14 @@ export default function Home() {
 
     return(<>
     <div id="upper-main-section" className="flex-row">
-        <div id="leftColumn">
-            <div className="sidebox">
-                <DetailedSong selectedSong={selectedSong}/>
-            </div>
-            <div className="sidebox">Bottom left box</div>
+        <div id="leftColumn" className="sidebox">
+            <DetailedSong selectedSong={selectedSong}/>
+            {/*(activeAudioResource.view === "StaticGraph") && <RangeSliderChart
+                width={150}
+                height={20}
+                data={attrSelectors}
+                selectedSong={selectedSong}
+            />*/}
         </div>
         <div id="centerColumn" className="center">
             <TitleBar activeAudioResource={activeAudioResource} />
@@ -218,7 +173,6 @@ export default function Home() {
             }
         </div>
         <div id="rightColumn">
-            <div className="sidebox">Top right box</div>
             <div className="sidebox center">
                 {
                     (activeAudioResource.view === "StaticGraph") && <>

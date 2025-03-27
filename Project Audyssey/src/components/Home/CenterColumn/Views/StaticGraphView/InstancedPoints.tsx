@@ -111,14 +111,6 @@ export default function InstancedPoints(props: {
         // and set its position to be (screenXPos, screenYPos)
     }
 
-    function rescale(// convert the coordinate's range to currMin..currMax
-        coord: number,
-        attrSel: AttrSelect
-    ): number {
-        const maxSubMin = attrSel.range.currMax - attrSel.range.currMin;
-        return (coord - attrSel.range.currMin)/ maxSubMin
-    }
-
     return(
         <instancedMesh
             ref={meshRef}
@@ -140,3 +132,10 @@ export default function InstancedPoints(props: {
     )
 }
 
+export function rescale(// convert the coordinate's range to currMin..currMax
+    coord: number,
+    attrSel: AttrSelect
+): number {
+    const maxSubMin = attrSel.range.currMax - attrSel.range.currMin;
+    return (coord - attrSel.range.currMin)/ maxSubMin
+}

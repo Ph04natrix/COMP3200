@@ -1,6 +1,6 @@
 import "../StaticGraphView/StaticGraph.css";
 
-import { Dispatch, SetStateAction, useMemo } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, extend } from "@react-three/fiber";
 import * as THREE from "three";
 import * as drei from "@react-three/drei";
@@ -8,17 +8,36 @@ import * as drei from "@react-three/drei";
 import Controls from "./Controls";
 import InstancedPoints from "./InstancedPoints";
 import { AttrSelect, ContinuousMetric, LowercaseAttr, Song, SpatialDimension, StaticCamera, StaticLayers } from "../../../../../types/audioResources";
+import { listen, once } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
+import { SongContMetricProgress } from "../../../../../types/tauriEvent";
 
 extend(THREE as any)
 
+const gridWidth = 100;
+
 export default function StaticGraph(props: {
-    songs: Song[],
     currentAttrs: AttrSelect[],
     selectedSong: Song | undefined,
     setSelectedSong: Dispatch<SetStateAction<Song | undefined>>,
     cameraState: StaticCamera
 }) {
-    const gridWidth = 100;
+    const fetchedSongs = useRef<boolean>(false);
+    const [songs, setSongs] = useState<Song[]>(null!);
+
+    useEffect(() => {
+        if (!fetchedSongs.current) {// main func
+            loadSongs().then(songs => {
+                fetchedSongs.current = true;
+                setSongs(songs);
+                props.setSelectedSong(songs[0]);
+            });
+        };
+
+        return () => {// cleanup function
+            fetchedSongs.current = false;
+        };
+    }, [fetchedSongs])
 
     const cachedAxisMetrics: {
         x: AttrSelect,
@@ -61,7 +80,7 @@ export default function StaticGraph(props: {
             // cursed method of getting the right attribute property value on song by converting
             // from ContinuousMetric to a string which is then used to index on Song
 
-            return props.songs.map((song) => {
+            return songs.map((song) => {
                 //console.log("[Co-ords] x: ", song[xAttr],", y: ", song[yAttr],", z: ", song[zAttr]);
                 return { coords: {
                     x: song.contMetrics[xAttr],
@@ -69,7 +88,7 @@ export default function StaticGraph(props: {
                     z: song.contMetrics[zAttr]
                 } }
             })
-        }, [props.songs, cachedAxisMetrics]
+        }, [songs, cachedAxisMetrics]
     );
 
     const orthoCameraEndVector: [number, number, number] = useMemo(()=>{
@@ -118,7 +137,7 @@ export default function StaticGraph(props: {
             <hemisphereLight color="#ffffff" groundColor={0x080820} intensity={1.0} args={[0xffffbb]}/>
             <InstancedPoints
                 data={songCoords}
-                songs={props.songs}
+                songs={songs}
                 gridWidth={gridWidth}
                 selectedSong={props.selectedSong}
                 setSelectedSong={props.setSelectedSong}
@@ -236,4 +255,45 @@ export default function StaticGraph(props: {
         </Canvas>
     </div>
     </>)
+}
+
+async function loadSongs() {
+    const newSongs: Song[] = [];
+
+    const unlisten = await listen<SongContMetricProgress>("song-cont-metric-progress", (e) => {
+        const payload = e.payload;
+        console.log(payload);
+        newSongs.push({
+            type: "Song",
+            name: payload.name,
+            contMetrics: {
+                duration: payload.duration,
+                acousticness: payload.acousticness,
+                danceability: payload.danceability,
+                energy: payload.energy,
+                valence: payload.valence,
+                tempo: payload.tempo,
+                speechiness: payload.speechiness,
+                liveness: payload.liveness,
+                loudness: payload.loudness,
+                instrumentalness: payload.instrumentalness,
+                popularity: payload.popularity,
+                timestamp: new Date(payload.timestamp).getTime()
+            },
+            coords: {
+                x: 0,
+                y: 0,
+                z: 0
+            }
+        });
+    });
+
+    invoke("get_songs_for_static_graph").then(msg => console.log(msg));
+
+    once("song-cont-metric-finished", (_e) => {
+        console.log("Finished fetching songs from backend with continuous metrics");
+        unlisten();
+    });
+
+    return newSongs
 }

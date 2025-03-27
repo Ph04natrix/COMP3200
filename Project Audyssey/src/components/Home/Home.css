@@ -30,20 +30,19 @@ div.flex-row {
 }
 
 #leftColumn {
-    flex-basis: 30%;
+    flex-basis: 25%;
     flex-grow: 0;
     display: flex;
     flex-flow: column nowrap;
-}
 
-#leftColumn > .sidebox {
-    border-top-right-radius: 24px;
+    width: 25%;
+
     border-right: 2px solid var(--outline-col);
-    flex-grow: 1;
+    border-top-right-radius: 24px;
 }
 
 #rightColumn {
-    flex-basis: 30%;
+    flex-basis: 25%;
     flex-grow: 0;
     display: flex;
     flex-flow: column nowrap;
@@ -55,12 +54,8 @@ div.flex-row {
     flex-grow: 1;
 }
 
-.sidebox:nth-child(1) {
-    margin-bottom: var(--overlap-dist);
-}
-
 .unused-attr-container {
-    width: 80%;
+    width: 85%;
     padding: 10px;
 
     display: flex;
