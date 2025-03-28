@@ -91,7 +91,11 @@ export default function RangeInstPoints(props: {
                 scaledMax - scaledMin,
                 props.height*0.5
             ]}/>
-            <meshBasicMaterial color={SELECTOR_BACKGROUND_COLOR} opacity={0.10}/>
+            <meshBasicMaterial
+                color={SELECTOR_BACKGROUND_COLOR}
+                transparent
+                opacity={0.10} // * only works if transparent is set to true
+            />
         </mesh>
         <drei.Line name="max-selector"
             points={[
