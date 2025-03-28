@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useRef } from "react"
+import { Dispatch, SetStateAction, useEffect, useMemo, useRef } from "react"
 import { Color, InstancedBufferAttribute, InstancedMesh, Object3D } from "three";
 import { AttrSelect, LowercaseAttr, Song } from "../../../../../types/audioResources";
 import { ThreeEvent } from "@react-three/fiber";
@@ -6,11 +6,12 @@ import { SELECTED_COLOR, DEFAULT_SONG_COLOR, GREYED_COLOR } from "../../../../..
 
 // re-use for instance copmutations
 const scratchObject3D = new Object3D();
-
 const scratchColor = new Color();
 
+const songSphereRadius = 2;
+const song_sphere_opacity = 0.5;
+
 export default function InstancedPoints(props: {
-    data: Pick<Song, "coords">[],
     songs: Song[],
     gridWidth: number,
     selectedSong: Song | undefined,
@@ -18,7 +19,27 @@ export default function InstancedPoints(props: {
     axisMetrics: {x: AttrSelect, y: AttrSelect, z: AttrSelect}
 }) {
     const meshRef = useRef<InstancedMesh>(null!);
-    const numPoints = props.data.length;
+    
+    const songCoords: Pick<Song, "coords">[] = useMemo(
+            () => {
+                const xAttr = (props.axisMetrics.x.attr as string).toLowerCase() as LowercaseAttr;
+                const yAttr = (props.axisMetrics.y.attr as string).toLowerCase() as LowercaseAttr;
+                const zAttr = (props.axisMetrics.z.attr as string).toLowerCase() as LowercaseAttr;
+                // cursed method of getting the right attribute property value on song by converting
+                // from ContinuousMetric to a string which is then used to index on Song
+    
+                return props.songs.map((song) => {
+                    //console.log("[Co-ords] x: ", song[xAttr],", y: ", song[yAttr],", z: ", song[zAttr]);
+                    return { coords: {
+                        x: song.contMetrics[xAttr],
+                        y: song.contMetrics[yAttr],
+                        z: song.contMetrics[zAttr]
+                    } }
+                })
+            }, [props.songs, props.axisMetrics]
+        );
+    
+    const numPoints = songCoords.length;
 
     const colorAttrib = useRef<InstancedBufferAttribute>(null!);
     const colorArray = new Float32Array(numPoints * 3);
@@ -59,7 +80,7 @@ export default function InstancedPoints(props: {
         const mesh = meshRef.current;
 
         for (let i = 0; i < numPoints; ++i) {// set the transform matrix for each instance
-            let {x, y, z} = props.data[i].coords;
+            let {x, y, z} = songCoords[i].coords;
 
             x = rescale(x, props.axisMetrics.x) * props.gridWidth;
             y = rescale(y, props.axisMetrics.y) * props.gridWidth;
@@ -72,7 +93,7 @@ export default function InstancedPoints(props: {
 
         mesh.instanceMatrix.needsUpdate = true;
         mesh.computeBoundingSphere();
-    }, [numPoints, props.data]);
+    }, [numPoints, songCoords]);
 
     const mouseDownRef = useRef([0, 0])
     const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
@@ -120,14 +141,18 @@ export default function InstancedPoints(props: {
             onPointerDown={handlePointerDown}
             onContextMenu={handleSongContextMenu}
         >
-            <sphereGeometry attach="geometry" args={[1]}>
+            <sphereGeometry attach="geometry" args={[songSphereRadius]}>
                 <instancedBufferAttribute
                     ref={colorAttrib}
                     args={[colorArray, 3]}
                     attach={"attributes-color"}
                 />
             </sphereGeometry>
-            <meshStandardMaterial vertexColors/>
+            <meshStandardMaterial
+                vertexColors
+                transparent
+                opacity={song_sphere_opacity}
+            />
         </instancedMesh>
     )
 }

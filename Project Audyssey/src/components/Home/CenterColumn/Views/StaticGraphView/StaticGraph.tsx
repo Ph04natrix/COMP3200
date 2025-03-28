@@ -7,14 +7,14 @@ import * as drei from "@react-three/drei";
 
 import Controls from "./Controls";
 import InstancedPoints from "./InstancedPoints";
-import { AttrSelect, ContinuousMetric, LowercaseAttr, Song, SpatialDimension, StaticCamera, StaticLayers } from "../../../../../types/audioResources";
+import { AttrSelect, ContinuousMetric, Song, SpatialDimension, StaticCamera, StaticLayers } from "../../../../../types/audioResources";
 import { listen, once } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { SongContMetricProgress } from "../../../../../types/tauriEvent";
 
 extend(THREE as any)
 
-const gridWidth = 100;
+const gridWidth = 200;
 
 export default function StaticGraph(props: {
     currentAttrs: AttrSelect[],
@@ -72,25 +72,6 @@ export default function StaticGraph(props: {
         return { x: x, y: y, z: z }
     }, [props.currentAttrs]);
 
-    const songCoords: Pick<Song, "coords">[] = useMemo(
-        () => {
-            const xAttr = (cachedAxisMetrics.x.attr as string).toLowerCase() as LowercaseAttr;
-            const yAttr = (cachedAxisMetrics.y.attr as string).toLowerCase() as LowercaseAttr;
-            const zAttr = (cachedAxisMetrics.z.attr as string).toLowerCase() as LowercaseAttr;
-            // cursed method of getting the right attribute property value on song by converting
-            // from ContinuousMetric to a string which is then used to index on Song
-
-            return songs.map((song) => {
-                //console.log("[Co-ords] x: ", song[xAttr],", y: ", song[yAttr],", z: ", song[zAttr]);
-                return { coords: {
-                    x: song.contMetrics[xAttr],
-                    y: song.contMetrics[yAttr],
-                    z: song.contMetrics[zAttr]
-                } }
-            })
-        }, [songs, cachedAxisMetrics]
-    );
-
     const orthoCameraEndVector: [number, number, number] = useMemo(()=>{
         switch (props.cameraState) {
             case StaticCamera.All: return [gridWidth, gridWidth, gridWidth]
@@ -136,7 +117,6 @@ export default function StaticGraph(props: {
             <ambientLight color="#ffffff" intensity={0.1} />
             <hemisphereLight color="#ffffff" groundColor={0x080820} intensity={1.0} args={[0xffffbb]}/>
             <InstancedPoints
-                data={songCoords}
                 songs={songs}
                 gridWidth={gridWidth}
                 selectedSong={props.selectedSong}
