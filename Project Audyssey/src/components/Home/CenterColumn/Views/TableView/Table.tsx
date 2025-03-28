@@ -1,20 +1,17 @@
 import "./Table.css";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 // import TableHeadItem from "./TableHeadItem";
 // import TableRow from "./TableRow";
 
 import { AgGridReact } from "ag-grid-react";
-import { colorSchemeDarkWarm, themeQuartz, type ColDef } from "ag-grid-community";
-import { Album, Key, Mode } from "../../../../../types/audioResources";
-import { listen, once } from "@tauri-apps/api/event";
-import { invoke } from "@tauri-apps/api/core";
-import { IRowProgress } from "../../../../../types/tauriEvent";
+import { colorSchemeDarkWarm, GetRowIdParams, SizeColumnsToContentStrategy, SizeColumnsToFitGridStrategy, themeQuartz, type ColDef } from "ag-grid-community";
+import { Key, Mode } from "../../../../../types/audioResources";
 
-interface IRow {
+export interface IRow {
     name: string;
-    artists: string[];
-    album: Album;
+    artists: string;
+    album: string //Album;
     // metrics
     acousticness: number;
     danceability: number;
@@ -35,49 +32,13 @@ interface IRow {
     timestamp: Date;
 }
 
-export default function Table(
-    // {_theadData, _tbodyData}: {theadData: [string], tbodyData: [[string]]}
-) {
-    const fetchedSongs = useRef<boolean>(false);
-    const [rowData, setRowData] = useState<IRow[]>();
-    
-    useEffect(() => {
-        if (!fetchedSongs.current) {// main func
-            loadRows().then(songs => {
-                fetchedSongs.current = true;
-                setRowData(songs);
-            });
-        };
-    
-        return () => {// cleanup function
-            fetchedSongs.current = false;
-        };
-    }, [fetchedSongs]);
+export default function Table(props: {
+    rowData: IRow[]
+}) {
+    // row data exists but table won't show it, could be fixed by moving the row data above into home.tsx
 
-    async function loadRows() {
-        const newSongs: IRow[] = [];
-
-        const unlisten = await listen<IRowProgress>("table-row-progress", (e) => {
-            const payload = e.payload;    
-
-            console.log(payload);
-            newSongs.push({
-                ...payload,
-                artists: payload.artists.map(art => art.name),
-                album: payload.album,
-                timestamp: new Date(payload.timestamp),
-            });
-        });
-
-        invoke("get_songs_for_table").then(msg => console.log(msg));
-
-        once("table-row-finished", (_e) => {
-            console.log("Finished fetching songs from backend for table");
-            unlisten();
-        });
-
-        return newSongs
-    }
+    const artistsHide = false;
+    const albumHide = false;
 
     const acousticHide = false;
     const danceabilityHide = false;
@@ -91,6 +52,7 @@ export default function Table(
     const tempoHide = false;
     const time_signatureHide = false;
     const valenceHide = false;
+
     const popularityHide = false;
     const explicitHide = false;
     const durationHide = false;
@@ -99,39 +61,58 @@ export default function Table(
     const [colDefs, setColDefs] = useState<ColDef<IRow>[]>([
         {
             field: "name",
-            lockPosition: "left"
+            lockPosition: "left",
+            //pinned: "left",
+            minWidth: 100
+        }, {
+            field: "artists",
+            hide: artistsHide,
+            minWidth: 100
+        }, {
+            field: "album",
+            hide: albumHide,
+            minWidth: 100
         }, {
             field: "acousticness",
             headerTooltip: "A confidence measure from 0.0 to 1.0 of whether a track is acoustic",
-            hide: acousticHide
+            hide: acousticHide,
+            minWidth: 100
         }, {
             field: "danceability",
             headerTooltip: "A value from 0.0 to 1.0 of the danceability of the track",
-            hide: danceabilityHide
+            hide: danceabilityHide,
+            minWidth: 100
         }, {
             field: "energy",
             headerTooltip: "A perceptual measure from 0.0 to 1.0 representing the intesity and activity of a track",
-            hide: energyHide
+            hide: energyHide,
+            minWidth: 100
         }, {
             field: "instrumentalness",
             headerTooltip: "Probability a track has no vocals",
-            hide: instrumentalnessHide
+            hide: instrumentalnessHide,
+            minWidth: 100
         }, {
             field: "key",
             headerTooltip: "The estimated key of the track",
-            hide: keyHide
+            hide: keyHide,
+            minWidth: 100
         }, {
             field: "liveness",
             headerTooltip: "Probability of a track being performed live (with an audience)",
-            hide: livenessHide
+            hide: livenessHide,
+            minWidth: 100
         }, {
             field: "loudness",
             headerTooltip: "The overall loudness of a track in decibels (dB), between -60 and 0",
-            hide: loudnessHide
+            hide: loudnessHide,
+            minWidth: 100
         }, {
             field: "mode",
             headerTooltip: "The modality of a track, either Major or Minor",
-            hide: modeHide
+            hide: modeHide,
+            minWidth: 100,
+            valueFormatter: p => p.value === Mode.Major ? "Major" : "Minor"
         }, {
             field: "speechiness",
             headerTooltip: "Probability of the presence of spoken words in a track",
@@ -144,7 +125,7 @@ export default function Table(
             field: "time_signature",
             headerTooltip: "The estimated time signature of the track",
             headerName: "Time Signature",
-            // render as time_sig / 4,
+            valueFormatter: p => p.value + "/4",
             hide: time_signatureHide
         }, {
             field: "valence",
@@ -168,20 +149,48 @@ export default function Table(
     ]);
 
     const defaultColDef = useMemo(() => ({
-        flex: 1,
+        // flex: 1,
         filter: true
     }), []);
 
-    return(<div className="table-view">
+    const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
+
+    return(<div className="table-view" style={gridStyle}>
         <AgGridReact
             theme={themeQuartz.withPart(colorSchemeDarkWarm)}
-            rowData={rowData}
+            rowData={props.rowData}
             columnDefs={colDefs}
             defaultColDef={defaultColDef}
-            allowDragFromColumnsToolPanel
+            autoSizeStrategy={{
+                type: "fitCellContents",
+                colIds: [
+                    "name",
+                    "acousticness",
+                    "danceability",
+                    "energy",
+                    "instrumentalness",
+                    "key",
+                    "liveness",
+                    "loudness",
+                    "mode",
+                    "speechiness",
+                    "tempo",
+                    "time_signature",
+                    "valence",
+                    "popularity",
+                    "explicit",
+                    "duration",
+                    "timestamp"
+                ]
+            } as SizeColumnsToContentStrategy}
+            //getRowId={getRowId}
             // * Pagination
             pagination
 
+            alwaysShowHorizontalScroll
+            debug
+            scrollbarWidth={8}
+            domLayout="normal"
         />
     </div>)
 }

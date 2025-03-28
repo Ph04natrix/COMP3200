@@ -2,3 +2,16 @@
     width: 100%;
     height: 100%;
 }
+
+.ag-body-viewport-wrapper.ag-layout-normal {
+    overflow-x: scroll;
+    overflow-y: scroll;
+  }
+  ::-webkit-scrollbar {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0,0,0,.5);
+    box-shadow: 0 0 1px rgba(255,255,255,.5);
+  }
