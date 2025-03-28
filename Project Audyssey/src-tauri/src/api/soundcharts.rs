@@ -2,7 +2,13 @@ use flecs_ecs::prelude::{Builder, QueryAPI, QueryBuilderImpl};
 use serde::{Serialize, Deserialize};
 use tauri::{http::StatusCode, Emitter};
 
-use crate::{ecs::types::{Acousticness, Danceability, Energy, Genres, Instrumentalness, Key, Liveness, Loudness, MissingAttributes, Mode, Name, Song, Speechiness, SpotifyID, Tempo, TimeSignature, Valence}, error::MyResult, AppState};
+use crate::{
+    ecs::types::{
+        Acousticness, Danceability, Energy, Genres, Instrumentalness, Key, Liveness, Loudness, MissingAttributes, Mode, Name, Song, Speechiness, SpotifyID, Tempo, TimeSignature, Valence
+    },
+    error::MyResult,
+    AppState
+};
 
 use super::conversion::Attributes;
 
@@ -85,7 +91,7 @@ pub async fn fill_song_attributes(
                                         .set(Mode::try_from(attrs.mode).expect("Mode is not 0 or 1"))
                                         .set(TimeSignature(attrs.time_signature))
                                         .set(Key::try_from(attrs.key).expect("Key is not in range 3..7"))
-                                        .set(Genres(attrs.genres))
+                                        .set(Genres(vec![]/*attrs.genres*/))
                                         .remove::<MissingAttributes>()
                                     ;
                                     // dbg!(song_ent.has::<MissingAttributes>());

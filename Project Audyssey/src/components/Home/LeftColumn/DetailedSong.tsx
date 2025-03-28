@@ -74,8 +74,13 @@ export default function DetailedSong(props: {
     <div id="song-img-container">
         <img
             id="album-image"
-            src={detailedSong.album.images[0].url}
-            alt={detailedSong.album.name}
+            src={
+                undefined
+                // detailedSong.album.images[0].url
+            }
+            alt={
+                detailedSong.album
+            }
         />
         <div id="name-artist-container">
             <div id="name-container" className="x-scroll-container">
@@ -86,7 +91,7 @@ export default function DetailedSong(props: {
                 }</p>
             </div>
             <div id="artist-container" className="x-scroll-container">
-                <p id="song-artist">{detailedSong.artists.map(art => art.name).join(", ")}</p>
+                <p id="song-artist">{detailedSong.artists.map(art => art).join(", ")}</p>
             </div>
             <div id="key-mode-container"><code className="song-key" style={{
                 backgroundColor: keyToBgColor(detailedSong.discrete_metrics.key)

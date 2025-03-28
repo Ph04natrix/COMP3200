@@ -1,6 +1,6 @@
 import "./Home.css";
 import "./RightColumn/AxisContainer.css";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     AttrSelect, ContinuousMetric, Song, SongCollection, SongColType, SongColView, SpatialDimension, StaticCamera
 } from "../../types/audioResources";
@@ -11,7 +11,7 @@ import ViewSelector from "./CenterColumn/ViewSelector";
 import Dashboard from "./CenterColumn/Views/Dashboard";
 import StaticGraph from "./CenterColumn/Views/StaticGraphView/StaticGraph";
 import DynamicGraph from "./CenterColumn/Views/DynamicGraph";
-import Table from "./CenterColumn/Views/TableView/Table";
+import Table, { IRow } from "./CenterColumn/Views/TableView/Table";
 import AxisContainer from "./RightColumn/AxisContainer";
 import OtherAttrContainer from "./RightColumn/OtherAttrContainer";
 
@@ -23,6 +23,8 @@ import {
     ModuleRegistry,
     AllCommunityModule,
 } from 'ag-grid-community';
+import { listen, once } from "@tauri-apps/api/event";
+import { IRowProgress } from "../../types/tauriEvent";
 
 ModuleRegistry.registerModules([
     AllCommunityModule,
@@ -37,7 +39,7 @@ export default function Home() {
     
     const [selectedSong, setSelectedSong] = useState<Song>();
 
-    const [cameraState, setCameraState] = useState<StaticCamera>(StaticCamera.NoX);
+    const [cameraState, setCameraState] = useState<StaticCamera>(StaticCamera.All);
 
     const [attrSelectors, setAttrSelectors] = useState<AttrSelect[]>([
         {
@@ -90,6 +92,26 @@ export default function Home() {
         } // todo set these to be the earliest and latest times of the library, to the nearest something
     ]);
 
+    const fetchedRows = useRef<boolean>(false);
+    const [rowData, setRowData] = useState<IRow[]>(null!);
+    useEffect(() => {
+        if (!fetchedRows.current) {// main func
+            loadRows().then(songs => {
+                fetchedRows.current = true;
+                //gridApi!.applyTransaction({
+                    //add: songs
+                //});
+                setRowData(songs);
+                
+            });
+        };
+    
+        return () => {// cleanup function
+            fetchedRows.current = false;
+        };
+    }, [fetchedRows]);
+
+    // todo figure out why this returned nothing
     const fillAttrValues = async () => {
         let attrSels: ContinuousMetric[] = attrSelectors.map(attrSel => attrSel.attr)
 
@@ -137,6 +159,7 @@ export default function Home() {
             case "Table": return <Table // todo pull from songs state
                 // theadData={["Song"]}
                 // tbodyData={[["From the start"]]}
+                rowData={rowData}
             />
             case "StaticGraph": return <StaticGraph
                 currentAttrs={attrSelectors.filter(attrSelect => attrSelect.use !== "Unused")}
@@ -150,15 +173,16 @@ export default function Home() {
 
     return(<>
     <div id="upper-main-section" className="flex-row">
+        {(activeAudioResource.view === "StaticGraph") &&
         <div id="leftColumn" className="sidebox">
             <DetailedSong selectedSong={selectedSong}/>
-            {/*(activeAudioResource.view === "StaticGraph") && <RangeSliderChart
+            {/*<RangeSliderChart
                 width={150}
                 height={20}
                 data={attrSelectors}
                 selectedSong={selectedSong}
             />*/}
-        </div>
+        </div>}
         <div id="centerColumn" className="center">
             <TitleBar activeAudioResource={activeAudioResource} />
             <div className="view-container">
@@ -172,10 +196,10 @@ export default function Home() {
                 />
             }
         </div>
-        <div id="rightColumn">
-            <div className="sidebox center">
-                {
-                    (activeAudioResource.view === "StaticGraph") && <>
+        {
+            (activeAudioResource.view === "StaticGraph") &&
+                <div id="rightColumn">
+                    <div className="sidebox center">
                         <div className="main-axis-container">
                             <AxisContainer
                                 thisAttr={attrSelectors.filter(({ use }) => { return use === SpatialDimension.X })[0]}
@@ -203,11 +227,35 @@ export default function Home() {
                             />
                         </div>
                         <OtherAttrContainer attrSelectors={attrSelectors} updateRange={updateRange} />
-                    </>
-                }
-            </div>
-        </div>
+                    </div>
+                </div>
+            }
     </div>
     <BottomBar />
     </>);
+}
+
+async function loadRows() {
+    const newSongs: IRow[] = [];
+
+    const unlisten = await listen<IRowProgress>("table-row-progress", (e) => {
+        const payload = e.payload;    
+
+        console.log(payload);
+        newSongs.push({
+            ...payload,
+            artists: payload.artists.join(", "),
+            album: payload.album,
+            timestamp: new Date(payload.timestamp),
+        });
+    });
+
+    invoke("get_songs_for_table").then(msg => console.log(msg));
+
+    once("table-row-finished", (_e) => {
+        console.log("Finished fetching songs from backend for table");
+        unlisten();
+    });
+
+    return newSongs
 }

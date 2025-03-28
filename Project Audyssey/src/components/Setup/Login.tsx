@@ -16,6 +16,7 @@ export default function Login({
 }) {
     const [currLibraryCount, setCurrLibraryCount] = useState<number>(0);
     const [attrSongCount, setAttrSongCount] = useState<number>(0);
+    const [csvToEcsCount, setCsvToEcsCount] = useState<number>(0);
 
     if (!setupDone) {
         switch (setupState.status) {
@@ -45,7 +46,8 @@ export default function Login({
                         requestLibraryCount();
                         break;
                     case "count_known":
-                        loadUsersSavedTracks(setupState.libState.total);
+                        loadECSfromCSV(setupState.libState.total);
+                        // loadUsersSavedTracks(setupState.libState.total);
                         break;
                     case "fetched_spotify":
                         getNoAttributeCount(setupState.libState.total);
@@ -53,8 +55,7 @@ export default function Login({
                     case "sc_count_known":
                         fillSongAttributes();
                         break;
-                    case "fetched_attributes":
-                        break;
+                    case "fetched_attributes": break;
                     }
                 }
                 break;
@@ -95,8 +96,42 @@ export default function Login({
     }
 
     // Kicks off the process to start requesting spotify API to get all the saved tracks
+    async function loadECSfromCSV(total: number) {
+        setSetupState({
+            ...setupState,
+            libState: {
+                status: "known",
+                total: total,
+                no_attributes: 0,
+                waiting: true
+            }
+        });
+
+        invoke<string>("load_ecs_from_csv").then(msg => console.log(msg));
+
+        const unlisten = await listen('csv-to-ecs-progress', (_e) => {
+            console.log("Loaded song from csv file as entity");
+            setCsvToEcsCount(n => n + 1);
+        });
+
+        once("csv-to-ecs-finished", (_event) => {
+            console.log("Finished converting CSV to ECS");
+            unlisten();
+            setSetupState({
+                ...setupState,
+                libState: {
+                    status: "fetched_attributes",
+                    total: total,
+                    no_attributes: 0,
+                    waiting: false
+                }
+            });
+        });
+    }
+
+    // Kicks off the process to start requesting spotify API to get all the saved tracks
     async function loadUsersSavedTracks(total: number) {
-        invoke<string>("file_to_ecs_cmd").then(msg => {// stored songs are ecs-ed
+        invoke<string>("").then(msg => {// stored songs are ecs-ed
             console.log(msg);
 
             setSetupState({
@@ -222,15 +257,19 @@ export default function Login({
                     {(
                         setupState.status === "authorised" && setupState.libState.status !== "unknown"
                     ) && <ProgressBar
-                        curr={currLibraryCount}
-                        max={setupState.libState.total}
+                        curr={
+                            csvToEcsCount
+                        }
+                        max={
+                            setupState.libState.total
+                        }
                         description="songs fetched from Spotify Library"
                     />}
                 </div>
                 <hr />
                 <div>
                     <h3>4. Updating the Audyssey </h3>
-                    <p>For each song fetched from your library, attributes will be fetched from SoundCharts.</p>
+                    <p>For each song fetched from your library, attributes will be fetched from SoundCharts. (now deprecated)</p>
                     {(
                         setupState.status === "authorised" && (
                             setupState.libState.status === "sc_count_known" || setupState.libState.no_attributes > 0

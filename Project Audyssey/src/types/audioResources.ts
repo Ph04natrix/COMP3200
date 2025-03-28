@@ -34,14 +34,14 @@ export type SongContMetric = {
 export type LowercaseAttr = keyof SongContMetric;
 
 export type SongExtras = {
-    album: Album,
-    artists: Artist[],
+    album: string,
+    artists: string[],
     discrete_metrics: {
         explicit: boolean,
         mode: Mode,
         time_signature: 3 | 4 | 5 | 6 | 7,
         key: Key,
-        genres: Genre[]
+        genres: string[]
     }
 }
 

@@ -6,7 +6,12 @@ use serde::Deserialize;
 use tauri::{Builder, Manager};
 
 mod api;
-use api::{authorization, conversion, soundcharts, spotify};
+use api::{
+    authorization,
+    conversion,
+    // soundcharts,
+    spotify
+};
 
 mod ecs;
 use ecs::types::{self, AudysseyModule};
@@ -21,7 +26,8 @@ pub struct AppStateInner {
   AccessToken: AccessToken,
   code_verifier: String,
   ecs_world: World,
-  main_directory: PathBuf
+  main_directory: PathBuf,
+  csv_path: PathBuf
 }
 
 pub type AppState = Mutex<AppStateInner>;
@@ -45,6 +51,9 @@ pub fn run() {
             let mut app_dir = app.path().data_dir().expect("Couldn't find app data directory");
             app_dir.push("Project Audyssey\\audyssey_deep_storage.json");
 
+            let mut csv_path = app.path().download_dir().expect("Couldn't find downloads directory");
+            csv_path.push("liked_songs.csv");
+
             if let Err(_) = File::create_new(&app_dir) {
                 println!("Did not create audyssey_deep_storage.json as it already exists.")
             };
@@ -56,7 +65,8 @@ pub fn run() {
                 AccessToken: AccessToken::default(),
                 code_verifier: "".to_string(),
                 ecs_world: World::new(),
-                main_directory: app_dir
+                main_directory: app_dir,
+                csv_path: csv_path
             };
             state.ecs_world.import::<AudysseyModule>();
 
@@ -70,9 +80,10 @@ pub fn run() {
             exit_app,
             authorization::request_auth_code, authorization::request_access_token, authorization::refresh_access_token,
             spotify::get_user_library_count, spotify::get_user_full_library, spotify::compare_library_with_ecs,
-            conversion::file_to_ecs_cmd, conversion::serialize_ecs_to_file,
-            soundcharts::song_without_attributes_count, soundcharts::fill_song_attributes,
-            types::get_songs_for_static_graph, types::get_song_extras, types::get_cont_metric_values
+            /*conversion::file_to_ecs_cmd, conversion::serialize_ecs_to_file, */conversion::load_ecs_from_csv,
+            // soundcharts::song_without_attributes_count, soundcharts::fill_song_attributes,
+            types::get_songs_for_static_graph, types::get_songs_for_table,
+            types::get_song_extras, types::get_cont_metric_values
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

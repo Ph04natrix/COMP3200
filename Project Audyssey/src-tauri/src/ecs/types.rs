@@ -25,10 +25,10 @@ pub struct User;
 pub struct Song;
 
 #[derive(Debug, Component)]
-pub struct Artist(pub Vec<MinimalArtistObject>);
+pub struct Artist(pub Vec<String>);
 
 #[derive(Debug, Component)]
-pub struct Album(pub MinimalAlbumObject);
+pub struct Album(pub String);
 
 #[derive(Debug, Component)]
 pub struct SpotifyID(pub String);
@@ -211,7 +211,7 @@ pub struct Duration(pub u32);
 pub struct Popularity(pub u16);
 
 #[derive(Debug, Component)]
-pub struct Genres(pub Vec<SCGenreObject>);
+pub struct Genres(pub Vec<String>);
 
 //*------- End of Component Definitions -------*/
 
@@ -330,16 +330,16 @@ pub async fn get_song_extras(
 
     let song_ent = find_song.find(|ent_name| ent_name.0 == name).expect("Couldn't find song.");
     song_ent.get::<(
-        &Album, &Artist, &Explicit, &Mode,
+        &Album, &Artist, /*&Explicit,*/ &Mode,
         &TimeSignature, &Key, &Genres
     )>(|(
-        alb, art, expl, mode,
+        alb, art, /*expl,*/ mode,
         time_sig, key, genres
     )| {
-        res.album = AlbumPayload::from(alb.0.clone());
+        res.album = /*AlbumPayload::from(*/alb.0.clone()/*)*/;
         res.artists = art.0.clone();
         res.discrete_metrics = DiscreteMetrics {
-            explicit: expl.0,
+            explicit: false, //expl.0,
             mode: u32::from(*mode),
             time_signature: time_sig.0,
             key: String::from(*key),
@@ -352,8 +352,8 @@ pub async fn get_song_extras(
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct SongExtras {
-    album: AlbumPayload,
-    artists: Vec<MinimalArtistObject>,
+    album: String, //AlbumPayload,
+    artists: Vec<String>, //Vec<MinimalArtistObject>,
     discrete_metrics: DiscreteMetrics
 }
 
@@ -387,7 +387,7 @@ pub struct DiscreteMetrics {
     mode: u32, // either 0 or 1
     time_signature: u32,
     key: String,
-    genres: Vec<SCGenreObject>
+    genres: Vec<String>
 }
 
 #[tauri::command]
@@ -457,42 +457,64 @@ pub async fn get_songs_for_table(
     let cont_metric_query = world.query::<(
         &Name, &Acousticness, &Danceability, &Energy, &Valence,
         &Tempo, &Speechiness, &Liveness, &Loudness, &Instrumentalness,
-        &Duration, &Popularity, &AddedAt
+        &Duration, &Popularity, &AddedAt, &Artist, &Album, // &Explicit
     )>().with::<&Song>()
         .with::<&Current>()
         .build()
     ;
 
-    cont_metric_query.each(|(
+    cont_metric_query.each_entity(|ent, (
         name, acc, dance, energy, val,
         tempo, speech, live, loud, instr,
-        dur, pop, time
+        dur, pop, time, art, alb, // exp
     )| {
-        app.emit("song-cont-metric-progress", SongContMetricPayload {
-            name: name.0.clone(),
-            acousticness: acc.0,
-            danceability: dance.0,
-            energy: energy.0,
-            valence: val.0,
-            tempo: tempo.0,
-            speechiness: speech.0,
-            liveness: live.0,
-            loudness: loud.0,
-            instrumentalness: instr.0,
-            duration: dur.0,
-            popularity: pop.0,
-            timestamp: time.0.clone()
-        }).expect("Failed to emit event: song-cont-metric-progress");
+        let mut key = 0;
+        let mut mode = 0;
+        let mut time_sig = 3;
+        ent.get::<(
+            &Key, &Mode, &TimeSignature
+        )>(|(
+            k, m, t_s
+        )| {
+            key = i32::from(*k);
+            mode = u32::from(*m);
+            time_sig = t_s.0;
+        });
+
+        app.emit("table-row-progress", SongRowPayload {
+            name:name.0.clone(),
+            acousticness:acc.0,
+            danceability:dance.0,
+            energy:energy.0,
+            valence:val.0,
+            tempo:tempo.0,
+            speechiness:speech.0,
+            liveness:live.0,
+            loudness:loud.0,
+            instrumentalness:instr.0,
+            duration:dur.0,
+            popularity:pop.0,
+            timestamp:time.0.clone(),
+            artists: art.0.clone(),
+            album: /*AlbumPayload::from(*/alb.0.clone(),//),
+            explicit: false, //exp.0,
+            key: key,
+            mode: mode,
+            time_signature: time_sig
+        }).expect("Failed to emit event: table-row-progress");
     });
 
-    app.emit("song-cont-metric-finished", 0).expect("Failed to emit event: song-cont-metric-finished");
+    app.emit("table-row-finished", 0).expect("Failed to emit event: table-row-finished");
 
-    Ok(String::from("Started get_songs_for_static_graph"))
+    Ok(String::from("Started get_songs_for_table"))
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SongContMetricPayload {
+pub struct SongRowPayload {
     name: String,
+    artists: Vec<String>, // Vec<MinimalArtistObject>,
+    album: String, // AlbumPayload,
+    // metrics
     acousticness: f32,
     danceability: f32,
     energy: f32,
@@ -502,7 +524,13 @@ pub struct SongContMetricPayload {
     liveness: f32,
     loudness: f32,
     instrumentalness: f32,
+    //
     duration: u32,
     popularity: u16,
-    timestamp: String
+    explicit: bool,
+    timestamp: String,
+    // metrics
+    key: i32,
+    mode: u32,
+    time_signature: u32
 }

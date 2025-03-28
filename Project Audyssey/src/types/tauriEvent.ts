@@ -27,8 +27,8 @@ export type SongContMetricProgress = {
 }
 
 export type IRowProgress = SongContMetricProgress & {
-    artists: Artist[];
-    album: Album;
+    artists: string[];
+    album: string;
     //
     key: Key,
     mode: Mode,

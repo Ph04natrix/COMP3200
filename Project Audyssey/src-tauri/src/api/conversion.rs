@@ -1,8 +1,8 @@
-use std::{fs::{File, OpenOptions}, io::{BufReader, BufWriter}, path::PathBuf};
+use std::{fs::{File, OpenOptions}, io::{self, BufReader, BufWriter}, path::PathBuf};
 
 use flecs_ecs::{core::World, prelude::{Builder, QueryAPI, QueryBuilderImpl}};
 use serde::{Serialize, Deserialize};
-use tauri::State;
+use tauri::{Emitter, State};
 
 use crate::{
     ecs::types::{
@@ -76,8 +76,8 @@ pub fn minimal_tracks_to_ecs(
             .set(Explicit(song.explicit))
             .set(Popularity(song.popularity))
             // todo .set the playlists the song belongs to
-            .set(Artist(song.artists))
-            .set(Album(song.album))
+            //.set(Artist(song.artists))
+            //.set(Album(song.album))
         ;
         if current { song_ent.add::<Current>(); }
 
@@ -135,7 +135,7 @@ pub fn minimal_tracks_to_ecs(
                 .set(Mode::try_from(attrs.mode).expect("Mode is not 0 or 1"))
                 .set(TimeSignature(attrs.time_signature))
                 .set(Key::try_from(attrs.key).expect("Key is not in range 3..7"))
-                .set(Genres(attrs.genres)) // ? do we need a better data structure for the genres of a song
+                //.set(Genres(attrs.genres))
         };
 
         song_ent.get::<&Name>(|name| println!("Created song entity for song: {}", name.0));
@@ -165,10 +165,10 @@ pub fn ecs_to_minimal_objects(
             spotify_id: s_id.0.clone(),
             popularity: pop.0,
             attributes: None,
-            artists: art.0.clone(),
-            album: alb.0.clone(),
+            artists: vec![], // art.0.clone(),
             disc_number: 0,
             track_number: 0,
+            album: todo!(), //alb.0.clone(),
         };
 
         e.get::<(
@@ -193,7 +193,7 @@ pub fn ecs_to_minimal_objects(
                 mode: u32::from(*mode),
                 time_signature: time_s.0,
                 key: i32::from(*key),
-                genres: g.0.clone(),
+                genres: vec![], // g.0.clone(),
             })
 
         });
@@ -371,4 +371,96 @@ impl From<SimplifiedArtistObject> for MinimalArtistObject {
     fn from(art_obj: SimplifiedArtistObject) -> Self {
         Self { href: art_obj.href, spotify_id: art_obj.id, name: art_obj.name }
     }
+}
+
+#[tauri::command]
+pub async fn load_ecs_from_csv(
+    state: State<'_, AppState>,
+    app: tauri::AppHandle
+) -> MyResult<String> {
+    let state_lock = state.lock().await;
+    let csv_path = &state_lock.csv_path;
+    let world = &state_lock.ecs_world;
+
+    let csv_file = File::open(csv_path).expect("Couldn't open file");
+    let mut rdr = csv::Reader::from_reader(csv_file);
+
+    for result in rdr.deserialize::<CSVTrack>() {
+        match result {
+            Ok(track_csv) => {
+            let genres = track_csv.genres.split(",").map(|str| str.to_string()).collect();
+            let artists = track_csv.artist_names.split(",").map(|str| str.to_string()).collect();
+
+            let _song_ent = world.entity()
+                .add::<Song>()
+                .set(Name(track_csv.track_name))
+                .set(AddedAt(track_csv.added_at))
+                .set(SpotifyID(track_csv.spotify_id))
+                .set(Duration(track_csv.duration_ms))
+                //.set(Explicit(track_csv.explicit)) // !  not in CSV
+                .set(Popularity(track_csv.popularity))
+                // todo .set the playlists the song belongs to
+                .set(Artist(artists))
+                .set(Album(track_csv.album_name))
+
+                // Attributes
+                .set(Acousticness(track_csv.acousticness))
+                .set(Danceability(track_csv.danceability))
+                .set(Energy(track_csv.energy))
+                .set(Valence(track_csv.valence))
+                .set(Tempo(track_csv.tempo))
+                .set(Speechiness(track_csv.speechiness))
+                .set(Liveness(track_csv.liveness))
+                .set(Loudness(track_csv.loudness))
+                .set(Instrumentalness(track_csv.instrumentalness))
+                .set(Mode::try_from(track_csv.mode).expect("Mode is not 0 or 1"))
+                .set(TimeSignature(track_csv.time_signature))
+                .set(Key::try_from(track_csv.key).expect("Key is not in range 3..7"))
+                // attributes finished
+                .set(Genres(genres))
+                .add::<Current>()
+            ;
+
+            app.emit("csv-to-ecs-progress", 0).unwrap();
+            },
+            Err(_) => eprintln!("Couldn't parse csv")
+        };
+    }
+
+    app.emit("csv-to-ecs-finished", 0).unwrap();
+
+    Ok(String::from("ECS loaded from CSV"))
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CSVTrack {
+    #[serde(rename = "Track ID")] spotify_id: String,
+    #[serde(rename = "Track Name")] track_name: String,
+    #[serde(rename = "Album Name")] album_name: String,
+    #[serde(rename = "Artist Name(s)")] artist_names: String,
+    #[serde(rename = "Release Date")] release_date: String,
+    #[serde(rename = "Duration (ms)")] duration_ms: u32,
+    #[serde(rename = "Popularity")] popularity: u16,
+    #[serde(rename = "Added By")] added_by: Option<String>,
+    #[serde(rename = "Added At")] added_at: String,// Date
+    #[serde(rename = "Genres")] genres: String,
+    #[serde(rename = "Record Label")] record_label: String,
+    #[serde(rename = "Danceability")] danceability: f32,
+    #[serde(rename = "Energy")] energy: f32,
+    #[serde(rename = "Key")] key: i32,
+    #[serde(rename = "Loudness")] loudness: f32,
+    #[serde(rename = "Mode")] mode: u32,
+    #[serde(rename = "Speechiness")] speechiness: f32,
+    #[serde(rename = "Acousticness")]
+    acousticness: f32,
+    #[serde(rename = "Instrumentalness")]
+    instrumentalness: f32,
+    #[serde(rename = "Liveness")]
+    liveness: f32,
+    #[serde(rename = "Valence")]
+    valence: f32,
+    #[serde(rename = "Tempo")]
+    tempo: f32,
+    #[serde(rename = "Time Signature")]
+    time_signature: u32
 }

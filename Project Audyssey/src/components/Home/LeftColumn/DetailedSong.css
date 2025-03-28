@@ -66,25 +66,22 @@ p#song-name {
 }
 
 ::-webkit-scrollbar {
+    
     scrollbar-width: thin;
+    /*
     display: none;
+    */
 }
 
-#name-container {
+#name-container { }
 
-}
+#artist-container { }
 
-#artist-container {
-    display: flex;
-    flex-flow: row nowrap;
-    column-gap: 4px;
-}
-
-#song-artist {
+p#song-artist {
     color: var(--bright-grey);
 
     width: 80%;
-    height: 24px;
+    height: 32px;
     
     overflow-x: auto;
     overflow-y: hidden;
