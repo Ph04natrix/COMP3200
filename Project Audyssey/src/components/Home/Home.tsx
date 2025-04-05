@@ -88,9 +88,13 @@ export default function Home() {
         },
         {
             attr: ContinuousMetric.Timestamp, use: "Unused", values: [],
-            min: 0, range: { currMin: 0, currMax: Date.now() }, max: Date.now(), step: 10 // seconds
+            min: Date.parse(
+                "2021-01-01T22:23:13Z"
+            ), range: { currMin: Date.parse("2023-01-29T22:23:13Z"), currMax: Date.now() }, max: Date.now(), step: 10 // seconds
         } // todo set these to be the earliest and latest times of the library, to the nearest something
     ]);
+
+
 
     const fetchedRows = useRef<boolean>(false);
     const [rowData, setRowData] = useState<IRow[]>(null!);
@@ -231,7 +235,9 @@ export default function Home() {
                 </div>
             }
     </div>
-    <BottomBar />
+    {
+        //<BottomBar />
+    }
     </>);
 }
 
@@ -245,7 +251,7 @@ async function loadRows() {
         newSongs.push({
             ...payload,
             artists: payload.artists.join(", "),
-            album: payload.album,
+            album: payload.album.name,
             timestamp: new Date(payload.timestamp),
         });
     });

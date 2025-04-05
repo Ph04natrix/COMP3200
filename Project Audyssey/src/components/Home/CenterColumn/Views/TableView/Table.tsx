@@ -5,7 +5,14 @@ import { useCallback, useMemo, useState } from "react";
 // import TableRow from "./TableRow";
 
 import { AgGridReact } from "ag-grid-react";
-import { colorSchemeDarkWarm, GetRowIdParams, SizeColumnsToContentStrategy, SizeColumnsToFitGridStrategy, themeQuartz, type ColDef } from "ag-grid-community";
+import {
+    colorSchemeDarkWarm,
+    GetRowIdParams,
+    SizeColumnsToContentStrategy,
+    SizeColumnsToFitGridStrategy,
+    themeQuartz,
+    type ColDef
+} from "ag-grid-community";
 import { Key, Mode } from "../../../../../types/audioResources";
 
 export interface IRow {
@@ -62,7 +69,7 @@ export default function Table(props: {
         {
             field: "name",
             lockPosition: "left",
-            //pinned: "left",
+            pinned: "left",
             minWidth: 100
         }, {
             field: "artists",
@@ -161,6 +168,7 @@ export default function Table(props: {
             rowData={props.rowData}
             columnDefs={colDefs}
             defaultColDef={defaultColDef}
+            
             autoSizeStrategy={{
                 type: "fitCellContents",
                 colIds: [

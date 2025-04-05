@@ -40,7 +40,7 @@ export default function Login({
                 break;
             case "authorised":// * Skip straight to getting the library count
                 if (!setupState.libState.waiting) {
-                    console.log(setupState.libState);
+                    console.log(setupState);
                     switch (setupState.libState.status) {
                     case "unknown": 
                         requestLibraryCount();

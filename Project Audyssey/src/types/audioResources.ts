@@ -34,7 +34,7 @@ export type SongContMetric = {
 export type LowercaseAttr = keyof SongContMetric;
 
 export type SongExtras = {
-    album: string,
+    album: Album,
     artists: string[],
     discrete_metrics: {
         explicit: boolean,
@@ -47,13 +47,13 @@ export type SongExtras = {
 
 export type Album = {
     type: "Album" | "Single" | "Compilation",
-    total_tracks: number,
+    // total_tracks: number,
     name: string,
-    release_date: {
+    /*release_date: {
         date: string,
         precision: "Year" | "Month" | "Day",
     }
-    artists: Artist[],
+    artists: Artist[],*/
     images: {
         url: string,
         height: number,
@@ -146,7 +146,7 @@ export enum DiscreteMetric {
 export type AttrSelect = {
     attr: ContinuousMetric,
     use: "Unused" | SpatialDimension,
-    min: 0 | -60,
+    min: number, //0 | -60,
     range: {
         currMin: number,
         currMax: number,
