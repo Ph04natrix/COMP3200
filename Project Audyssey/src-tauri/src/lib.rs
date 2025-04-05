@@ -52,7 +52,17 @@ pub fn run() {
             app_dir.push("Project Audyssey\\audyssey_deep_storage.json");
 
             let mut csv_path = app.path().download_dir().expect("Couldn't find downloads directory");
-            csv_path.push("liked_songs.csv");
+            // csv_path.push("liked_songs.csv");
+            // csv_path.push("the_playlist.csv");
+            // csv_path.push("favourite_songs.csv");
+            // csv_path.push("combined.csv");
+            //csv_path.push("new_52.csv");
+            // csv_path.push("whiteteenagegirldrinkingstarbucks.csv");
+            csv_path.push(
+                //"nice_stuff.csv"
+                // "csv.csv"
+                "raja_arr_ani.csv"
+            );
 
             if let Err(_) = File::create_new(&app_dir) {
                 println!("Did not create audyssey_deep_storage.json as it already exists.")
