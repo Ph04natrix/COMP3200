@@ -6,7 +6,7 @@ use chrono::prelude::*;
 use crate::{
     api::{
         conversion::{MinimalAlbumObject, MinimalArtistObject},
-        soundcharts::SCGenreObject, spotify::ImageObject,
+        soundcharts::SCGenreObject, spotify::{ImageObject, TrackObject},
     }, error::MyResult, AppState
 };
 
@@ -323,27 +323,59 @@ pub async fn get_song_extras(
 ) -> MyResult<SongExtras> {
     let state_lock = state.lock().await;
     let world = &state_lock.ecs_world;
+    let access_token = &state_lock.AccessToken.access_token;
 
-    let find_song = world.query::<&Name>().with::<&Song>().build();
-
+    let song_ent = world
+        .query::<&Name>()
+        .with::<&Song>()
+        .build()
+        .find(|ent_name| ent_name.0 == name)
+        .expect("Couldn't find song.")
+    ;
+    
     let mut res: SongExtras = SongExtras::default();
 
-    let song_ent = find_song.find(|ent_name| ent_name.0 == name).expect("Couldn't find song.");
     song_ent.get::<(
         &Album, &Artist, /*&Explicit,*/ &Mode,
-        &TimeSignature, &Key, &Genres
+        &TimeSignature, &Key, &Genres,
+        &SpotifyID,
     )>(|(
-        alb, art, /*expl,*/ mode,
-        time_sig, key, genres
+        _alb, art, /*expl,*/ mode,
+        time_sig, key, genres, s_id
     )| {
-        res.album = /*AlbumPayload::from(*/alb.0.clone()/*)*/;
-        res.artists = art.0.clone();
-        res.discrete_metrics = DiscreteMetrics {
-            explicit: false, //expl.0,
-            mode: u32::from(*mode),
-            time_signature: time_sig.0,
-            key: String::from(*key),
-            genres: genres.0.clone(),
+
+        if let Ok(resp) = ureq::get(format!("https://api.spotify.com/v1/tracks/{}", s_id.0))
+            //.query("id", s_id.0)
+            .query("market", "GB")
+            .header("Authorization", format!("Bearer {access_token}"))
+            .call() {
+                let track_obj = resp.into_body()
+                    .read_json::<TrackObject>()
+                    .expect("Couldn't deserialize track response into struct")
+                ;
+
+                let alb_obj = track_obj.album;
+
+                res.album = AlbumPayload {
+                    r#type: alb_obj.album_type,
+                    // total_tracks: alb_obj.total_tracks,
+                    name: alb_obj.name,
+                    // release_date: alb_obj.release_date,
+                    // release_date_precision: alb_obj.release_date_precision,
+                    // artists: alb_obj.artists,
+                    images: alb_obj.images
+                };
+
+                res.artists = art.0.clone();
+                res.discrete_metrics = DiscreteMetrics {
+                    explicit: track_obj.explicit,
+                    mode: u32::from(*mode),
+                    time_signature: time_sig.0,
+                    key: String::from(*key),
+                    genres: genres.0.clone(),
+                }
+        } else {
+            eprintln!("Error getting track from Spotify");
         }
     });
     
@@ -352,7 +384,7 @@ pub async fn get_song_extras(
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct SongExtras {
-    album: String, //AlbumPayload,
+    album: AlbumPayload,
     artists: Vec<String>, //Vec<MinimalArtistObject>,
     discrete_metrics: DiscreteMetrics
 }
@@ -360,22 +392,22 @@ pub struct SongExtras {
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct AlbumPayload {
     r#type: String, // "Album" | "Single" | "Compilation",
-    total_tracks: u16,
+    // total_tracks: u16,
     name: String,
-    release_date: String,
-    release_date_precision: String, // "Year" | "Month" | "Day",
-    artists: Vec<MinimalArtistObject>,
+    // release_date: String,
+    // release_date_precision: String, // "Year" | "Month" | "Day",
+    // artists: Vec<MinimalArtistObject>,
     images: Vec<ImageObject>
 }
 impl From<MinimalAlbumObject> for AlbumPayload {
     fn from(input: MinimalAlbumObject) -> Self {
         Self {
             r#type: String::from(input.album_type),
-            total_tracks: input.total_tracks,
+            // total_tracks: input.total_tracks,
             name: input.name,
-            release_date: input.release_date,
-            release_date_precision: String::from(input.release_date_precision),
-            artists: input.artists,
+            // release_date: input.release_date,
+            // release_date_precision: String::from(input.release_date_precision),
+            // artists: input.artists,
             images: input.images
         }
     }
