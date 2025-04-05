@@ -94,7 +94,7 @@ export default function StaticGraph(props: {
     const arrConeHeight = 3.0;
     const axisColor = 0x808080;
 
-    const textScale = 8;
+    const textScale = 18;
     
     return(<>
     <div className="vis-container">
@@ -206,7 +206,7 @@ export default function StaticGraph(props: {
                     position={(props.cameraState === StaticCamera.NoY)
                         ? [-6, 0, gridWidth/2]
                         : [0, -4, gridWidth/2]}
-                    scale={8}
+                    scale={textScale}
                     rotation={(props.cameraState === StaticCamera.NoY)
                         ? [Math.PI/-2, 0, Math.PI/2]
                         : [0, Math.PI/2, 0]
@@ -225,7 +225,7 @@ export default function StaticGraph(props: {
                     position={(props.cameraState === StaticCamera.NoY)
                         ? [0, 0, gridWidth+(arrConeHeight/2)+5]
                         : [0, -5, gridWidth+(arrConeHeight/2)+5]}
-                    scale={8}
+                    scale={textScale}
                     rotation={(props.cameraState === StaticCamera.NoY)
                         ? [Math.PI/-2, 0, 0]
                         : [0, Math.PI/2, 0]
