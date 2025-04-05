@@ -58,7 +58,7 @@ p#song-name {
     color: var(--main-light);
 
     width: 80%;
-    height: 24px;
+    height: 32px;
 
     overflow-x: auto;
     overflow-y: hidden;

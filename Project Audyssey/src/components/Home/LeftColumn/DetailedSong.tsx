@@ -75,11 +75,10 @@ export default function DetailedSong(props: {
         <img
             id="album-image"
             src={
-                undefined
-                // detailedSong.album.images[0].url
+                detailedSong.album.images[0].url
             }
             alt={
-                detailedSong.album
+                detailedSong.album.name
             }
         />
         <div id="name-artist-container">
@@ -113,7 +112,7 @@ export default function DetailedSong(props: {
     </div>
     <RadarChart radialData={radialData}/>
     <div id="other-song-info">
-        <div>Genres: TODO{/*detailedSong.discrete_metrics.genres[0].root*/}</div>
+        <div>Genres: {detailedSong.discrete_metrics.genres.join(", ")}</div>
     </div>
     </div>
     )} else { return(<></>) }
