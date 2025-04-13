@@ -19,6 +19,6 @@ count:
 	firefox results.html &
 
 clean:
-	rm *.aux *.out  *.fls *.lol *.lof *.fdb_latexmk *.lot *.toc
+	rm *.aux *.out *.fls *.lol *.lof *.fdb_latexmk *.lot *.toc
 	rm *.pdf 
 
