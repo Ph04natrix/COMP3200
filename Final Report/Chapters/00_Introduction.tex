@@ -1,11 +1,87 @@
 %% ----------------------------------------------------------------
-%% Introduction.tex
-%% ---------------------------------------------------------------- 
-\chapter{Introduction} \label{Chapter:Introduction}
-This template was originally from \cite{Gunn:2001:pdflatex}.
+%% In Progress (1st Draft Complete)
+%% ----------------------------------------------------------------
+\chapter{Introduction (870 words)}% \label{Chapter:Introduction}
+%This template was originally from \cite{Gunn:2001:pdflatex}.
+\section{Problem}
+As technology has advanced over the years, people's personal music collections have become more and more digital \cite{
+    %cite the streaming percentage
+}.
 
-\paragraph{
-    Music is created physically and used to be experienced only physically too.
-    But as technology developed, music has become something that is now experienced
-    digitally as well
-}
+Initially, if a listener wanted to listen to a song or some music, it would have to be performed live, usually by the creator of said music. As such music started to be performed in concerts, where many people could listen to songs from one or more artists.
+
+Radio allowed people to listen to music together and in the comfort of their own home. However, there wasn't full control over what to listen to.
+
+Vinyls and CDs allowed for listening to any song in any place, with the right equipment. This made it possible for people to start treating music as a collectible physical item and build personal music collections. However these physical collections were limited by purchase cost and storage space.
+
+As technology progressed further, we entered the streaming era, where physical collections were replaced by digital collections. These digital collections are significantly cheaper, and are much less constrained by storage space.
+
+As such music collections have the capability to be significantly larger than their physical counterpart. The process of adding songs is much simpler digitally, allowing these digital collections to grow at a significantly faster rate than physical collections.
+
+To navigate the landscape of a personal music collection the predominant method employed by streaming applications is to simply arrange the items in a list. This method works well on a small scale, but falls apart with the large scale that digital music collections can reach.
+
+As such, as a workaround, most users split their mental collections into sub-collections (playlist)s, folders that allow for a lesser mental load and better maintainability.
+
+Whilst playlists help manage the scale of songs, they themselves' have the issue "when a user’s playlists become overwhelmingly numerous, streaming services begin to appear inefficient and unmanageable as collection systems"\cite{playlistExperience}.
+
+This hierarchical system allows for the better handling of large scale collections that grow at the pace most collections do \textbf{CITE} but if these playlists grow too large, then they require reorganising which can become a chore.
+
+As such the organisational benefit provided by these playlists is lost due to the 'perceived' high mental load required.
+
+Whilst the capability and format of personal music collections have changed dramatically with technological advancements, the structure of these collections has stagnated in the streaming era.
+
+This project will investigate different structures to see how they can improve either of the following key aspects for personal music collections:\begin{itemize}
+    \item \textbf{
+        Complete Knowledge of the Collection
+    } - understanding the entire contents of the collection (to not lose/forget about songs in the collection over time) without exacting a heavy mental load
+    \item \textbf{
+        Replayability/Queue Building
+    } - being able to quickly and frictionlessly create song queues to listen to (where the order of the song queue exists on a spectrum between fixed and random)
+\end{itemize}
+%! How do I show that these have stagnated
+
+\section{Method}
+First we will try to understand people's mental organisational models for their personal music collections and how they create song queues using their organisational model.
+
+Then we will see the relationship between their mental understanding and their digital music collection.
+
+\subsection{Complete Knowledge over the Colection}
+For song organisation, the current method employed by streaming applications is a folder-based list structure (using playlists as folders).
+
+Other methods using graphical spatial methods have been researched\begin{itemize}
+    \item there has been research into creating 2d and 3d visualisations of song Libraries
+    \item although there hasn't been research into making these usable from a software application point of view
+\end{itemize}
+
+%todo do I need to give examples or find way to better explain this
+This project will employ three different organisational models:\begin{itemize}
+    \item \textbf{Clustered Table} \(\to\) %! Do I keep this here?
+    \item \textbf{Static Graph} \(\to\) each song is mapped onto a cartesian grid (both 2D and 3D) where the co-ordinates of the song is determined by the numerical attribute for that axis
+    \item \textbf{Dynamic Graph} \(\to\) each song is spaced out from every other song depending on how similar they are to each other, based on both metadata (artist, genre, etc.) and attributes
+\end{itemize}
+
+The aforementioned attributes are mid-level features analysed from the audiofile of each song \(\to\) these include the instrumentalness, loudness, energy, etc. of a track
+% these attributes will be pulled from Spotify's API as that works well if I look at people with Spotify Libraries
+
+\subsection{Replayability/Queue Building}
+When listening to songs, the next song to be played is chosen somewhere on a spectrum between fully deterministically (manually selected) or fully non-determinstically (randomly selected):\begin{itemize}
+    \item fixed deterministic choices occur when the listener knows which song they want to listen to next
+    \item when the listener doesn't know which song to listen to next then the next song should be randomly chosen (such as with Spotify's shuffle feature on a playlist)
+\end{itemize}
+
+With the advent of software now being the medium with which songs are listened to, song queues can now be generated randomly from a set of songs, such as a listener's playlist.
+
+However, there exists no framework for creating song queues where their order is elsewhere on the spectrum than near the two ends. Essentially there is no way to control this randomness without significant overhead (such as having to create a new playlists with the desired songs).
+
+%? song queues are also quite a dynamic process so this static, heavy method of creating playlists and then filling them is tedious
+%* better is to just have the contents automatically encapsulated, such as with a query
+
+By using the graph-based views as the foundation, this project will investigate a song-queue building algorithm which allows for more of a guided randomness, that is allowing for songs to be randomly selected under the constraints of song metadata and attributes.
+
+This project will use a software application to act as a vehicle for testing and evaluating the aforementioned new organisational structures.
+
+% -------------------------- %! Speculation ---------------------------- %
+%* Songs could be grouped together either because they all share something that gives this group a specific identity, or because together they provide a specific listening journey.
+
+%? This collection of songs can be thought of as a database, where song queues are queries and playlists are subsets of the databse
+%* Can't find sources for this, searching difficult
