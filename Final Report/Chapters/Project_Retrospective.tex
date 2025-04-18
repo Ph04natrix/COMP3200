@@ -12,12 +12,12 @@ Since this project had a very limited timeframe, ensuring that progress remained
 %% ----------------------------------------------------------------
 \section{What Went Well}
 %% ----------------------------------------------------------------
-One of the main things that significantly helped with planning the project and managing all the things I needed to do was building a hierarchical mindmap in Miro. Miro is a diagramming tool that allows for building any type of diagram. The reason Miro's mindmap was useful was that it allowed for children nodes to be toggled, meaning that they were visually hidden, but still accessible.
+One of the major elements that significantly helped with planning the project and managing the complexity of the project was building a hierarchical mindmap in Miro (a highly flexible diagramming tool). The reason Miro's mindmap was useful was that it allowed for children nodes to be toggled, meaning that they were visually hidden, but still accessible.
 
 This meant that I could decompose the project into its significant core parts. Each section could then be decomposed into its significant parts. This significantly reduced the mental load and allowed for me to better breakdown each aspect of the project as much as I needed to.
 \begin{figure}
-    \includegraphics[angle=90, scale=0.35]{Miro_Mindmap_Depth_1,2}
-    \caption{The Miro Mindmap Tree only showing nodes to a depth of 1 or 2}
+    \includegraphics[angle=90, scale=0.434]{Miro_Mindmap_Depth_1,2}
+    \caption{Miro Mindmap high level overview}
 \end{figure}
 
 %! Do I talk about how it also didn;t work. Because I could hide stuff it was also a bit easier to forget about (about what???)
@@ -53,21 +53,39 @@ Unfortunately, due to the sudden nature of the Spotify deprecation announcement,
     Losing sight of the Goal
     Only learning and understanding the true goal of the project near the end.
 }% Lost sight of the goal at the core of this project, which was the dynamic graph
+%todo go over this bit agian
+%todo make sure to add sources and cite if needed (such as when mentioning from the evaluation)
 %% ----------------------------------------------------------------
 
-This project whilst in a limited timeframe, was still quite long, hvaing taken the better part of 7 months. During this process the true goal/research questions were only fully understood quite late into the project sadly.
+This project whilst in a limited timeframe, was still quite long, having transpired over the better part of 7 months. During this process the true goal/research questions were only fully understood quite late into the project sadly.
 
-The true/original niche/gap in the research was investigating better ways to create listening journeys, mainly using the graph visualisations as a foundation for controlling and viewing them. This is because, with the advent of the digital streaming era, there has not been any research (none that I could find at least) for creating better tools for users. As discussed in the Evaluation, there is a desire for these tools.
+\subsubsection{Static Cartesian Graphs: A Red Herring}
+The true/original niche/gap in the research was investigating better ways to create listening journeys, mainly using the graph visualisations as a foundation for controlling and viewing them. This is because, with the advent of the digital streaming era, there has not been any research (none that I could find at least) for creating better tools for users. As discussed in the Evaluation, there is an expressed desire for these tools.
 
-However, during development, as the static graph views were being created, I realised that these were more specifically useful in a data analysis perspective. Unfortunately, data analysis on a user's music library, especially using the EchoNest (now Spotify's) attributes, is something that has been investigated extensively, as mentioned in the background chapter.
+However, during development, after the static graph views were created, I realised that these were only really specifically useful in a data analysis perspective (something that has already been researched extensively and is not the focus of this project). The evaluation also confirmed this, as the participants felt that the static/cartesian graphs were only useful as a one-off and not as a basis for reflecting their mental model of their music collection.
 
-In hindsight developing the staic graph views should've been allocated to be done after the dynamic views so that the listening journeys could be accomplished as fast as possible. Static cartesian graphs were intially planned first as I did not realise at the time that they were significantly less useful for interacting with listening journeys than the dynamic view.
+In hindsight, developing the staic graph views should've been allocated to be done after the dynamic views so that the listening journeys could be accomplished as fast as possible. Static cartesian graphs were intially planned first as I did not realise at the time that they were significantly less useful for interacting with listening journeys than the dynamic view.
 
 One participant in the evaluatory study also mentioned that they liked there being an absolute order to their songs/collection that they could return to. This absolute order synergises better with the dynamic graph, as the static graph produced different distributions for each combination of attributes on the axes.
 %This was Vedarth, was there anyone else?
 
+To prevent the static graphs feature be the 'red herring' that they were, in taking away development focus from the actual significant features (the dynamic graph and listening journeys) then this feature should've been omitted from the project during the research stage.
+For this delay to have not occurred, the ideal scenario would've been to do more research in how the EchoNest attributes have been used much earlier in the project, before the design and development stages. 
+During the research stage, more energy was invested into where to source the song attributes, meaning extensive research into how they had been used was only investigated during the development stage.
+
+%However, this feature is not entirely destructive to this project as it confirmed that the cartesian static graph method of representing song libraries is not useful.
+
+%%* Basically this feature wasn't good, but the main issue is that I should have pivoted during development to the dynamic graph once I realised I wouldn't have time to do both.
+
+%%* It also helps show that the more unstructured view of the library where there is less detail is better for the general public to use on a more daily basis as it requires less mental effort to understand more
+Whereas the more detailed in-depth view of the library by looking at the distributions of specific metrics is more useful when the person allocates a specific time to go through it.
+This is because the view requires more mental energy to understand and explore it, to reach a sufficient mental understanding of it.
+
 %% ----------------------------------------------------------------
-\section{Initial vs Final vs Ideal Project Plan} % ? how much explanation do I need, will Gantt charts be enough
+\section{
+    Initial vs Final vs Ideal Project Plan
+    %todo find better name
+} % ? how much explanation do I need, will Gantt charts be enough
 %% ----------------------------------------------------------------
 Below are three project plans:\begin{itemize}
     \item \textbf{Initial Plan} \(\to\) this is what was planned initially near the start of the project
@@ -83,6 +101,10 @@ Below are three project plans:\begin{itemize}
 \subsection{Actual Progress}
 %% ----------------------------------------------------------------
 
+%% ----------------------------------------------------------------
+\subsection{Ideal Plan}
+%% ----------------------------------------------------------------
+
 Key Points:
 - reduce the amount of features
     - should've only done the dynamic graph as other people have done the static cartesian graphs before
@@ -90,7 +112,3 @@ Key Points:
 - either of the below:
     - do an initial survey of people before design and development -> get a better sense of requirements
     - had a review meeting with the review team on the application - was supposed to do this but hadn't finished enough code in time and they both left the country early
-
-%% ----------------------------------------------------------------
-\subsection{Ideal Plan}
-%% ----------------------------------------------------------------
