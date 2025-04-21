@@ -388,40 +388,44 @@ pub async fn load_ecs_from_csv(
     for result in rdr.deserialize::<CSVTrack>() {
         match result {
             Ok(track_csv) => {
-            let genres = track_csv.genres.split(",").map(|str| str.to_string()).collect();
-            let artists = track_csv.artist_names.split(",").map(|str| str.to_string()).collect();
+                let genres = track_csv.genres.split(",").map(|str| str.to_string()).collect();
+                let artists = track_csv.artist_names.split(",").map(|str| str.to_string()).collect();
 
-            let _song_ent = world.entity()
-                .add::<Song>()
-                .set(Name(track_csv.track_name))
-                .set(AddedAt(track_csv.added_at))
-                .set(SpotifyID(track_csv.spotify_id))
-                .set(Duration(track_csv.duration_ms))
-                //.set(Explicit(track_csv.explicit)) // !  not in CSV
-                .set(Popularity(track_csv.popularity))
-                // todo .set the playlists the song belongs to
-                .set(Artist(artists))
-                .set(Album(track_csv.album_name))
+                // Strips away the "spotify:track" part of the Track URI
+                // Note: this is a duct tape fix, assumes that everything in the library/playlist is a track
+                let s_id = track_csv.spotify_id.clone().split_off(14);
 
-                // Attributes
-                .set(Acousticness(track_csv.acousticness))
-                .set(Danceability(track_csv.danceability))
-                .set(Energy(track_csv.energy))
-                .set(Valence(track_csv.valence))
-                .set(Tempo(track_csv.tempo))
-                .set(Speechiness(track_csv.speechiness))
-                .set(Liveness(track_csv.liveness))
-                .set(Loudness(track_csv.loudness))
-                .set(Instrumentalness(track_csv.instrumentalness))
-                .set(Mode::try_from(track_csv.mode).expect("Mode is not 0 or 1"))
-                .set(TimeSignature(track_csv.time_signature))
-                .set(Key::try_from(track_csv.key).expect("Key is not in range 3..7"))
-                // attributes finished
-                .set(Genres(genres))
-                .add::<Current>()
-            ;
+                let _song_ent = world.entity()
+                    .add::<Song>()
+                    .set(Name(track_csv.track_name))
+                    .set(AddedAt(track_csv.added_at))
+                    .set(SpotifyID(s_id))
+                    .set(Duration(track_csv.duration_ms))
+                    //.set(Explicit(track_csv.explicit)) // !  not in CSV
+                    .set(Popularity(track_csv.popularity))
+                    // todo .set the playlists the song belongs to
+                    .set(Artist(artists))
+                    .set(Album(track_csv.album_name))
 
-            app.emit("csv-to-ecs-progress", 0).unwrap();
+                    // Attributes
+                    .set(Acousticness(track_csv.acousticness))
+                    .set(Danceability(track_csv.danceability))
+                    .set(Energy(track_csv.energy))
+                    .set(Valence(track_csv.valence))
+                    .set(Tempo(track_csv.tempo))
+                    .set(Speechiness(track_csv.speechiness))
+                    .set(Liveness(track_csv.liveness))
+                    .set(Loudness(track_csv.loudness))
+                    .set(Instrumentalness(track_csv.instrumentalness))
+                    .set(Mode::try_from(track_csv.mode).expect("Mode is not 0 or 1"))
+                    .set(TimeSignature(track_csv.time_signature))
+                    .set(Key::try_from(track_csv.key).expect("Key is not in range 3..7"))
+                    // attributes finished
+                    .set(Genres(genres))
+                    .add::<Current>()
+                ;
+
+                app.emit("csv-to-ecs-progress", 0).unwrap();
             },
             Err(_) => eprintln!("Couldn't parse csv")
         };
@@ -434,7 +438,7 @@ pub async fn load_ecs_from_csv(
 
 #[derive(Debug, Deserialize)]
 pub struct CSVTrack {
-    #[serde(rename = "Track ID")] spotify_id: String,
+    #[serde(rename = "Track URI")] spotify_id: String,
     #[serde(rename = "Track Name")] track_name: String,
     #[serde(rename = "Album Name")] album_name: String,
     #[serde(rename = "Artist Name(s)")] artist_names: String,

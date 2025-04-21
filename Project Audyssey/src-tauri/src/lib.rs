@@ -59,9 +59,10 @@ pub fn run() {
             //csv_path.push("new_52.csv");
             // csv_path.push("whiteteenagegirldrinkingstarbucks.csv");
             csv_path.push(
+                "liked_songs.csv"
                 //"nice_stuff.csv"
                 // "csv.csv"
-                "raja_arr_ani.csv"
+                //"raja_arr_ani.csv"
             );
 
             if let Err(_) = File::create_new(&app_dir) {
