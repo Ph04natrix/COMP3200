@@ -1,19 +1,119 @@
 %% ----------------------------------------------------------------
 %%? 1st Draft In Progress
 %% ----------------------------------------------------------------
-\chapter{Testing}
-As the instrument for investigating the research questions for this project was a software application, the software itself was tested according to:\begin{itemize} %todo! add list of how I tested the software
-    \item 
+\chapter{Testing and Results (600 Words)}
+\section{Data Collection}
+As the project was aiming to initially understand how people manage and use their digital music collections, then to see how these could be transformed using new concepts implemented with software, a more open approach was required.
+
+Students from the University of Southampton with an active Spotify Account were invited to take part in a participant study after development had finished. This study was performed and complied with the ethics standards set out in \lstinline|ERGO78677.A2|.
+
+The study consisted of 1-on-1 ethnographic semi-structured interviews, typically lasting 45-60 minutes. The process was as follows:\begin{itemize}
+    \item Provide the participant with an information sheet and consent form
+    \item They were then asked how they build song queues - from fully random to fully ordered
+    \item The following questions were asked:\begin{itemize}
+        \item How is your collection organised?
+        \item How do you maintain your collection?
+        \item How do you create queues to listen to? (expanding on their previous answer of random vs ordered)
+        \item How do you interact with your listening queues after creation (excluding the listening aspect itself)?
+    \end{itemize}
+    \item Then the participant loaded a playlist into the software application:\begin{itemize}
+        \item Export a chosen playlist as a \lstinline|.csv| file from the Exportify web page
+        \item \item Open the Audyssey application with the aformentioned \lstinline|.csv| file
+    \end{itemize}
+    \item Then the user was walked through the application and then they gave their thoughts on the application and concepts within it.
 \end{itemize}
 
-The concepts being explored, namely the different representations of personal digital music collections and improved listening journeys were tested using ethnographic interviews.
+Due to the semi-structured nature, some questions and topics were explored to different degrees depending on the different answers and behaviours of the participants. During the interviews, notes were taken to be used in an inductive coding process.
 
-6 students from the University of Southampton with active Spotify accounts participated in the ethnographic interview.
+This process was done iteratively, modifying and combing codes after each interview. Then these codes were grouped to form a hierarchy of themes and sub-themes, along with the occurrence count for each code. This process follows from the Thematic Analysis process set out by \cite{
+    %todo Joy, Braun, Clarke's paper on reflexive thematic analysis
+}
 
-%TODO How I do coherently say I did the ethics thingy???
-The study involved human participants but complied with the ethics standards as found in \lstinline|ERGO78677.A2|.
+\section{Thematic Analysis of Interview Pre-application}
+\subsection{Hierarchical Table of Themes}
+\begin{longtable}[c]{| c | c | c | c |}
+    %\caption{Hierarchical Table of Themes, Sub-Themes, Codes and Counts.} \\
+    %\toprule
+    %Theme & Sub-Theme & Code & Count\\
+    %\midrule
+    %\endfirsthead
+    
+    %\caption[]{Hierarchical Table of Themes, Sub-Themes, Codes and Counts.}
+    \toprule
+    Theme & Sub-Theme & Code & Count\\
+    \midrule
+    \endhead
+
+    \multirow{9}{6em}{
+        Collection Organisation
+    } & \multirow{2}{*}{Method} & Singular Playlist & 2\\*
+    & & Multiple Playlists & 4 \\*
+    & \multirow{2}{*}{Full Collection Understanding} & Vague & 1\\*
+    & & Strong & 5 \\*
+    & Mental Model & Distinctly Unique & 2 \\*
+    & Familiar Structure & Easy to Use & 4 \\*% all the playlist peeps
+    & Dark Spots & Forgotten/Unfamiliar Songs & 3\\*
+    & \multirow{2}{*}{Growing Song Count} & Always Adding & 6\\*
+    & & Doesn't Remove Songs & 5 \\*
+    \midrule
+
+    \multirow{12}{6em}{
+        Playlist Management
+    } & \multirow{5}{*}{Unique Identity} & Per Artist & 1 \\*
+    & & Per Time Period & 2 \\*
+    & & Per Genre & 2 \\*
+    & & Per Mood/Vibe & 3 \\*
+    & & Activity & 2 \\*
+    & \multirow{4}{*}{Friction/High Mental Load} & Creating DesiredPlaylists & 2\\*
+    & & Switching between Playlists & 2\\*%* for creating queues
+    & & Infrequent Playlist Creation & 3\\*
+    & & Cleaning Playlist Contents & 1\\*
+    & \multirow{3}{*}{Absolute/Fixed Ordering} & Playlist Contents &3\\*
+    & & Playlist Structure & 3\\*
+    & & Specific Audio Experiences & 3\\*
+    \midrule
+    
+    \multirow{12}{6em}{Listening Journeys (Queue)} & \multirow{2}{*}{Creation Process} & Passive: Shuffle & 5\\*
+    & & Active: Manually Create Queue & 2\\*
+    & \multirow{3}{*}{Source} & Individual Playlist & 4\\*
+    & & Full Collection & 4\\*
+    & & Affected by Recency Bias & 3\\*
+    & \multirow{3}{*}{Shuffle} & Unplayed Songs & 2\\*
+    & & Fixing the Queue & 4\\*
+    & & Close Enough & 2\\*
+    & \multirow{2}{*}{New Song Buffer} & Forgetting to Add & 3\\*
+    & & Desired & 2\\*
+    & \multirow{2}{*}{Listening as a Trajectory} & Listening Rendered as a Line & 4\\*
+    & & Boundary Songs & 2\\*%* Which they change direction on
+    \midrule
+\end{longtable}
+
+\subsubsection{Collection Organisation}%todo add Quotes
+All the participants had a specific way that they digitally organised their Spotify music collections. Mainly they could be split into two groups: those who placed all their songs into one singular box (the Liked Songs folder) or those who split their collection over multiple playlists.
+
+Only 1 participant felt like they had a vague understanding of their entire collection [Riya], whilst the other 5 felt like they had quite a good grasp on their collection.
+
+Contradicting this however, 3 of the aforementioned 5, upon exploration of their collection in the software application realised there were forgotten or unfamiliar songs to them in their collection.
+%? This implies that their grasp on their collection is not as concrete as they stated.
+
+3 of the 4 participants who utilised multiple playlists to organise their collection also attributed benefits to this:\begin{itemize}
+    \item knows where a song would be found in, doesn't have to know the exact location, taking off mental load
+    \item muscle memory, familiarity
+\end{itemize}
+%* Implying that this organisation and seperation into distinct regions is good, but as we will find later this level of organisation requires a lot of effort and once it is lost is difficult to regain
+The participant who didn't attribute benfits to the structure of their playlists also had an issue with their playlists converging to the same identity[Riya: "over time, my playlists all sort of converge to the same type of song, though they're not meant to"]
+
+Common across all 6 participants is that their collections were continuously growing over time, with only 1 participant stating that they removed songs[Riya] although rarely. %? and only cuz they didn't really belong in the first place
+
+\subsubsection{Playlist Management}
+The 4 participants who organised their collection using playlists also had common concepts and behaviours.
+
+All 4 participants created their playlists with a distinct identity in mind whether this be for a specific artist[Shruthi], a time period[Shruthi, Vedarth], a genre[Josh, Vedarth], a mood or vibe[Riya, Josh, Vedarth] or an activity like the gym[Vedarth, Casper wanted one].
 
 
 
-\section{Results}
-%* Thematic analysis is being done in Notion
+\subsubsection{Listening Journeys/Queues}
+
+\section{Application Feedback}
+
+\section{TODO: Discussion}
