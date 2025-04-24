@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
-%%todo In Progress
+%%? 1st Draft In Progress
 %% ---------------------------------------------------------------- 
-\chapter{TODO: Design}
+\chapter{Design/Method (785 words)}
 
 %? Is this redundant
 The instrument for testing and evaluation these new models of digital music collection organisation and song queue creation was decided to be a software application.
@@ -9,7 +9,7 @@ The instrument for testing and evaluation these new models of digital music coll
 \section{Non-Functional Requirements}
 This software application was designed with the following guidelines in mind:\begin{itemize}
     \item \textbf{
-        Integration with existing software
+        Synergy with existing software
     } \(\to\) the features in the application should be able to be inserted in existing music streaming applications without issue (such as Spotify, Apple Music, etc.) %! How did I ensure this?
     \item \textbf{
         Desktop only
@@ -20,12 +20,69 @@ This software application was designed with the following guidelines in mind:\be
 
 \section{Functional Requirements}
 \begin{itemize}
-    \item 
+    % Spotify OAuth authorisation flow
+    \item[\textbf{Auth1}] Users must be able to access their library by logging in with the credentials of the platform that library is stored in.
+    \item[\textbf{Auth2}] The system must be able to interact with a user's library by using a user-specific access token to the Spotify API.
+    % Get all songs + all playlists from user's library
+    \item[\textbf{B}] Users can view all songs in their library
+    \item[\textbf{C}] Users can view multiple/all playlists in their collection at once
+    \item[] Users can view individual playlists in their library
+    % Getting the Echo Nest Attributes
+    \item[\textbf{Attr}] Each song in the user's library must have the appropriate Echo Nest attributes attached
+    % Playback Control
+    \item[\textbf{Play}] User's can control playback on another device where the user is logged into their Spotify Account
+    % Table View
+    \item[\textbf{Table}] Users should be able to see the metadata and attributes for all their songs in a table
+    % Static Graph 1D, 2D, 3D
+    \item[\textbf{SG1}] Users should be able to see their songs mapped along one dimension for each attribute
+    \item[\textbf{SG2}] Users should be able to see their songs mapped along 2 dimensions for each combination of 2 attributes
+    \item[\textbf{SG3}] Users should be able to see their songs mapped along 3 dimensions for each combination of 3 attributes
+    % Detailed Song View + Neighbours
+    \item[\textbf{DeSo1}] Users should be able to see the attributes and metadata for a song when they click on it.
+    \item[\textbf{DeSo2}] Users should be able to see the most similar songs to the currently selected song
+    % Dynamic Graph
+    \item[\textbf{DG1}] Users should be able to see all their songs mapped in 2 dimensions based on how similar they are to each other (where similarity is calculated using both the metadata and attributes)
+    \item[\textbf{DG2}] Users should be able to see all their songs mapped in 3 dimensions based on how similar they are to each other
+    \item[\textbf{DG3}] Users should be able to toggle which attributes and metadata are currently affecting the similarity
+    % Filtering
+    \item[\textbf{Fil1}] Users should be able to filter out songs on all views
+    \item[\textbf{Fil2}] Users should be able to toggle which playlists are currently being shown
+    % Visualising Listening Journeys
+    \item[\textbf{VLJ1}] Users should be able to see their current song as a distinct node in the graph views.
+    \item[\textbf{VLJ2}] Users should be able to see their queue as a directed line through the relevant songs
+    \item[\textbf{VLJ3}] Users should be able to see their history rendered as a fading line (up to different preset lengths of either number of songs or length of time)
+    % Controlling Listening Journeys
+    \item[\textbf{CLJ1}] Users should be able to set a target song for the listening journey to go to
+    \item[\textbf{CLJ2}] Users should be able to select a song to randomly listen around
+    \item[\textbf{CLJ3}] Users should be able to create a segment of the listening journey where the songs are played through in a fixed order
+    \item[\textbf{CLJ4}] Users should be able to create a segment of the listening journey where songs are played through randomly
+    \item[\textbf{CLJ5}] Users should be able to listen to a song and then return to their original listening journey trajectory (effectively a temporary diversion)
+    % Past and Present Listening Journeys
+    \item[\textbf{PLJ1}] Users should be able to view past audio journeys (segments of their full audio history), possibly as a sped up line
+    \item[\textbf{PLJ2}] Users should be able to quickly re-listen to an old audio journey
+    % User-added song tags
+    \item[\textbf{Tag1}] Users should be able to add custom tags to their songs (these can then be used to make the song similarity more informative)
+    \item[\textbf{Tag2}] The system should treat these tags in a similar fashion to genres, in that they are hierarchical and not mutually exclusive
 \end{itemize}
+%* | Identifier | Requirement | MoSCoW |
+%todo Or I can just highlight and bold the MoSCoW prioritisation in the words of the requirement itself
+% User stories have been cut as it was deemed that their content overlapped too much with the functional requirements and as such were easy to cut to fit within the word limit
 
-\section{User Stories}
+\section{TODO: Activity Network (Dependency) Diagram} %* Effectively a work breakdown structure - lower level than a feature roadmap
+%todo Put break down the groups represented by the functional requirements and link the dependencies
+SoundCharts Flow versus Exportify Flow for loading 
 
-\section{Activity Network Diagram} %* Effectively a work breakdown structure - lower level than a feature roadmap
-
-\section{UI Wireframes}%* can categorise them by the feature roadmap? Or maybe I can group sections of the roadmap
+\section{TODO: UI Wireframes}%* can categorise them by the feature roadmap? Or maybe I can group sections of the roadmap
 As one of the key non-functional requirements is for the developed features to integrate into existing streaming applications, the UI was designed using Spotify's desktop interface as an inspiration.
+
+\section{TODO: Storyboards}%? How many do I have of these?
+
+\section{TODO: Chosen Method \& Tools}%* Talk about what my options were
+API used for accessing digital music collections - Spotify
+Because they have the most feature-complete API and initially their API would've been able to allow for getting attributes for each song as well.
+
+Gaining EchoNest attributes - was SoundCharts, then switched to Exportify
+
+Tech Stack - Tauri - access to web technologies, meaning making UI should be easier, as the backend complexity of this project is not as complex, the UI is more important??? %? is it actually?
+
+Frontend Framework - React - very popular, making it easier to learn and find support. Also has good support for 3js a 3D visualising library that is suitable for creating my novel visualisations
