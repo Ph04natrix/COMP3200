@@ -1,5 +1,146 @@
 %% ----------------------------------------------------------------
-%% ! Not Started
+%%? 1st Draft In Progress
 %% ---------------------------------------------------------------- 
-\chapter{Evaluation}
-The static graph view helped in maybe actually figuring out what was truly in the collection. Although this could also only be due to the fact that they were sitting down with me to actually look at and discuss their collection
+\chapter{Evaluation (1700 words)}
+This project aimed to ask two research questions:\begin{itemize}
+    \item \textit{how can the organisation of digital music collections be improved to better reflect people's mental models of their collections, without increasing the mental load required?}
+    \item \textit{How can we improve the process of creating and controlling}
+\end{itemize}
+
+People have a expected mental audio journey. Passive listeners usually have much larger audio journeys that they'd be happy with
+
+%% ---------------------------------------------------------------- 
+% Active is blue, Passive is yellow (I don't know why)
+\section{Active vs Passive Listening Spectrum}
+%% ---------------------------------------------------------------- 
+When someone is listening to a sequence of songs they exist somewhere on the passive-active spectrum. This spectrum is concerned with the number of possible song sequences that the person is satisfied listening to.
+
+At the extreme end, a fully passive listener is satisfied with any sequence of any songs, no matter how similar or dissimilar the songs in the listening journey are.
+
+At the other extreme end is a fully active listener, someone who has an exact set of songs that they want to listen to, in an exact order. This order may be for many reasons.
+
+All the participants were somewhere on this spectrum when they were listening to their collection, some would stay in one place or would move about on the spectrum.
+[-] Casper usually passive, but then switches to active to make sure that they listen to album in the correct original order
+[-] Vedarth passive when doing more mindless activities, but when more focused, preferred to actively create the queue.
+
+%todo draw this spectrum
+The interactions made by users (regarding song queues) can be mapped to relative positions on this spectrum:
+[-] 100\% Active -> Manually find song then click add to queue
+[-] -> Shuffle a small playlist / Song radio
+[-] -> Shuffle a large playlist
+
+Keeping track of the next ~10 upcoming songs -> slightly active
+Reorder queue -> active
+Switch to new playlists -> temporary active then back to passive
+
+\subsection{What is a Listening Journey?}
+%% ---------------------------------------------------------------- 
+%%* Listening Journeys
+%% ---------------------------------------------------------------- 
+A listening journey is simply a sequence of songs and as with any sequence, it has the following properties:\begin{itemize}
+    \item Initial Item (First Song)
+    \item Previous Item (Previously Played Song)
+    \item Current Item (Currently Playing Song)
+    \item Subsequent item (Next Song)
+    \item End Point (Last Song)
+    \item Length (Number of Songs Listened to)
+\end{itemize}
+
+However this sequence is not simply a sequence of scalar items, but should be thought of as a sequence of vectors, items with direction. As such the overall song queue can be thought of being a listening journey, with an overall direction (and a direction from song to song).
+
+This direction is a vector in an n-dimensional space, where n is the total attributes and metadata for a song. This project only looks at a subset of these attributes and metadata -> the Echo Nest attributes and the Spotify metadata.
+
+What we propose is that the full listening history of a user is comprised of these listening journeys.
+However, due to the continuous nature of listening to music in the digital era, further research will have to be done to see if people still have 'end points' or final songs as this was not investigated during the participant study.
+
+A listening journey has 3 parts: its history, its current position, its future:\begin{itemize}
+    \item \textbf{History:} a list of songs ordered by when they were listened to (with how much of each song was listened to)
+    \item \textbf{Current Position:} the current position in the currently playing track
+    \item \textbf{Future:} the trajectory that the listener will follow, comprised of segments that either have a fixed or unfixed/random order:\begin{itemize}
+        \item \textbf{Fixed} similar to the history this is a collection of songs which are played through in order
+        \item \textbf{Unfixed} the next song to be played is randomly chosen from a collection of 1 or more songs
+        \item \textbf{Trajectory} this is the n-dimensional vector between the next song and the current song
+    \end{itemize}
+\end{itemize}
+
+Both viewing history and the currently playing track are easily viewable and interactable in Spotify (and other streaming services). Spotify does allow for creating and interacting with the future aspect of queues, both fixed and unfixed, however the process to do so still has some friction and can only be done over the entire queue:\begin{itemize}
+    \item Fixed Order Queue \(\to\) the user must manually locate and add songs one by one to create a fixed order queue% simple process but can be tedious having to locate each song, especially if they are not stored together -> Vedarth + Riya
+    \item Fixed Order Segment \(\to\) a user can reorder songs in the queue to ensure that those songs are played in a fixed order% very easy to do
+    \item Unfixed Order Queue \(\to\) a user can click shuffle play to create a new queue of all the songs in a playlist, which have been shuffled to be in a random order. Also they can shuffle the queue once it exists to randomise the order of songs within it. % also very easy
+    \item Unfixed Order Segment \(\to\) should a user want to listen to 5 songs in a specific order, then listen to 15 different songs in a random order, then another five songs in a fixed order, there is no built-in way to do this.\begin{itemize}
+        \item First the user would have to wait until they've listened through the first 5 fixed order songs.
+        \item Then they would have to remember the 5 fixed-order songs they want to listen to at the end and remove those songs from the queue
+        \item They could then shuffle the remaining 15 songs to achieve an unfixed/random order.
+        \item If they are happy with the shuffle then they can re-add the final 5 fixed-order songs.
+        \item However, if at any point they want to reshuffle the queue (but only the random-order songs) they have to go through the entire process again.
+    \end{itemize}
+\end{itemize}
+
+As can be seen above, whilst Spotify does allow for creating both fixed and unfixed queues, they do not have a way of easily creating unfixed sections of the queue (without losing any desired fixed sections). This project aimed to provide a way for accomplishing this by using the graph visualisations as a base.
+
+Unfortunately, as explained in the Project Retrospective chapter, this feature was not implemented and as such could not be fully tested. However, many participants noted that they would like to see this feature added to Spotify so that they could create song queues with both fixed-order and unfixed-order sections in their queue.
+%!-- Now what?? Should this have been in the introduction?
+
+\subsubsection{Listening Journey Trajectory}
+A listening journey can also be thought of in terms of its trajectory, both between 2 songs, and over multiple songs. These trajectories are comprised of n-dimensional vectors, where n is the sum of all attributes and metadata on a song.
+
+This project aimed at visualising these trajectories by rendering the listening history and upcoming queue as a line in the dynamic graph view, thereby representing all the dimensions of the songs.
+
+Unfortunately, this feature was not completed (as explained in the Project Retrospective Chapter) but when asked to the participants, they all expressed interest in seeing their past and future listening rendered as a directional line. As such this is a concept worth researching further into, to determine how useful it can be, as this was not able to be fully tested during this project.
+
+\subsection{Song Sources for Building Queues}%TODO
+When passively listening, listeners often have very little mental energy they want to allocate to controlling the music they listen to[Shruthi Quote]. The easiest way to do this is to pick a playlist and start listening within it.
+
+As such, playlists are an effective solution at reproducing listening queues. For some, one large playlist is enough (often Spotify's Liked Songs) as the listener is happy to listen to any possible sequence of songs in that large playlist. However, for others, they do not want to listen to all their songs at once[Vedarth: larger playlists lose their shuffleability], so they decompose their collection into multiple distinct playlists.
+
+These playlists contain songs which all have a common aspect, which forms the identity of the playlist. This can be anything from having a specific artist or genre in common, as well as being for a specific activity like a workout.
+
+However, due to the enclosed nature of the playlists it is difficult to know how much they overlap and what the true full collection looks like unless they are combined and rendered as one.
+
+Unfortunately, combining multiple playlists into one was a feature that was not implemented, but is worth investigating further. Many participants noted that they wanted to see how similar their playlists were to each other. Further research will be needed to analyse the behaviour of choosing what songs go into which song queues[Vedarth agreed with this]. This will be detailed further in the Future Work Section.
+
+%% --------------
+%% Difficulty in maintaining Playlists
+%% --------------
+\subsubsection{Difficulties in Maintaining Playlists}
+%todo fix this paragraph
+At first glance, these playlists seem like the perfect solution for easily recreating queues. However, maintaining these playlists can be difficult for some[Riya: playlists started to converge] and applying clean-up is usually avoided [Riya: can't be bothered to go through and remove songs] as listeners just want to listen to their music usually. They are not usually in the mood to perform spring cleaning on their collection.
+
+There is also a perceived heavy mental load associated with the process of creating playlists and adding songs to them. [Vedarth: likes the design and identity of a playlist and pulling different songs together] This puts off user's from creating new playlists with new identities with songs from their collection.[Shruthi+Vedarth would like maybe 2010's playlists but cba to make it]
+
+There is currently too much friction associated with creating playlists, even though there is a desire.
+
+%todo find source to cite how iTunes song tags are good.
+\paragraph{Automatic Generation of Playlists}
+One possible solution that was proposed in this project, but not attempted due to being low priority was song tags. These are words or phrases that can be attached to any song (similar to the genre metadata) and were a core feature of Apple's iTunes. These song tags can then be used to automatically generate playlists for that tag, taking away the tedious labour from a user. This will be explained futher in the Future Work Section.
+
+\paragraph{Buffer Zone}
+Another issue with utilising playlists effectively is adding the right songs when they're found by the user and removing ones that don't belong anymore. Most of the participants didn't remove songs, but that was also because they were more certain that a song belong to the playlist. For the participant who was less certain if a song belonged then they would add it and remove it afterwards if they deemed it necessary. A few participants also noted that they didn't always remember to add songs that they liked listening to, so they would prefer to 
+
+\section{Visualising using Continuous Attributes}
+From the feedback gained after the users interacted with the software application (the Audyssey) the following table can be constructed:
+
+
+\begin{longtable}[c]{| c | c | c | c | c|}
+    \caption{Optimal views for 1 or more songs and 1 or more continuous attributes} \\
+    \toprule
+    & \textbf{Singular Song}
+    & \textbf{Each Song} % in a playlist/ for a high number of songs
+    & \textbf{Song Distribution}
+    & \textbf{Extremities} %Both min and max
+    \\
+    \midrule
+    \endhead
+
+    \textbf{1 Attribute} & \multirow{3}{*}{Table} & Table/1D Graph & Histogram & Table \\*
+    \cmidrule{1-1}\cmidrule{3-5}
+    \textbf{2 Attributes} & & 2D Static Graph & \multirow{4}{*}{Ridge Plot} & 2D Static Graph \\*
+    \cmidrule{1-1}\cmidrule{3-3}\cmidrule{5-5}
+    \textbf{3 Attributes} & & 3D Static Graph & & 3D Static Graph \\*
+    \cmidrule{1-3}\cmidrule{5-5}
+    \multirow{2}{*}{\textbf{\>3 Attributes}} & Polar Chart/Table/ & \multirow{2}{*}{Dynamic Graph} & & Table/\\*
+    & Line over Ridge Plot & & & Dynamic Graph \\*
+    \midrule
+\end{longtable}
+
+The Static Graph view is optimal for seeing the values of each song for 2 and 3 attributes as it allows a user to explore their collection
