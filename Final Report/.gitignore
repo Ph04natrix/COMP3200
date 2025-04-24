@@ -13,4 +13,4 @@
 *.synctex.gz
 
 # Hiding this temporarily because it might be messing with the LaTeX Workshop Extension
-*.pdf
+# *.pdf
