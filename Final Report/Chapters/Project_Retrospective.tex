@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
 %%? 1st Draft In Progress
 %% ----------------------------------------------------------------
-\chapter{Project Planning Retrospective (1230 words)}
+\chapter{Project Planning Retrospective (1500 words)}
 %todo fix the intro section
 This section will explore in detail the planning and development of the project itself, throughout the stages: research, designing, development, evaluation and the final write-up.
 
@@ -20,12 +20,21 @@ This meant that I could decompose the project into its significant core parts. E
     \caption{Miro Mindmap high level overview}
 \end{figure}
 
-%! Do I talk about how it also didn;t work. Because I could hide stuff it was also a bit easier to forget about (about what???)
+%! Do I talk about how it also didn't work. Because I could hide stuff it was also a bit easier to forget about (about what???)
 
 %% ----------------------------------------------------------------
-\section{Pitfalls}
+\section{Limitations}
 %% ----------------------------------------------------------------
-There were many issues that occurred, some within my control and some due to external sources:
+There were some factors that limited this project:
+[-] Unfinished Code limiting the ability to fully evaluate the concepts
+    [-] spent too long on the Spotify and SoundCharts API stuff
+    [-] lost 1-2 weeks due to LOpSoc and AdvCompArch
+[-] Only got 6 people evaluated due to time constraints, still was very informative but more would've been better
+    [-] ideally 8-10 participants to really see the patterns
+[-] final evaluation was quite a lengthy process, should've done a mini user survey before the progress report to both find requirements and get an initial understanding. Then it would've been easier to see how the application and new concepts would've affected the listeners
+[-] should've done more research into what the attributes that Spotify was offering were earlier in the research stage (not in the development stage) as that would have led to figuring out Exportify as the better route over SoundCharts.
+    - In my defence, Spotify has obscured that the attributes were from the Echo Nest in their developer API.
+    - they also deprecated the API endpoint days before the progress report handin, a significant milestone in the project meaning that as soon as an alternative was found, I had to take what I could get
 
 %% ----------------------------------------------------------------
 \subsection{Acquiring Song Attributes for all Songs in a User's Library}
@@ -58,8 +67,7 @@ Progress was also slowed down by having a more complex application flow due to i
     Losing sight of the Goal
     Only learning and understanding the true goal of the project near the end.
 }% Lost sight of the goal at the core of this project, which was the dynamic graph
-%todo go over this bit agian
-%todo make sure to add sources and cite if needed (such as when mentioning from the evaluation)
+%todo go over this bit again + make sure to add sources and cite if needed (such as when mentioning from the evaluation)
 %% ----------------------------------------------------------------
 
 This project whilst in a limited timeframe, was still quite long, having transpired over the better part of 7 months. During this process the true goal/research questions were only fully understood quite late into the project sadly.
@@ -85,6 +93,9 @@ During the research stage, more energy was invested into where to source the son
 %%* It also helps show that the more unstructured view of the library where there is less detail is better for the general public to use on a more daily basis as it requires less mental effort to understand more
 Whereas the more detailed in-depth view of the library by looking at the distributions of specific metrics is more useful when the person allocates a specific time to go through it.
 This is because the view requires more mental energy to understand and explore it, to reach a sufficient mental understanding of it.
+
+\subsection{Scope Creep: Implementing Better Listening}
+Initially, as detailed in the project brief, this project aimed to create better listening queues by allowing for combinations of fixed and unfixed queues and greater flexibility in changing the directoin of the song queue.
 
 %% ----------------------------------------------------------------
 \section{Initial vs Final vs Ideal Project Plan}%todo find better name
@@ -115,3 +126,4 @@ Key Points:
 - either of the below:
     - do an initial survey of people before design and development -> get a better sense of requirements
     - had a review meeting with the review team on the application - was supposed to do this but hadn't finished enough code in time and they both left the country early
+    - minor thing, but should've asked if the action of skipping was annoying/effort
