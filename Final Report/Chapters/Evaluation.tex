@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
-%%? 1st Draft In Progress
+%%? 1st Draft Completed
 %% ---------------------------------------------------------------- 
-\chapter{Evaluation (1700 words)}
+\chapter{Evaluation (2700 words)}
 This project aimed to ask two research questions:\begin{itemize}
     \item \textit{how can the organisation of digital music collections be improved to better reflect people's mental models of their collections, without increasing the mental load required?}
     \item \textit{How can we improve the process of creating and controlling}
@@ -81,7 +81,7 @@ As can be seen above, whilst Spotify does allow for creating both fixed and unfi
 Unfortunately, as explained in the Project Retrospective chapter, this feature was not implemented and as such could not be fully tested. However, many participants noted that they would like to see this feature added to Spotify so that they could create song queues with both fixed-order and unfixed-order sections in their queue.
 %!-- Now what?? Should this have been in the introduction?
 
-\subsubsection{Listening Journey Trajectory}
+\subsubsection{Trajectory of a Listening Journey}
 A listening journey can also be thought of in terms of its trajectory, both between 2 songs, and over multiple songs. These trajectories are comprised of n-dimensional vectors, where n is the sum of all attributes and metadata on a song.
 
 This project aimed at visualising these trajectories by rendering the listening history and upcoming queue as a line in the dynamic graph view, thereby representing all the dimensions of the songs.
@@ -117,30 +117,86 @@ One possible solution that was proposed in this project, but not attempted due t
 \paragraph{Buffer Zone}
 Another issue with utilising playlists effectively is adding the right songs when they're found by the user and removing ones that don't belong anymore. Most of the participants didn't remove songs, but that was also because they were more certain that a song belong to the playlist. For the participant who was less certain if a song belonged then they would add it and remove it afterwards if they deemed it necessary. A few participants also noted that they didn't always remember to add songs that they liked listening to, so they would prefer to 
 
-\section{Visualising using Continuous Attributes}
-From the feedback gained after the users interacted with the software application (the Audyssey) the following table can be constructed:
+%% ----------------------------------------------------------------
+\section{FINISH | Analysing the implemented software features}%todo better name
+%% ----------------------------------------------------------------
 
+\subsection{Visualising using Continuous Attributes in a Collection of Songs}
+The Echo Nest attributes were useful in helping provide more ways for listeners to understand their music collection. Each combination of attributes and songs has a specific visualisation that was found to be the best by the users.
+
+Note: in the below table, Each Song is referring to how a song compares to the rest of the songs in the collection it belongs to.
 
 \begin{longtable}[c]{| c | c | c | c | c|}
     \caption{Optimal views for 1 or more songs and 1 or more continuous attributes} \\
     \toprule
     & \textbf{Singular Song}
     & \textbf{Each Song} % in a playlist/ for a high number of songs
-    & \textbf{Song Distribution}
+    & \textbf{Overall Distribution}
     & \textbf{Extremities} %Both min and max
-    \\
-    \midrule
-    \endhead
+    \\ \midrule \endhead
 
     \textbf{1 Attribute} & \multirow{3}{*}{Table} & Table/1D Graph & Histogram & Table \\*
     \cmidrule{1-1}\cmidrule{3-5}
-    \textbf{2 Attributes} & & 2D Static Graph & \multirow{4}{*}{Ridge Plot} & 2D Static Graph \\*
-    \cmidrule{1-1}\cmidrule{3-3}\cmidrule{5-5}
-    \textbf{3 Attributes} & & 3D Static Graph & & 3D Static Graph \\*
-    \cmidrule{1-3}\cmidrule{5-5}
-    \multirow{2}{*}{\textbf{\>3 Attributes}} & Polar Chart/Table/ & \multirow{2}{*}{Dynamic Graph} & & Table/\\*
+    \textbf{2 Attributes} & & \multicolumn{3}{c|}{2D Static Graphs} \\*
+    \cmidrule{1-1}\cmidrule{3-5}
+    \textbf{3 Attributes} & & \multicolumn{3}{c|}{3D Static Graphs} \\*
+    \midrule
+    \multirow{2}{*}{\textbf{\(>\)3 Attributes}} & Polar Chart/Table/ & \multirow{2}{*}{Dynamic Graph} & \multirow{2}{*}{Ridge Plot} & Table/\\*
     & Line over Ridge Plot & & & Dynamic Graph \\*
     \midrule
 \end{longtable}
 
-The Static Graph view is optimal for seeing the values of each song for 2 and 3 attributes as it allows a user to explore their collection
+\subsubsection{Understanding a single song using any and all attributes and metadata} No novel visualisations were required. Of note, some participants[Riya, ] liked the polar chart as a way of rendering all the continuous attributes.
+
+\subsubsection{Understanding multiple songs according to 1 attribute}
+Conventional methods sufficed: tables, histograms, bar charts, etc.
+
+\subsubsection{Understanding multiple songs according to 2 continuous attributes} The conventional method of 2-dimensional cartesian graphs were sufficient for the participants. It allowed for viewing the collection as a whole and for also looking at and comparing individual songs. Finding outliers and max and minimum points was a trivial process in this view.
+
+\subsubsection{Understanding multiple songs according to 3 continuous attributes} The 3-dimensional cartesian graph was useful here but harder to navigate and represent on a 2D desktop screen. This would be easier to interact with using a 3D medium, such as AR or VR.
+
+\subsubsection{Understanding multiple songs according to more than 3 attributes} The conventional cartesian graphs do not hold up anymore. Although it was not developed in time to be fully evaluated, the design of the dynamic graph was evaluated by the participants. Their feedback indicated that this view is an effective method of better understanding their collection using more than 3 attributes. 2 participants in particular were particularly excited as they felt it better matched their mental model of their music collection and the way they listen.
+
+Whilst the dynamic graph is good at visualising multiple songs using multiple attributes, it collapses the attributes in order to do so. This makes it harder to distinguish how each attribute is affecting the collection. To see how the collection as a whole can be represented by the attributes, the best visualisation is a ridge plot \(\to\) histograms of each continuous attribute layered over each other. This feature was designed but not implemented, so the design was evaluated, but requires further research.
+
+The participants all found the ridge plot as a significantly useful feature. 1 participant[Casper] noticed that it was very effective as mini-map of the whole collection. When combine with the range sliders for filtering, this feature had more application. 1 participant[Casper] stated that they would prefer to use this filterable ridge plot to filter out the table and graph views over the conventional filtering method.
+
+\section{Implementation Considerations}
+This section goes over what to consider should I tackle this again.
+
+\subsection{Overwhelming Choice}
+All the participants enjoyed seeing their collections according to different combinations of attributes. However, with there being 12 attributes in total that could be applied to the axis there was a significant amount of combinations to go through:\begin{itemize}
+    \item 66 combinations over 2 axes
+    \item 220 combinations over 3 axes
+\end{itemize}
+This is such high number of combinations that most people would not bother trying to go through all of them. The patricipants only went through 3 or 4. To assist with understanding and using the static cartesian graphs, 2 participants noted that they would like suggested combinations to start with. This is detailed more in the Future Work section.
+
+\subsection{The Echo Nest Attributes}%TODO Finish this section properly
+Users enjoyed being able to see their collection defined in terms of the Echo Nest attributes as some data points affirmed pre-existing thoughts about their songs.
+
+It was also an effective way of defining one's music tastes.
+
+However, not all the attributes were useful to everyone, most notably key, mode and time signature. Further testing on a higher sample size would be required to fully test which attributes are more relevant over others.
+
+The most influential dimension turned out to be time as this was easiest to interpret from the user's side.
+
+The attributes also required some explanation as they were not all self-explanatory. As such for these to be introduced in a more user-facing role and to be rolled out to the public, a walkthrough would need to be created, going through each attribute and giving a brief understandable description.
+
+%? Put in table of what attributes were the best and maybe what combos of attributes were good?
+
+\subsection{Distinguishing Songs in the Graph Views}
+The static graph views were highly effective at understanding one's entire music collection and learning the different landscapes of their collection. However, a major trade-off with the graph views (including dynamic) is the loss of individual song identifiability. 
+
+To ensure the individual songs were still identifiable in the graph views, the following options were queried with the participants to receive feedback:\begin{itemize}
+    \item[Title Text] Most recognisable and interpretable. Usually not enough space to full render however.
+    \item[Album Image Square] Less recognisable than song title, but still recognisable. Requires much less space to fully render.
+    \item[Coloured Sphere] Least recognisable but requires the least amount of space to render.
+\end{itemize}
+
+The approach taken in the project was to render the songs as 3D spheres, with planned functionality to colour them based on a discrete attribute or metadata. 5 participants[no Josh] expressed that they would want the colour to be determined by genre and 3 participants[] stated they would want to colour by the mood/vibe of the song.
+
+One participant noted that they would want to colour by artist, however this is likely due to the fact that they build their collection around a specific set of a few artists.
+
+The right method of distinguishing songs can also have a secondary bonus effect, allowing for one to roughly see the distribution of a discrete attribute/metadata on their collection.
+
+5 participants[not Riya] said they would prefer album images over 3D spheres as this method hit the right balance of not taking up too much visual space (resulting in overlap and obscurity) and still alowing for song recognition. However, they all agreed that they did not mind the song spheres as well and would only prefer the album images to render when zoomed in enough to be legibile.
