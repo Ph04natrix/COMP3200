@@ -2,7 +2,6 @@
 %%? (1st Draft Complete)
 %% ----------------------------------------------------------------
 \chapter{Introduction (980 words)}% \label{Chapter:Introduction}
-%This template was originally from \cite{Gunn:2001:pdflatex}.
 \section{Problem}
 As technology has advanced over the years, people's personal music collections have become more and more digital \cite{
     %cite the streaming percentage
@@ -54,13 +53,13 @@ Other methods using graphical spatial methods have been researched\begin{itemize
 \end{itemize}
 
 %todo do I need to give examples or find way to better explain this
-This project will employ three different organisational models:\begin{itemize}
-    \item \textbf{Clustered Table} \(\to\) %! Do I keep this here?
+This project will employ two different organisational models:\begin{itemize}
+    %\item \textbf{Clustered Table}
     \item \textbf{Static Graph} \(\to\) each song is mapped onto a cartesian grid (both 2D and 3D) where the co-ordinates of the song is determined by the numerical attribute for that axis
-    \item \textbf{Dynamic Graph} \(\to\) each song is spaced out from every other song depending on how similar they are to each other, based on both metadata (artist, genre, etc.) and attributes
+    \item \textbf{Dynamic Graph} \(\to\) each song is a node in a graph with edges between each song for each attribute and metadata. As such songs will be 'pulled' closer to together if they have a high overall similarity.
 \end{itemize}
 
-The aforementioned attributes are mid-level features analysed from the audiofile of each song \(\to\) these include the instrumentalness, loudness, energy, etc. of a track
+The aforementioned attributes are audio features analysed by the Echo Nest group. These include: instrumentalness, loudness, energy, etc.
 % these attributes will be pulled from Spotify's API as that works well if I look at people with Spotify Libraries
 
 \subsection{Replayability/Queue Building}
@@ -79,12 +78,6 @@ However, there exists no framework for creating song queues where their order is
 By using the graph-based views as the foundation, this project will investigate a song-queue building algorithm which allows for more of a guided randomness, that is allowing for songs to be randomly selected under the constraints of song metadata and attributes.
 
 This project will use a software application to act as a vehicle for testing and evaluating the aforementioned new organisational structures.
-
-% -------------------------- %! Speculation ---------------------------- %
-%* Songs could be grouped together either because they all share something that gives this group a specific identity, or because together they provide a specific listening journey.
-
-%? This collection of songs can be thought of as a database, where song queues are queries and playlists are subsets of the databse
-%* Can't find sources for this, searching difficult
 
 %% ----------------------------------------------------------------
 \section{Report Structure}
