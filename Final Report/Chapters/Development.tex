@@ -1,11 +1,62 @@
 %% ----------------------------------------------------------------
-%%! Not Started
+%%? 1st Draft In Progress
 %% ---------------------------------------------------------------- 
-\chapter{Development}
-Tech Stack used
+\chapter{Development (375 words)}
+\section{Techonology Stack}
+\subsection{Application Framework}
+To effectively implement features that integrate with the Spotify Desktop experience, a way to create desktop applications was required. This framework must allow for easy access to the Spotify API and abstract away any unnecessary functionality. As such the below two frameworks were deemed suitable with Tauri being chosen. Both of these frameworks use web-technologies for their frontend meaning they both allow for complex, intuitive UIs and simple API access.
+
+\textbf{Electron:}\begin{itemize}
+    \item[+] widely used, lots of support, very well-established
+    \item[+] packages a Chromium binary, meaning that the frontend is consistent across operating systems
+    \item[+] JavaScript frontend
+    \item[-] JavaScript backend \(\to\) difficult to ensure code safety and handle complex logic
+    \item[-] Bloated: large executable size due to packaged Chromium binary
+\end{itemize}
+
+\textbf{Tauri:}\begin{itemize}
+    \item[+] Rust Backend \(\to\) more familiar and better synergy with complex libraries
+    \item[+] Frontend Framework Agnostic \(\to\) works with any frontent \texttt{js} framework
+    \item[+] Faster and more ergonomic that Electron
+    \item[+] Uses the OS's native web renderer 
+\end{itemize}
+[+] cross-platform executable creator (something that allows for easy API usage (web-tech?) + choose frontend + can make backend as powerful as possible + ...)
+    [-] Electron
+        [+] widely used, more support, older and well-established, packages Chromium binary so frontend is easier to make sure its consistent
+        [-] fully JavaScript/TypeScript, big executable size (which doesn't really matter for this project)
+    [+] Tauri
+        [+] Rust (more familiar with), smaller .exe size
+        [-] less adoption but still good support and documentation + learning resources
+        [+] can have any frontend I want, both JS and Rust
+    [+] web-technologies - easy to understand and pick up
+[+] Front-end library (want easy to pick and helps organise code and manage state and UI changes well + compatiblity with 3d libraries for data visualisation)
+    [+] React
+        [+] more popular, more learning resources, compatibility with 3D libraries, can create composable
+    [-] Svelte
+    [-] 
+[+] Backend (Rust babyyy) - cache results from API locally to avoid
+[+] Database - for both SoundCharts and Exportify, their results are kept in a file and then this is loaded into an ECS world during runtime
+    [+] Entity-Component System - way of efficiently storing and querying data, mainly used for games but effective at parallelising heavy calculations.
+    [-] SQL
+        [+] effective and could make cloud-based (more effort than it was worth)
+        [-] unfamiliar with this
+[+] Music collection access API (featureful + well-documented + )
+    [+] Spotify
+        [?] market share?
+    [-] Apple Music
+    [-] YouTube Music - no API %todo check the Youtube API as it might be weirdly hidden in there
+[+] Sourcing Echo Nest Attributes
+    [-] Spotify (original method but then sudden deprecation)
+    [-] SoundCharts (good but not as detailed info, plus didn't give confidence interval endpoint and also paywalled which was an unreasonable amount of faff) - wasted a lot of time trying to get a workflow that allowed for not having to send repeated requests for the same song
+    [+] Exportify
+        [+] easy to use + free + shows all playlists + count + exports everything as csv file so don't have to worry about faffing about with the API.
+        [-] csv export doesn't have correct values for explicit, could of mentioned this to the creator but wasn't enough time
+
 Why Spotify's API used (is this in prior section?)
 How I sourced the EchoNest attributes
 
 Software architecture of the project?
 
 Application state diagram
+
+Diagram of the way I used the tauri API to effectively just access the flecs backend. Although the way I sent data and received data was a bit clunky. Should I have made a trait that allowed things to work together well?

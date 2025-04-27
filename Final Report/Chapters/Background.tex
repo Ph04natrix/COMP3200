@@ -3,13 +3,12 @@
 %%? Do I need to bring over some stuff from the introduction into here
 %% ---------------------------------------------------------------- 
 \chapter{Background (270 words)}
-Here we will have a systematic literature review of the prior
-approaches to this problem.
-
-And some more definitions and explanation
+Here we will have a systematic literature review of the prior approaches to this problem.
+[-] explain the difference between the two types of graphs I will use
+[-] explain what each EchoNest attribute does
 
 %% ---------------------------------------------------------------- 
-\section{Graphical Visualisation of Music Collections}
+\section{Spatial Visualisation of Music Collections}
 %% ---------------------------------------------------------------- 
 
 
@@ -20,9 +19,9 @@ And some more definitions and explanation
 There has been lots of research into analysing song similarity by performing analysis on the audio itself. This leads to extractable features that can then be used to compare songs to find their \textbf{sonic distance}.
 Analysis over the whole song leads to high-level features, including: key, chords, tempo, rhythm, genre, lyrics, etc.
 
-Music Information Retrieval (MIR) is the field of study concerned with extracting musically semantic information from audio files, primarily through the use of machine learning algorithms. One of the biggest seccessors at this was the Echo Nest, a company who analysed millions of songs to produce low-, mid- and high-level features, made public through their API.
+Music Information Retrieval (MIR) is the field of study concerned with extracting musically semantic information from audio files, primarily through the use of machine learning algorithms. One of the biggest successors at this was the Echo Nest, a company who analysed millions of songs to produce low-, mid- and high-level features, made public through their API.
 
-In 2014, the Echo Nest was bought over by Spotify, meaning that their Api was now integrated into Spotify's developer API.
+In 2014, the Echo Nest was bought over by Spotify, meaning that their API was now integrated into Spotify's developer API.
 
 There is lots of research and projects done using these Echo Nest attributes to perform data analysis on Spoitfy users' music collections, as explored below.
 
@@ -31,17 +30,28 @@ However, there has been very little research into using these high-level feature
 The attributes have been used as the basis for providing song suggestions to users, based on how they listen.
 
 There has been explorations into different ways of visually representing users music collections:
-- \textbf{ambif} - used their own feature analysis, closest thing to the Audyssey
-- \textbf{Organise Your Music} - uses Echo Nest attributes to create 2D graphs, mainly for easy playlist generation by drawing a line
+[-] \textbf{ambif} - used their own feature analysis, closest thing to the Audyssey
+    [-] built in a game engine
+    [-] used 3D static cartesian graphs
+[-] \textbf{Organise Your Music} - uses Echo Nest attributes to create 2D graphs, mainly for easy playlist generation by drawing a line
+    [-] 2D static cartesian graphs
+[-] \textbf{} 
 
 %% -------------------------------------------------------
-\subsection{EchoNest's Music Database}
+\subsection{The Echo Nest Attributes}
 %% -------------------------------------------------------
+These attributes are high-level features analysed from the audio files of song tracks by the Echo Nest group. These attributes and their confidence intervals (how accurate the values for the attributes were)
+
+
+% For each pre-existing project, talk about what it does in context of this project
 
 %todo a paragraph mentioning all the websites and tools where data analysis has been done using these attributes (or any others)
-\begin{itemize}
-    \item Exportify's Python Notebooks
-    \item 
-\end{itemize}
+\subsubsection{Definitions}
+These definitions are pulled from the 
+\paragraph{Acousticness} 
 
-\section{}
+\subsubsection{Applications}
+
+\paragraph{TODO Exportify's Python Notebooks}
+
+\paragraph{TODO Chosic}
