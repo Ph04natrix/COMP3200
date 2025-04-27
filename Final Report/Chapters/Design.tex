@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
 %%? 1st Draft In Progress
 %% ---------------------------------------------------------------- 
-\chapter{Design/Method (780 words)}
+\chapter{Design/Method (850 words)}
 
 \section{Non-Functional Requirements}
 The software application was designed with the following guidelines in mind:\begin{itemize}
@@ -74,9 +74,9 @@ Note: the below list of functional requirements have their MoSCoW prioritisation
 \section{TODO: Static Cartesian Graphs}
 %* Explain how I coded this basically
 [-] combine the different continuous attributes
-[-] 
+\subsection{TODO: UI mockups}
 
-\section{Dynamic Similarity Graph}
+\section{TODO: Dynamic Similarity Graph}
 [-] Each song is a node in the graph
 [-] Each song has multiple bidirectional weighted edges to each other song
     [-] Discrete attributes/metadata: edge is overlap of discrete metric between song A and song B
@@ -84,41 +84,18 @@ Note: the below list of functional requirements have their MoSCoW prioritisation
 [-] When rendering the graph, songs are pulled closer together depending on strength of weight:
     [-] continuous weight of 100\% - songs pulled as close together as possible
 [?] maybe have a toggle to turn off collisions? that way clusters that form might be more interesting or the graph never settles on a shape
+\subsection{TODO: UI mockup}
 
-\section{Audio Journeys}
-
-\section{TODO: UI Wireframes}%* can categorise them by the feature roadmap? Or maybe I can group sections of the roadmap
-As one of the key non-functional requirements is for the developed features to integrate into existing streaming applications, the UI was designed using Spotify's desktop interface as an inspiration.
+\section{TODO: Audio Journeys}
+[-] Storing in Data:
+    [-] Specific relationship for full audio history: `History -listened-to-time-> Song'
+    [-] can also add how much of the song was listened to but this is out of scope, but easily addable to the relationship
+[-] viewing Audio Journeys
+    [-] Table/List view: sort by time, (what else?)
+    [-] Graph:
+        [-] new range slider that is the listened to time (not sure if this replaces the added at time slider)
+        [-] just show the fully history as a static line with arrows to indicate direction
+        [-] further research to find out when it stops being readable/legible (how many songs/ time period)
+\subsection{TODO: UI mockups}
 
 \section{TODO: Storyboards}%? How many do I have of these?
-
-%todo how do I fit this into the project. Is it design or development
-%TC: ignore
-\begin{longtable}[c]{|c|c|c|p{5em}|p{5.5em}|}
-    \caption{The Echo Nest Attributes}\\%todo better caption
-    \toprule
-    \textbf{Attribute} & \textbf{Definition} & \textbf{Datatype} & \textbf{Possible Values} & \textbf{Continuous /Discrete} \\
-    \midrule
-    \endfirsthead
-
-    \textbf{Acousticness} & & \texttt{float} & \texttt{0}-\texttt{1} & \multirow{9}{*}{Continuous}\\*
-    \cmidrule{1-4}
-    \textbf{Danceability} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Energy} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Instrumentalness} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Liveness} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Loudness} & & \texttt{float} & \texttt{-60}-\texttt{0} & \\*\cmidrule{1-4}
-    \textbf{Speechiness} & & \texttt{float} & \texttt{0}-\texttt{1} & 
-    \\*\cmidrule{1-4}
-    \textbf{Valence} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Tempo} & & \texttt{float} & \(\ge\)\texttt{0} & \\*
-    \midrule
-    \textbf{Key} & & \texttt{integer} & \texttt{None}/\texttt{C}/\texttt{C\#} /\texttt{D}/\texttt{D\#}/\texttt{E}/\texttt{F} /\texttt{F\#}/\texttt{G}/\texttt{G\#}/ \texttt{A}/\texttt{A\#}/\texttt{B} & \multirow{3}{*}{Discrete}\\*
-    \cmidrule{1-4}
-    \textbf{Mode} & & \texttt{boolean} & \texttt{true}/\texttt{false} & \\*
-    \cmidrule{1-4}
-    \textbf{Time Signature} & & \texttt{integer} & \texttt{3}/\texttt{4}/\texttt{5}/\texttt{6}/\texttt{7} & \\*
-    \midrule
-    
-\end{longtable}
-%TC: endignore

@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
 %%? 1st Draft In Progress
 %% ---------------------------------------------------------------- 
-\chapter{Development (1100 words)}
+\chapter{Development (1150 words)}
 \section{Chosen Techonology Stack}
 \subsection{Application Framework: Tauri vs Electron}
 Tauri and Electron are the two main frameworks for building native applications using web technologies. They both create an executable than can be run on any operating system. Electron bundles a version of Chromium into the executable, increasing the size of the application compared to Tauri, but resulting in a consistent experience across any OS. Tauri uses the default browser of the operating system, which means it is smaller in size, but more inconsistent. As the application will mainly be tested using Windows machines, this inconsistency is not an issue.
@@ -71,6 +71,68 @@ SoundCharts has an API that allows for fetching songs with the Echo Nest attribu
 Exportify allows for the exporting of one's Spotify collection as csv files with all associated metada and attributes. These attributes are also the original precision of Spotify's endpoints.
 
 A minor bug/issue with the Exportify process is that the explicit field was not correctly filled in, meaning that all values in the csv were left empty. How this affected the project is also detailed in the Project Retrospective chapter.
+
+\section{TODO: Echo Nest Attributes \& Spotify Metadata}
+%todo how do I fit this into the project. Is it design or development
+%! Add definitions for all the attributes
+%TC: ignore
+\begin{longtable}[c]{|c|c|c|p{5em}|p{5.5em}|}
+    \caption{The Echo Nest Attributes}\\%todo better caption
+    \toprule
+    \textbf{Attribute} & \textbf{Definition} & \textbf{Datatype} & \textbf{Possible Values} & \textbf{Continuous /Discrete} \\
+    \midrule
+    \endfirsthead
+
+    \textbf{Acousticness} & & \texttt{float} & \texttt{0}-\texttt{1} & \multirow{9}{*}{Continuous}\\*
+    \cmidrule{1-4}
+    \textbf{Danceability} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
+    \textbf{Energy} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
+    \textbf{Instrumentalness} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
+    \textbf{Liveness} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
+    \textbf{Loudness} & & \texttt{float} & \texttt{-60}-\texttt{0} & \\*\cmidrule{1-4}
+    \textbf{Speechiness} & & \texttt{float} & \texttt{0}-\texttt{1} & 
+    \\*\cmidrule{1-4}
+    \textbf{Valence} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
+    \textbf{Tempo} & & \texttt{float} & \(\ge\)\texttt{0} & \\*
+    \midrule
+    \textbf{Key} & & \texttt{integer} & \texttt{None}/\texttt{C}/\texttt{C\#} /\texttt{D}/\texttt{D\#}/\texttt{E}/\texttt{F} /\texttt{F\#}/\texttt{G}/\texttt{G\#}/ \texttt{A}/\texttt{A\#}/\texttt{B} & \multirow{3}{*}{Discrete}\\*
+    \cmidrule{1-4}
+    \textbf{Mode} & & \texttt{boolean} & \texttt{true}/\texttt{false} & \\*
+    \cmidrule{1-4}
+    \textbf{Time Signature} & & \texttt{integer} & \texttt{3}/\texttt{4}/\texttt{5}/\texttt{6}/\texttt{7} & \\*
+    \midrule
+    
+\end{longtable}
+%TC: endignore
+
+%TC: ignore
+\begin{longtable}[c]{|c|p{7.5em}|p{7.5em}|p{5em}|p{5.5em}|}
+    \caption{Spotify's Metadata}\\%todo better caption
+    \toprule
+    \textbf{Metadata} & \textbf{Definition} & \textbf{Datatype} & \textbf{Possible Values} & \textbf{Continuous /Discrete} \\
+    \midrule
+    \endfirsthead
+
+    \textbf{Title} & The full name of the track & \texttt{String} & Unicode & \multirow{4}{*}{Discrete} \\*
+    \cmidrule{1-4}
+    \textbf{Album} & What this track belongs to & \texttt{String} & Unicode & \\*
+    \cmidrule{1-4}
+    \textbf{Artist(s)} & The artist(s) that contributed to this track & \texttt{String[]} & Unicode & \\*
+    \cmidrule{1-4}
+    \textbf{Explicit} & Whether the track contains explicit words & \texttt{bool} & \texttt{true}/\texttt{false} & \\*
+    \cmidrule{1-5}
+    \textbf{Duration} & Length of the track (in ms) & \texttt{Integer} & \texttt{\(\ge\) 0} & \multirow{3}{*}{Continuous}\\*
+    \cmidrule{1-4}
+    \textbf{Popularity} & How 'popular' a track is, based on recent streams and other factors& \texttt{Integer} & \texttt{0-100} & \\*
+    \cmidrule{1-4}
+    \textbf{Added At} & UTC timestamp this track was added to a playlist & \texttt{String} & Unknown-Now&\\*
+    \cmidrule{1-5}
+    \textbf{Playlist(s)} & All (of a user's) playlists containing this song & \texttt{String[]} & Unicode & \multirow{2}{*}{Discrete}\\*
+    \cmidrule{1-4}
+    \textbf{Genre(s)} & List of genres and sub-genres & \texttt{root: String, sub: String[]} & Unknown &\\*
+    \midrule
+\end{longtable}
+%TC: endignore
 
 \section{TODO: Architecture}%! what do I put here???
 Diagram of the way I used the tauri API to effectively just access the flecs backend. Although the way I sent data and received data was a bit clunky. Should I have made a trait that allowed things to work together well?
