@@ -1,62 +1,96 @@
 %% ----------------------------------------------------------------
 %%? 1st Draft In Progress
 %% ---------------------------------------------------------------- 
-\chapter{Development (375 words)}
+\chapter{Development (1100 words)}
 \section{Techonology Stack}
-\subsection{Application Framework}
-To effectively implement features that integrate with the Spotify Desktop experience, a way to create desktop applications was required. This framework must allow for easy access to the Spotify API and abstract away any unnecessary functionality. As such the below two frameworks were deemed suitable with Tauri being chosen. Both of these frameworks use web-technologies for their frontend meaning they both allow for complex, intuitive UIs and simple API access.
+\subsection{Application Framework: Tauri vs Electron}
+Tauri and Electron are the two main frameworks for building native applications using web technologies. They both create an executable than can be run on any operating system. Electron bundles a version of Chromium into the executable, increasing the size of the application compared to Tauri, but resulting in a consistent experience across any OS. Tauri uses the default browser of the operating system, which means it is smaller in size, but more inconsistent. As the application will mainly be tested using Windows machines, this inconsistency is not an issue.
 
-\textbf{Electron:}\begin{itemize}
-    \item[+] widely used, lots of support, very well-established
-    \item[+] packages a Chromium binary, meaning that the frontend is consistent across operating systems
-    \item[+] JavaScript frontend
-    \item[-] JavaScript backend \(\to\) difficult to ensure code safety and handle complex logic
-    \item[-] Bloated: large executable size due to packaged Chromium binary
+The main difference between Tauri and Electron resides in the backend; Electron is JavaScript-based, whilst Tauri is Rust-based. Due to the type-safety and prior experience in Rust, Tauri is the more optimal choice for the backend. Tauri also integrates with any frontend framework much simpler than Electron does (Electron requires more manual setup). 
+
+Tauri is less widely-used than Electron however, meaning there is less community support. However, Tauri is still well-documented and has very open forums for support.
+
+As both frameworks use web technologies, accessing a user's music collection via API is trivial.
+
+\subsection{Frontend Library}
+React.js was chosen as the frontend framework for this project for the following reasons:\begin{itemize}
+    \item[\textbf{+}] Breaks down the code into reusable components that can be inserted and removed easily.
+    \item[\textbf{+}] Virtual DOM: only the parts of the UI that have changed are re-rendered, meaning the entire UI doesn't have to re-render for any update
+    \item[\textbf{+}] Widespread adoption (highest community and industry use), lots of support and excellent documentation
+    \item[\textbf{+}] Full compatibility with three.js, an excellent 3D data visualisation library.
+    \item[\textbf{+}] Highly effective at managing state.
+    %\item[\textbf{-}] Learning time required
 \end{itemize}
 
-\textbf{Tauri:}\begin{itemize}
-    \item[+] Rust Backend \(\to\) more familiar and better synergy with complex libraries
-    \item[+] Frontend Framework Agnostic \(\to\) works with any frontent \texttt{js} framework
-    \item[+] Faster and more ergonomic that Electron
-    \item[+] Uses the OS's native web renderer 
+\subsubsection{Data Visualisation}
+Whilst using a specialised data visualisation library would be easier to use and intepret, it would be too restrictive in making the views interactive. As such three.js a 'lower-level' library was chosen even though it requires more work to create the static cartesian graphs.
+
+Three.js was chosen partly due to its synergy with React (via the \lstinline|react-three-fiber| library) and mostly for its more flexible nature. This library allows the user to build complex 3D scenes using primitive 2D and 3D shapes. As such it works well for creating the static and dynamic graphs, polar charts and ridge plots.
+
+\subsection{Backend}
+\subsubsection{Database: Entity Component System}
+To store a user's songs, collection structure and the song attributes a local storage approach was taken. Cloud-based would be effective at allowing for access from multiple devices, however this was considered out of scope and not worth the extra development.
+
+To efficiently store and query the data locally, the \lstinline|flecs| library (which has Rust bindings) was chosen:\begin{itemize}
+    \item[\textbf{+}] Entity Component System - alternative paradigm to object-oriented programming, execellent at storing and querying large amounts of data efficiently, very good at parallelising complex logic. Mainly used for game engines.
+    \item[\textbf{+}] Rust-bindings and very lightweight \(\to\) slots easily into the project %with a minor bit of faff
+    \item[\textbf{+}] Rich support for relationships \(\to\) easy to create and query graphs using the data.
 \end{itemize}
-[+] cross-platform executable creator (something that allows for easy API usage (web-tech?) + choose frontend + can make backend as powerful as possible + ...)
-    [-] Electron
-        [+] widely used, more support, older and well-established, packages Chromium binary so frontend is easier to make sure its consistent
-        [-] fully JavaScript/TypeScript, big executable size (which doesn't really matter for this project)
-    [+] Tauri
-        [+] Rust (more familiar with), smaller .exe size
-        [-] less adoption but still good support and documentation + learning resources
-        [+] can have any frontend I want, both JS and Rust
-    [+] web-technologies - easy to understand and pick up
-[+] Front-end library (want easy to pick and helps organise code and manage state and UI changes well + compatiblity with 3d libraries for data visualisation)
-    [+] React
-        [+] more popular, more learning resources, compatibility with 3D libraries, can create composable
-    [-] Svelte
-    [-] 
-[+] Backend (Rust babyyy) - cache results from API locally to avoid
-[+] Database - for both SoundCharts and Exportify, their results are kept in a file and then this is loaded into an ECS world during runtime
-    [+] Entity-Component System - way of efficiently storing and querying data, mainly used for games but effective at parallelising heavy calculations.
-    [-] SQL
-        [+] effective and could make cloud-based (more effort than it was worth)
-        [-] unfamiliar with this
-[+] Music collection access API (featureful + well-documented + )
-    [+] Spotify
-        [?] market share?
-    [-] Apple Music
-    [-] YouTube Music - no API %todo check the Youtube API as it might be weirdly hidden in there
-[+] Sourcing Echo Nest Attributes
-    [-] Spotify (original method but then sudden deprecation)
-    [-] SoundCharts (good but not as detailed info, plus didn't give confidence interval endpoint and also paywalled which was an unreasonable amount of faff) - wasted a lot of time trying to get a workflow that allowed for not having to send repeated requests for the same song
-    [+] Exportify
-        [+] easy to use + free + shows all playlists + count + exports everything as csv file so don't have to worry about faffing about with the API.
-        [-] csv export doesn't have correct values for explicit, could of mentioned this to the creator but wasn't enough time
 
-Why Spotify's API used (is this in prior section?)
-How I sourced the EchoNest attributes
+This heavy support for relationships helps with storing and accessing the structure of a user's collection. It also makes it easy to create the dynamic graph view.
 
-Software architecture of the project?
+Bevy, another ECS library written in Rust was considered, however it has significantly worse support for relationships and is less featureful in general.
 
+%%%* Should have just put the API keys and stuff in a singleton or something in the flecs world. Would've meant that I could use the API tokens without needing to pull it from state.
+
+\section{Accessing a user's Digital Music Collection}
+There are many applications that allow for streaming music and creating music collections. Most of these applications have an API to easily work with, however these vary in their effectiveness. The chosen streaming application for this project was Spotify:\begin{itemize}
+    \item[\textbf{+}] Extensive and reliable API
+    \item[\textbf{+}] Free API access (Premium account required for controlling playback and song queues)
+    \item[\textbf{+/-}] endpoints for detailed attributes for any song (now deprecated)
+    \item[\textbf{-}] Risk of API deprecation or major breaking changes to the API
+\end{itemize}
+
+Whilst there have been major changes to the API that significantly affected the project, this API is still the most feature complete and easiest to use.
+%? maybe make the below a list to reduce word count/streamline this section
+Apple Music was considered due to also having a considerable market share and extensive API, but was not chosen due to not wanting to be locked to iOS users. YouTube music, another popular streaming service, was considered however they have no official API.
+
+Pandora is a US-based streaming service that also has attributes on their songs in their Music Genome project, however their API is paywalled and region locked to the USA. Amazon music also has a high market share but their API is only in a closed beta so it was not considered.
+
+\section{Sourcing the Echo Nest Attributes}
+Initially Spotify was the source for fetching song attributes as Spotify was already the chosen API for accessing a user's music collection.
+
+However, due to Spotify's deprecation of these endpoints (\lstinline|Get Track's Audio Features| and \lstinline|Get Track's Audio Analysis|) an alternative method was required. For most of the development process SoundCharts's API was used. This was then switched to Exportify instead due to reasons explained in the project retrospective. Where relevant both workflows will be shown in this chapter.
+
+Note that if the more ideal approach is using Exportify.
+
+\subsection{SoundCharts}
+SoundCharts has an API that allows for fetching songs with the Echo Nest attributes attached. However, these attribute values are to a significantly lesser precision. Another issue with the API is that it is paywalled. There is a free trial, however this was only for 500 API calls which was only sufficient for development and not the final evaluation.
+
+\subsection{Exportify}
+Exportify allows for the exporting of one's Spotify collection as csv files with all associated metada and attributes. These attributes are also the original precision of Spotify's endpoints.
+
+A minor bug/issue with the Exportify process is that the explicit field was not correctly filled in, meaning that all values in the csv were left empty. How this affected the project is also detailed in the Project Retrospective chapter.
+
+\section{TODO: Architecture}%! what do I put here???
+Diagram of the way I used the tauri API to effectively just access the flecs backend. Although the way I sent data and received data was a bit clunky. Should I have made a trait that allowed things to work together well?
+
+[-] someone interacts with the react frontend, ts function calls \texttt{invoke("rust\_function")} by using tauri API
+[-] tauri finds the unique function with name \texttt{rust\_function} and runs that function
+[-] if that function needs to access the songs/collection a flecs query is created and run.
+[-] data is then sent back to the frontend via listening for events or as the callback to the frontend function that did the invoking
+
+\section{TODO: Application State Flow}
 Application state diagram
 
-Diagram of the way I used the tauri API to effectively just access the flecs backend. Although the way I sent data and received data was a bit clunky. Should I have made a trait that allowed things to work together well?
+\section{TODO: Development Methodology}
+[-] Decided on a agile customer driven approach.
+[-] had a meeting with Dhruv + Josh who said that maybe think more about playlists so planned to start thinking about the project in terms of looking at specific playlists. Started off with library during development as that was easiest.
+[-] did learn lots of things that would be cool but out of scope
+    [-] the 3d static+dynamic graphs would be good for AR/VR
+    [-] learnt that Dhruv is fully active and Josh is more passive wants to listen around a song
+[-] was supposed to do another meeting on a mvp but didn't finish in time to organise meeting before the evaluation
+
+\section{TODO: How I coded the features like the graphs}
+
+%%% Talk about how I coded the project, being more pseudocodey, as in more alluding to how the code works, so it could be theoretically replicated in another language.

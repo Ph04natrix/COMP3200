@@ -37,14 +37,16 @@ There were some factors that limited this project:
     - they also deprecated the API endpoint days before the progress report handin, a significant milestone in the project meaning that as soon as an alternative was found, I had to take what I could get
 
 %% ----------------------------------------------------------------
-\subsection{Acquiring Song Attributes for all Songs in a User's Library}
+\subsection{Spotify Deprecating Access of Echo Nest Attributes}
 %% ----------------------------------------------------------------
 [2014] Spotify buys EchoNest - now EchoNest's API is locked behind a Spotify Premium Account (this wasn't an issue due to already having a premium account, but this is a paywall), however this was also a sort of blessing in disguise as it would've meant that I only need to work with one API.
     
 [27 Nov 2024] Spotify announces they are deprecating several endpoints for applications made after the 27th November - these endpoints included both \lstinline|Get Track's Audio Features| and \lstinline|Get Track's Audio Analysis| which were key for the project
 
 These audio features (or attributes) were necessary as they would provide the numerical basis for mapping the songs and helping control the audio journeys.
-To ensure that this didn't derail the project, after much searching an alternative was found, namely the SoundCharts API. This API had an endpoint, that given a track's Spotify ID, would provide the attribute data that Spotify had deprecated access to.
+
+o ensure that this didn't derail the project, after much searching an alternative was found, namely the SoundCharts API. This API had an endpoint, that given a track's Spotify ID, would provide the attribute data that Spotify had deprecated access to.
+
 However, this data was less accurate (only to 2 decimal places) and was also behind a paywall. For one month, the cost of access for 500,000 API calls at a 30\% academic discount amounted to 125 USD. This was within the budget of the project. Initially, the plan was to purchase one month once development had finished. As such the API access would be used only when it was fully needed.
 
 [Late March 2025] Due to significant issues with purchasing the API access using the University's system, another alternative method to gaining the attributes had to be found. This solution was found in Exportify, a web tool built by Pavel Komarov. This tool accesses the Spotify API, including the newly deprecated endpoints, to allow for exporting a spotify user's library to a \lstinline|.csv| file.
@@ -52,6 +54,8 @@ However, this data was less accurate (only to 2 decimal places) and was also beh
 This tool was made before the deprecation announcement and is free to use, making it a very suitable replacement. Futhermore, the attribute values are to the original precision as provided by Spotify. The tool also allowed for exporting of individual playlists, making it easier for my software application to know how one's full collection was composed by the playlists and the catch-all liked songs.
 
 Unfortunately, due to the sudden nature of the Spotify deprecation announcement, an alternative had to be chosen very quickly meaning that Exportify wasn't found until very, very late in development. This meant that the API setup portion of the project took longer than it theoretically could've, as the workflow using Exportify's \lstinline|.csv| files is much simpler (as shown in the figure NUMBER below). The ideal method would've been to continue searching for alternatives after finding SoundCharts allowing for Exportify to be found sooner and be integrated into the application state flow from the start, however due to the time constraint in needing to submit a project brief, this was not done.%\includegraphics[]{} %todo Show the setup flow with SoundCharts versus with Exportify
+
+SoundCharts - (good but not as detailed info, plus didn't give confidence interval endpoint and also paywalled which was an unreasonable amount of faff) - wasted a lot of time trying to get a workflow that allowed for not having to send repeated requests for the same song
 
 %%? ----------------------------------------------------------------
 \subsection{Unfinished Code in the Development Stage}
