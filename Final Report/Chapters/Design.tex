@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
 %%? 1st Draft In Progress
 %% ---------------------------------------------------------------- 
-\chapter{Design/Method (785 words)}
+\chapter{Design/Method (780 words)}
 
 %? Is this redundant
 The instrument for testing and evaluation these new models of digital music collection organisation and song queue creation was decided to be a software application.
@@ -86,3 +86,41 @@ Gaining EchoNest attributes - was SoundCharts, then switched to Exportify
 Tech Stack - Tauri - access to web technologies, meaning making UI should be easier, as the backend complexity of this project is not as complex, the UI is more important??? %? is it actually?
 
 Frontend Framework - React - very popular, making it easier to learn and find support. Also has good support for 3js a 3D visualising library that is suitable for creating my novel visualisations
+
+%todo how do I fit this into the project. Is it design or development
+%TC: ignore
+\begin{longtable}[c]{|c|c|c|c|c|}
+    \caption{The Echo Nest Attributes}\\%todo better caption
+    \toprule
+    \textbf{Attribute} & \textbf{Definition} & \textbf{Datatype} & \textbf{Possible Values} & \textbf{Continuous/Discrete} \\
+    \midrule
+    \endfirsthead
+
+    \textbf{Acousticness} & & \lstinline|float| & \lstinline|0|-\lstinline|1| & Continuous\\
+    \midrule
+    \textbf{Danceability} & & \lstinline|float| & \lstinline|0|-\lstinline|1| & Continuous\\
+    \midrule
+    \textbf{Energy} & & \lstinline|float| & \lstinline|0|-\lstinline|1| & Continuous\\
+    \midrule
+    \textbf{Instrumentalness} & & \lstinline|float| & \lstinline|0|-\lstinline|1| & Continuous\\
+    \midrule
+    \textbf{Liveness} & & \lstinline|float| & \lstinline|0|-\lstinline|1| & Continuous\\
+    \midrule
+    \textbf{Loudness} & & \lstinline|float| & \lstinline|-60|-\lstinline|0| & Continuous\\
+    \midrule
+    \textbf{Speechiness} & & \lstinline|float| & \lstinline|0|-\lstinline|1| & 
+    Continuous\\
+    \midrule
+    \textbf{Valence} & & \lstinline|float| & \lstinline|0|-\lstinline|1| & Continuous\\
+    \midrule
+    \textbf{Tempo} & & \lstinline|float| & \(\ge\)\lstinline|0| & Continuous\\
+    \midrule
+    \textbf{Key} & & \lstinline|integer| & \lstinline|None|/\lstinline|C|/\lstinline|C#|/\lstinline|D|/\lstinline|D#|/\lstinline|E|/\lstinline|F|/\lstinline|F#|/\lstinline|G|/\lstinline|G#|/\lstinline|A|/\lstinline|A#|/\lstinline|B| & Discrete\\
+    \midrule
+    \textbf{Mode} & & \lstinline|boolean| & \lstinline|true|/\lstinline|false| & Discrete\\
+    \midrule
+    \textbf{Time Signature} & \lstinline|integer| & \lstinline|3|/\lstinline|4|/\lstinline|5|/\lstinline|6|/\lstinline|7|/ & Discrete\\
+    \midrule
+    
+\end{longtable}
+%TC: endignore
