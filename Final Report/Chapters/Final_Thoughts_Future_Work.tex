@@ -1,31 +1,53 @@
 %% ----------------------------------------------------------------
-%%! Planned, need to Finish 1st Draft
+%%? 1st Draft In Progress (Future Work Done, Conclusion TODO)
 %% ---------------------------------------------------------------- 
-\chapter{TODO: Conclusion (250 words)}% Treat this as a continuation of the introduction, sumarising all the prior sections.
-
+\chapter{TODO: Conclusion (460 words)}% Treat this as a continuation of the introduction, sumarising all the prior sections.
 %* This is under the Lessons Learned heading in Notion
 
+%%* --- About Static Graphs ---
+%However, this feature is not entirely destructive to this project as it confirmed that the cartesian static graph method of representing song libraries is not useful..
+
+%%* It also helps show that the more unstructured view of the library where there is less detail is better for the general public to use on a more daily basis as it requires less mental effort to understand more
+% Whereas the more detailed in-depth view of the library by looking at the distributions of specific metrics is more useful when the person allocates a specific time to go through it.
+% This is because the view requires more mental energy to understand and explore it, to reach a sufficient mental understanding of it.
+
 \section{Future Work}
-\subsection{User-Requested Features}
-[-] Buffer zone for songs that have been recently listened to
-    [-] added/viewable in collection but show that they aren't fully part of the collection yet
-    [-] if this grows too much might come across the issue of people not wanting to deal with it.
-    [-] need to be careful to figure out how to make it actually useful and not overwhelming for a user
-    [-] how does this relate to song suggestions? are they one and the same or close enough??
+\subsection{Buffer Zone for New and Suggested Songs}
+When a song that isn't already in a user's library is listened to, this song will be added to the collection, but only partially. These songs should have a distinguishing visual identifier that shows that they aren't fully part of the collection yet.
 
-\subsubsection{Customisable Presets: Attribute Combinatinos}
-Thiis feature would help to handle the significantly large scale in the possible combinations of attributes for the static cartesian graphs.
-    [-] require a lot of research into the different shapes and distributions that appear for all combinations
-    [-] need a largre varied data set
-    [-] possibly have to find an algorithm or automatable way to see if a distribution might be more useful than another
-    [-] need to build a ranking list effectively of all the combinations
+To fully add these songs, they can either be automatically added after a certain number of listens within a timeframe (and likewise possibly removed if they don't reach this number) or also manually added/disliked by the user.
 
-\subsection{Further Research}
-[-] Rendering listening history
-[-] Auto-generating Playlists, possibly using song tags as a base
-[-] Adding Song tags
-    [-] explicit is an example of a pre-existing tag, however there is a lot of complexity involved with letting users create and add tags.
-    [-] would have to research into how iTunes did their tags and what went well and what didn't (Obsidian and any others as well)
-    [-] automatic tag adding is desired for adding tags to a high volume of songs
-    [-] make them hierarchical like the way genre works?
-[-] Figuring out how to make this research more mobile friendly as more people listen using their phones\cite{} %todo CITE
+This buffer zone could also act as a way to introduce song suggestions from Spotify or also friends of the user.
+
+This feature would also require research into ensuring that the user does not get overwhelmed by a large number of songs in this buffer zone.
+
+\subsection{Customisable Presets: Attribute Combinations}
+This feature would help to handle the significantly large number ofthe possible combinations of attributes for the static cartesian graphs. Users would be presented with suggested attribute combinations to get started exploring. They could then configure these presets to tailor the static graphs that are most meaningful to them.
+
+Further research would be required to figure out the best default combinations to show as this would require ranking all possible combinations using a very large and varied data set. These may also vary depending on the distributions of a user's collection of songs they are viewing.
+
+\subsection{Storing and Viewing Listening Histories}
+Although listening histories were initially scoped into the project, there is a lot of hidden complexity in storing sections of a user's full listening history. Then being able to create a mechanism to easily re-listen to these sections of the full listening history (but in a different order) is another complex challenge that requires further research and investigation.
+
+The main complexity resides in the datatypes used to efficiently store sections of the full listening history: whether to use an array, a linked list, a sub-graph or a more complex datatype.
+
+\subsection{Automatic Creation and Management of Playlists}
+This feature would allow for playlists to be automatically created based on certain ranges of attributes. This would effectively allow for overlapping subsets of the dynamic graphs, so users can easily look at specific parts of their collection without having to go through the mentally taxing process of creating a playlist themself.
+
+These defined regions could also be created using custom user tags, explained below.
+
+\subsection{User-added Song Tags}
+These are strings that can be added to songs, similar to how Explicit functions in Spotify. These tags are usually implemented with a flat nature, that is they are all distinct from each other.
+
+This implementation of song tags is a very popular feature of iTunes. However, there isn't research on using these custom tags as a method of helping to manipulte the structure of the dynamic graph. Users can add tags to account for missing information or ways to introduce similarity that is personal to them.
+
+One issue with adding song tags is that this can be quite a mentally taxing activity. As such a potential avenue for research would be to adapt the Apple Photos approach where photos are automatically classified using machine learning. Users would then be able to modify and configure these tags, meaning most of the grunt work is done for them.
+
+These tags would also require investigation into the benefits and tradeoffs of hierarchical tags (similar to Spotify's genres) where each tag can have a set of sub-tags.
+
+%* Common theme of do as much as possible for the user and then give them the freedom to tweak the little bits to their needs.
+
+\subsection{Other Mediums}
+The Audyssey was only designed and developed for desktop, however most people use Spotify on their phones \cite{}. As such more research is required to figure out how to best translate the static and dynamic graph views to be accessible on mobile.
+
+Further research also needs to be done in seeing how well the graph views perform in mixed reality, where the 3D graphs are easier to navigate and explore.
