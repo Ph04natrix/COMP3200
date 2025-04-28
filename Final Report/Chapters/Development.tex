@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
 %%? 1st Draft In Progress
 %% ---------------------------------------------------------------- 
-\chapter{Development (1150 words)}
+\chapter{Development (1850 words)}
 \section{Chosen Techonology Stack}
 \subsection{Application Framework: Tauri vs Electron}
 Tauri and Electron are the two main frameworks for building native applications using web technologies. They both create an executable than can be run on any operating system. Electron bundles a version of Chromium into the executable, increasing the size of the application compared to Tauri, but resulting in a consistent experience across any OS. Tauri uses the default browser of the operating system, which means it is smaller in size, but more inconsistent. As the application will mainly be tested using Windows machines, this inconsistency is not an issue.
@@ -28,7 +28,7 @@ Whilst using a specialised data visualisation library would be easier to use and
 Three.js was chosen partly due to its synergy with React (via the \lstinline|react-three-fiber| library) and mostly for its more flexible nature. This library allows the user to build complex 3D scenes using primitive 2D and 3D shapes. As such it works well for creating the static and dynamic graphs, polar charts and ridge plots.
 
 \subsection{Backend}
-\subsubsection{Database: Entity Component System}
+\subsubsection{Database: Fast and Lightweight Entity Component System (FLECS)}
 To store a user's songs, collection structure and the song attributes a local storage approach was taken. Cloud-based would be effective at allowing for access from multiple devices, however this was considered out of scope and not worth the extra development.
 
 To efficiently store and query the data locally, the \lstinline|flecs| library (which has Rust bindings) was chosen:\begin{itemize}
@@ -36,6 +36,7 @@ To efficiently store and query the data locally, the \lstinline|flecs| library (
     \item[\textbf{+}] Rust-bindings and very lightweight \(\to\) slots easily into the project %with a minor bit of faff
     \item[\textbf{+}] Rich support for relationships \(\to\) easy to create and query graphs using the data.
 \end{itemize}
+%todo maybe cite the flecs main page here?
 
 This heavy support for relationships helps with storing and accessing the structure of a user's collection. It also makes it easy to create the dynamic graph view.
 
@@ -62,7 +63,7 @@ Initially Spotify was the source for fetching song attributes as Spotify was alr
 
 However, due to Spotify's deprecation of these endpoints (\lstinline|Get Track's Audio Features| and \lstinline|Get Track's Audio Analysis|) an alternative method was required. For most of the development process SoundCharts's API was used. This was then switched to Exportify instead due to reasons explained in the project retrospective. Where relevant both workflows will be shown in this chapter.
 
-Note that if the more ideal approach is using Exportify.
+Note that the more ideal approach is using Exportify.
 
 \subsection{SoundCharts}
 SoundCharts has an API that allows for fetching songs with the Echo Nest attributes attached. However, these attribute values are to a significantly lesser precision. Another issue with the API is that it is paywalled. There is a free trial, however this was only for 500 API calls which was only sufficient for development and not the final evaluation.
@@ -72,9 +73,39 @@ Exportify allows for the exporting of one's Spotify collection as csv files with
 
 A minor bug/issue with the Exportify process is that the explicit field was not correctly filled in, meaning that all values in the csv were left empty. How this affected the project is also detailed in the Project Retrospective chapter.
 
-\section{TODO: Echo Nest Attributes \& Spotify Metadata}
-%todo how do I fit this into the project. Is it design or development
-%! Add definitions for all the attributes
+\section{TODO: Architecture}%! what do I put here???
+Diagram of the way I used the tauri API to effectively just access the flecs backend. Although the way I sent data and received data was a bit clunky. Should I have made a trait that allowed things to work together well?
+
+[-] someone interacts with the react frontend, ts function calls \texttt{invoke("rust\_function")} by using tauri API
+[-] tauri finds the unique function with name \texttt{rust\_function} and runs that function
+[-] if that function needs to access the songs/collection a flecs query is created and run.
+[-] data is then sent back to the frontend via listening for events or as the callback to the frontend function that did the invoking
+
+\subsection{Entity-Component Database Structure}
+Flecs has a concept of a world which is the data structure that stores all the entities and the components (amongst other things). To ensure efficient querying of these entities using their components, the entities are organised into multiple tables based on their archetype.
+
+Archetypes are the groupings of entities that have the same components. This decomposition allows for high query efficiency even when there are lost of different groups. 
+
+\subsubsection{TODO EntRel Diagram}
+\begin{figure}
+    \caption{The Audyssey's Entities, Components and Relationships}
+    %todo entitiy relationship diagram of
+    % Song
+    % Artist
+    % Album
+    % Playlist
+    % Listening History (only one)
+    %? Spotify User (mainly for showing playlist creators and who added what songs)
+\end{figure}
+
+Flecs allows for adding \texttt{Tag} components to entities, that is a component where there is no data associated with it. These tags were used to define the different archetypes that exist in the application.
+
+Note that the \texttt{MissingAttributes} component is deprecated as it was only required to the SoundCharts workflow.
+
+The only entity where there is one of is the listening history.
+%? The Spotify User entities are mainly to help track who created which playlist (for filtering) and to 
+
+\subsection{(TODO add attribute definitions) Echo Nest Attributes \& Spotify Metadata}%! Add definitions for all the attributes + How do I link these to the ECS components that I have mentioned before?
 %TC: ignore
 \begin{longtable}[c]{|c|c|c|p{5em}|p{5.5em}|}
     \caption{The Echo Nest Attributes}\\%todo better caption
@@ -134,25 +165,71 @@ A minor bug/issue with the Exportify process is that the explicit field was not 
 \end{longtable}
 %TC: endignore
 
-\section{TODO: Architecture}%! what do I put here???
-Diagram of the way I used the tauri API to effectively just access the flecs backend. Although the way I sent data and received data was a bit clunky. Should I have made a trait that allowed things to work together well?
+\section{TODO: Application State Flow (+ Diagram)}
+%todo Application state diagram
+\subsection{Spotify Authorisation}
+To gain a user-specific API access token, Spotify's OAuth authorisation flow was implemented based on this \href{https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow}{official guide}. This API token expires after an hour and requires sending another request to refresh this, however this mechanism was not implemented due to being needed. Once this access token has been retrieved and stored, the user's library can be loaded.
 
-[-] someone interacts with the react frontend, ts function calls \texttt{invoke("rust\_function")} by using tauri API
-[-] tauri finds the unique function with name \texttt{rust\_function} and runs that function
-[-] if that function needs to access the songs/collection a flecs query is created and run.
-[-] data is then sent back to the frontend via listening for events or as the callback to the frontend function that did the invoking
+\subsection{Downloading User's Library (with Echo Nest Attributes)}
+\subsubsection{SoundCharts API}
+A full breakdown of this process can be found in \ref{appendix::Miro}, but here are the high-level steps:\begin{itemize}
+    \item Request Spotify for all songs in a user's library
+    \item Read serialized songs from a file into memory
+    \item Fetch User's Spotify Library (only Liked Songs due to time constrains)
+    \item Update songs missing attributes by requesting the SoundCharts API
+\end{itemize}
 
-\section{TODO: Application State Flow}
-Application state diagram
+\subsubsection{Exportify}
+A full breakdown of this process can be found in \ref{appendix::Miro}, but here are the high-level steps:\begin{itemize}
+    \item Login to \href{https://exportify.net/}{Exportify.net}
+    \item Export a chosen playlist as a \texttt{.csv} file
+    \item Convert the \texttt{csv} entries into flecs entities
+    \item Fill missing fields (this was not implemented during this setup stage, but was done on-demand when a user clicked on a song)
+\end{itemize}
 
-\section{TODO: Development Methodology}
-[-] Decided on a agile customer driven approach.
-[-] had a meeting with Dhruv + Josh who said that maybe think more about playlists so planned to start thinking about the project in terms of looking at specific playlists. Started off with library during development as that was easiest.
-[-] did learn lots of things that would be cool but out of scope
-    [-] the 3d static+dynamic graphs would be good for AR/VR
-    [-] learnt that Dhruv is fully active and Josh is more passive wants to listen around a song
-[-] was supposed to do another meeting on a mvp but didn't finish in time to organise meeting before the evaluation
+\subsection{TODO: Main application yippee}
+The \texttt{ViewSelector} UI component acts as the way to switch between views: Table, Static and Dynamic.
+%todo insert picture of view selector
 
-\section{TODO: How I coded the features like the graphs}
+\subsubsection{Table}
+To make the development process easier, a library was used to implement the table UI: \href{https://www.ag-grid.com/react-data-grid/}{ag-grid}. This library was chosen due to its extensive feature set and easy assimilation into the existing codebase.
+%todo insert picture of table
+
+\subsubsection{TODO: Static Graphs}
+\paragraph{TODO: three.js Instanced Points}
+\paragraph{TODO: Draggable Range Sliders}
+\paragraph{TODO: Detailed Song Component}
+
+\subsubsection{TODO: Dynamic Graph}
+To create the dynamic graph, a special set of components are used.
+- Each discrete metric is queried, then all songs found in this query have a \texttt{same\_metric} relationship added.
+- Each continuous metric is queried then each song loops through the other songs
+    - calculate difference between metric values
+    - divide this difference by the maximum possible difference to get a percentage similarity
+    - add Component: ---SimAcousticness(50\%)--> (for example)
+
+- There was not enough time to fully pseudocode how to actually render the graph and still being readable.
+
+\section{TODO: Development Methodology/Process}
+%Wanted to be agile, actually was a waterful approach
+A participatory approach was taken for the development process of this application (the Audyssey). Two music streaming service users who were asked help the development of the Audyssey as a review team (by acting as potential customers).
+
+The chosen members also both represented both ends of the listening queue control spectrum. [Dhruv] is a fully active listener, they know the next song that they want to listen to, whereas [Josh] is significantly more passive, as they just pick a playlist and hit shuffle to always give them a randomly ordered queue.
+
+\subsection{Design Review Meeting}
+The initial design elements (including requirements, UI) were presented to the review team to get their feedback. Each requirement and its associated UI design were discussed with the team with any significant feedback noted down. The team were quite happy with the design resources, however they did have comments on reducing scope and new features.
+
+\subsubsection{TODO: Reducing Scope}%todo
+%! so what? How did I reduce the intended scope based on this.
+
+\subsubsection{Feature: Mixed Reality as a Medium for the Audyssey}
+One proposed feature/future work by the review team was the adaptation of the 3D graph views to a mixed reality device. This would make the graphs "easier to navigate and explore" but would be a lot harder to develop. As such this feature was classified as out of scope but a good potential avenue for future work.
+
+\subsubsection{Feature: Creating Playlists}
+Similar to Organise Your Music, one member of of project noted that they would like the ability to create playlists by drawing a circle around a set of songs in the graph views. However, the main reason for this was so that they could easily re-listen to those songs again. As such this desire was adapted into a new requirement of being able to store and replay audio journeys.%! Remove this if it was already in the design section.
+\paragraph{ReqID} Users \textbf{should} be able to listen to past audio journeys. %This is more difficult than it seems. How to show these when there's a lot of them. Finding the best way to store audio journeys requires a lot more research and investigation.
+
+\subsection{Prototype Review Meeting}
+As shown in the project plan, this meeting was planned to occur after an MVP was developed. This MVP would be showcased to the review team and any feedback would then be implemented in time for the final evaluation. Due to time constraints detailed in the Project Retrospective chapter, this meeting did not occur. As such, this feedback was instead discussed during the final evaluation itself. These design improvements are detailed in the Design Improvements section in the Evaluation Chapter.
 
 %%% Talk about how I coded the project, being more pseudocodey, as in more alluding to how the code works, so it could be theoretically replicated in another language.
