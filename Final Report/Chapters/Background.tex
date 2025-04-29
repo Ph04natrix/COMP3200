@@ -1,60 +1,49 @@
 %% ----------------------------------------------------------------
-%%? 1st Draft In Progress
+%%? 720 words
 %% ---------------------------------------------------------------- 
-\chapter{TODO: Background (360 words)}
-Here we will have a systematic literature review of the prior approaches to this problem.
-[-] explain the difference between the two types of graphs I will use
-    [-] Data visualisation Cartesian graphs with axis
-    [-] Network Graph Theory
-[-] Analysing songs to get attributes that correspond to music Theory
-    [-] Pandora's Music Genome Project    
-    [-] The Echo Nest Attributes
-        [-] Data analysis using this
-[-] Previous attempts at Visualising Music Resources Spatially
+\chapter{Background}
+\section{Song Similarity}
+There are two significantly successful attempts at algorthmically computing the similarity between songs for streaming services. These streaming services mainly utilise this song similarity metric as a way to provide meaningful suggestions.
 
-%% ---------------------------------------------------------------- 
-\section{Spatial Visualisation of Music Collections}
-%% ---------------------------------------------------------------- 
+\subsection{Pandora's Music Genome Project}
+One approach to copmuting song similarity is the manual approach, undertaken by Pandora. Using a team of many human musical experts, they analysed and categorised every song in their database. They have then patented this into "an n-dimensional database vector in which each element corresponding to one of n musical characteristics of the song."\cite{pandoraPatent}. Whilst this system has no benefit for the organisation of songs for the user, it allows for recommendation through sonic distance - a distance calculated using the distance between the vectors of two songs. This database is also used to create radios where the next song played is guaranteed to be similar.
 
-%% ---------------------------------------------------------------- 
-\section{Song Similarity through Music Information Retrieval}
-%% ---------------------------------------------------------------- 
-There has been lots of research into analysing song similarity by performing analysis on the audio itself. This leads to extractable features that can then be used to compare songs to find their \textbf{sonic distance}.
-Analysis over the whole song leads to high-level features, including: key, chords, tempo, rhythm, genre, lyrics, etc.
-
-Music Information Retrieval (MIR) is the field of study concerned with extracting musically semantic information from audio files, primarily through the use of machine learning algorithms. One of the biggest successors at this was the Echo Nest, a company who analysed millions of songs to produce low-, mid- and high-level features, made public through their API.
-
-In 2014, the Echo Nest was bought over by Spotify, meaning that their API was now integrated into Spotify's developer API.
-
-There is lots of research and projects done using these Echo Nest attributes to perform data analysis on Spoitfy users' music collections, as explored below.
-
-However, there has been very little research into using these high-level features (attributes) as the foundation for different ways of representing personal digital music collections, aimed at helping manage the growing complexity.
-
-The attributes have been used as the basis for providing song suggestions to users, based on how they listen.
-
-There has been explorations into different ways of visually representing users music collections:
-[-] \textbf{ambif} - used their own feature analysis, closest thing to the Audyssey
-    [-] built in a game engine
-    [-] used 3D static cartesian graphs
-[-] \textbf{Organise Your Music} - uses Echo Nest attributes to create 2D graphs, mainly for easy playlist generation by drawing a line
-    [-] 2D static cartesian graphs
-[-] \textbf{}
-
-%% -------------------------------------------------------
-\subsection{TODO: Pandora's Music Genome Project}
-%% -------------------------------------------------------
-
-%% -------------------------------------------------------
+% cool website: https://www.music-tomorrow.com/blog/how-spotify-recommendation-system-works-a-complete-guide-2022
 \subsection{The Echo Nest Attributes}
-%% -------------------------------------------------------
-These attributes are high-level features analysed from the audio files of song tracks by the Echo Nest group. These attributes and their confidence intervals (how accurate the values for the attributes were)
+The other approach to computing song similarity is to use machine learning to extract low, mid and high level features. One such company that employed this method is the Echo Nest company who created again created an n-dimensional database of musical characteristics. These were publicly accessible through their API until Spotify bought the Echo Nest in 2014.
 
-% For each pre-existing project, talk about what it does in context of this project
+Spotify has used this (along with their own research into programmatically learning music characteristics \cite{spotify_ismir_21_machine_Learning}) to empower their internal tools\cite{how_spotify_uses_echo_nest}, but they have not made these attributes public to users. The attributes and audio analysisi are only availible through their developer API which is now deprecated.
 
-%todo a paragraph mentioning all the websites and tools where data analysis has been done using these attributes (or any others)
+\subsubsection{Exportify}
+Exportify is a tool that allows for the exporting of a Spotify user's library as \texttt{.csv} files. This \texttt{.csv} file contains all the metadata for a song and also all the Echo Nest attribute values. These files can then be inputted into a Jupyter notebook\href{https://github.com/pavelkomarov/exportify/blob/master/taste_analysis.ipynb}{(found here)} that provides data visualisations using the Echo Nest attributes, providing insights into the distributions of attributes using histograms.
 
-\subsubsection{Applications}
+\subsubsection{Chosic}
+\href{https://www.chosic.com/spotify-listening-stats}{Chosic} is a website that uses the EchoNest attributes via the Spotify API to provide insights into a Spotify user's collection as a whole, by finding things such as the top genre and top decade for songs. It also shows the different distributions of all the attribtutes and metadata over the entire collection.
 
-\paragraph{TODO Exportify's Python Notebooks}
+\section{Spatial Visualisation of Music}
+Streaming services predominantly think of music in terms of distinct playlists, where the songs are interactable purely as a scrollable list. There have been many other approaches to representing these music collections using spatial dimensions, where the position of the song directly maps to a characteristic of it.
 
-\paragraph{TODO Chosic}
+\subsection{Using the EchoNest/Spotify Attributes}
+\subsubsection{Exportify}
+As mentioned above Exportify can provide insights using data visualisation techniques, but it also has a way to collapse the attributes into 2 dimensions. This is done using a dimensional reduction technique known as t-SNE. Whilst this is effective at creating a now organisation of songs, the resulting landscape is very difficult to understand and is limited to 2 dimensions.
+
+\subsubsection{Organize Your Music}
+This is a project built by a Spotify Employee, Paul Lamere, which plots songs from a Spotify user's library on a 2-dimensional graph using the Spotify API itself. Both the x and y axis can be set to any of the Echo Nest attributes. Unfortunately many of the features of the graph are unavailable (e.g. zoom in not working) with development having stopped 4 years ago\footnote{Organise Your Music GitHub: https://github.com/plamere/OrganizeYourMusic}. The graphs are effective at displaying songs, however the main interactivity with these graphs is purely rooted in creating and manipulating playlists and nothing else.
+
+\subsection{Using Artists}
+\subsubsection{MusicGalaxy}
+\href{https://galaxy.spotifytrack.net/}{Music Galaxy} is an interactive 3D visualisation of the relationships between over 70,000 artists using a graph-based approach to spatially layout these artists. To build these relationships, Spotify's API was used as it provides similar artists when one is queried. However, these graph edges are opaque to the user and are only visible when fully zoomed out.
+
+\subsubsection{MusicSun}
+MusicSun\cite{musicsun} is another approach at visually laying out artists based on their similarity. This interface is primarily focused on helping recommend artists to users, based on their existing preferences.
+
+\subsection{Ambif}
+The ambif\cite{AMBIF} is an attempt at spatially rendering songs along three axis, where each axis is a music characteristic that has been extracted from song audio files using machine learning. These songs are rendered as 3D spheres and are explorable using a first person camera and WASD keyboard controls. However, this approach only implemented this concept in a game engine and was treated as a standalone proof-of-concept.
+
+%\subsection{mSpace}
+%\subsection{Moodplay}
+%\subsection{MusicRainbow}
+%\subsection{Songrium3D}
+%\subsection{GeoSOM}
+
+%\subsection{Every Noise At Once}

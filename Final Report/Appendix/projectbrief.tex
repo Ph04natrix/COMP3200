@@ -1,0 +1,30 @@
+\section{Problem}
+Digital music streaming services (Spotify, Apple Music, Tidal, etc.) provide an easy way to listen to songs and playlists, from users and artists alike.
+
+These services allow users to listen to multiple songs by traversing through a list/queue. This list can either be manually ordered (playlists), semi-ordered (through the radio feature) or fully disordered (random shuffling). The latter two methods exist to ensure that the listening experience doesn’t become stale, i.e. the user doesn’t have to listen to the same songs in the exact same sequence.
+
+These three methods all have drawbacks however. Playlists, while effective and fun to make, can be a lot of overhead for the desired effect. Playlists are quite static and don’t easily evolve with the user. Random shuffling is very effective at keeping the listening experience fresh and new. However there is no way to control this random jumping which can lead to both smooth and jarring sequences of songs.  The radio feature, which allows for listening to songs which are deemed similar to a specific song is more effective than the prior methods, however it only allows for song sequences based on a specific song and not based on other musical dimensions.
+
+These services also don’t provide a method to transition smoothly between songs, as currently, the end of a song leads immediately into the next. To create better transitions, specific DJ software/experience is required which can be a lot of overhead for a simple effect.
+
+\section{Goal}
+
+This project will consist of a web-based application allowing for advanced visualisations of a user’s song library. The predominant view will be a 3D graph view where songs are positioned based on their dimensions, such as genre, instrument, artist. To avoid clutter, the graph will be able to hide the links belonging to their respective dimensions.
+
+To listen to sequences of songs, users will mainly use coordinates in the multidimensional space. These coordinates can refer to one, many or all dimensions (all being a song). These coordinates can then be used as milestones, heuristics which decide the next song to listen to. Eventually, after a milestone is reached, if no new milestone is set, then the next similar song will be played and so on.
+
+Traversing between milestones can be done smoothly or roughly, depending on tweakable parameters. Milestones can also be used an attractor, for the next song to be chosen from within a certain radius of the milestone.
+
+This project will focus on enriching each song’s metadata with its values in their respective dimensions. As such movement between songs has the ability to be much smoother. If the gap between the end of the current song and the start of the next song, a low-code/no-code (similar to Scratch, node editors, etc.) system can be leveraged to bridge the gap. This system would allow for simple transitions to be chained.
+
+Enriching of song’s metadata can be done automatically (potentially via the Spotify API) or manually, by the users/artists. User’s can also create additional tags to enforce simple rules on the traversal system.
+
+\section{Scope}
+
+This project will only use songs from a user’s Spotify library (via their API) as this will be sufficient to test the new multidimensional navigation system.
+
+This project could also let the user upload audio clips that aren’t necessarily songs, but this is currently out of scope and will only be attempted if time allows for it.
+
+This project will not involve creating a stem separation algorithm for further decomposing songs but a pre-existing system (such as Gaudio Studio) will be considered if they are worth the time (and possible financial) investment.
+
+To make bridging the gap between songs even smoother, sections of other songs can be used, however this isn’t one of the main priorities but will be considered.

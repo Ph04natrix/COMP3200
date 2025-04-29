@@ -4,9 +4,7 @@
 %% ----------------------------------------------------------------
 \chapter{Introduction}% \label{Chapter:Introduction}
 \section{Problem}
-As technology has advanced over the years, people's personal music collections have become more and more digital \cite{
-    %cite the streaming percentage
-}.
+As technology has advanced over the years, people's personal music collections have become more and more digital, with "around 2 in 3 people listening to music using a streaming service" \cite{streaming::percentage}.
 
 Initially, if a listener wanted to listen to a song or some music, it would have to be performed live, usually by the creator of said music. As such music started to be performed in concerts, where many people could listen to songs from one or more artists.
 
@@ -24,11 +22,7 @@ As such, as a workaround, most users split their mental collections into sub-col
 
 Whilst playlists help manage the scale of songs, they themselves' have the issue "when a user’s playlists become overwhelmingly numerous, streaming services begin to appear inefficient and unmanageable as collection systems"\cite{playlistExperience}.
 
-This hierarchical system allows for the better handling of large scale collections that grow at the pace most collections do \cite{} but if these playlists grow too large, then they require reorganising which can become a chore.
-
-As such the organisational benefit provided by these playlists is lost due to the 'perceived' high mental load required.
-
-Whilst the capability and format of personal music collections have changed dramatically with technological advancements, the structure of these collections has stagnated in the streaming era.
+This hierarchical system allows for the better handling of large scale collections but if these playlists grow too large, then they require reorganising which is a mentally taxing activity. As such the organisational benefit provided by these playlists is lost due to the 'perceived' high mental load required. Whilst the capability and format of personal music collections have changed dramatically with technological advancements, the structure of these collections has stagnated in the streaming era.
 
 This project will investigate different structures to see how they can improve either of the following key aspects for personal music collections:\begin{itemize}
     \item \textbf{
@@ -56,8 +50,8 @@ Other methods using graphical spatial methods have been researched\begin{itemize
 %todo do I need to give examples or find way to better explain this
 This project will employ two different organisational models:\begin{itemize}
     %\item \textbf{Clustered Table}
-    \item \textbf{Static Graph} \(\to\) each song is mapped onto a cartesian grid (both 2D and 3D) where the co-ordinates of the song is determined by the numerical attribute for that axis
-    \item \textbf{Dynamic Graph} \(\to\) each song is a node in a graph with edges between each song for each attribute and metadata. As such songs will be 'pulled' closer to together if they have a high overall similarity.
+    \item \textbf{Static Cartesian Graphs} \(\to\) each song is mapped onto a cartesian grid (both 2D and 3D) where the co-ordinates of the song is determined by the numerical attribute for that axis
+    \item \textbf{Dynamic Similarity Graph} \(\to\) each song is a node in a graph with edges between each song for each attribute and metadata. As such songs will be 'pulled' closer to together if they have a high overall similarity.
 \end{itemize}
 
 The aforementioned attributes are audio features analysed by the Echo Nest group. These include: instrumentalness, loudness, energy, etc.

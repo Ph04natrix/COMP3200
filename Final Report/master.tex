@@ -1,6 +1,6 @@
 %% ----------------------------------------------------------------
 %%? 1st Draft In Progress (2 days left)
-%%* 11000/10K words
+%%* 12231/10K words
 %% ----------------------------------------------------------------
 \documentclass{src/ecsgdp}
 \graphicspath{ {./images/} }
@@ -13,6 +13,7 @@
 
 %% ----------------------------------------------------------------
 \begin{document}
+%TC: ignore
 \frontmatter
 \title{Project Audyssey - A Platform for Multidimensional Journeys through Large Song Libraries}
 \authors    {{Kathirvelan Arounassalam}}
@@ -46,6 +47,7 @@
 % \mainmatter means that we've gone from i, ii, iii, iv, v etc.
 % introduction numbering to 1,2,3,4,5 chapter numbering
 
+%TC: endignore
 \mainmatter
 
 % -------------------------------------------------
@@ -129,7 +131,28 @@ Main issue is sometimes I want to only listen to a certain region of my collecti
 % Appendices
 % -------------------------------------------------
 \appendix
-\include{Appendix/Appendix}
+% TC: ignore
+\chapter{Project Brief} \label{appendix::project_brief}
+\include{Appendix/projectbrief}
+
+\chapter{Miro Diagrams Expanded} \label{appendix::Miro}
+\begin{figure}
+    \includegraphics[angle=90, scale=0.35]{Miro_SoundCharts_State_Flow.jpg}
+    \caption{SoundCharts Expanded State Flow for filling user's songs with attributes}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[angle=90, scale=0.35]{Miro_Exportify_State_Flow.jpg}
+    \caption{Exportify Expanded State Flow for getting all songs (with attributes) in a specific playlist}
+\end{figure}
+
+\chapter{Risk Analysis}%todo update it
+\include{Appendix/riskanalysis}
+
+%\chapter{Echo Nest Attribute Documentation}
+%\include{Appendix/EchoNestAnalyzeDocumentation.pdf}
+
+% TC: endignore
 
 \end{document}
 
