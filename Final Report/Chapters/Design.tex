@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
-%%? 1st Draft In Progress
+%%? 1st Draft In Progress 1100 words
 %% ---------------------------------------------------------------- 
-\chapter{Design/Method (850 words)}
+\chapter{Design/Method}
 
 \section{Non-Functional Requirements}
 The software application was designed with the following guidelines in mind:\begin{itemize}
@@ -71,31 +71,53 @@ Note: the below list of functional requirements have their MoSCoW prioritisation
 
 % User stories have been cut as it was deemed that their content overlapped too much with the functional requirements and as such were easy to cut to fit within the word limit
 
-\section{TODO: Static Cartesian Graphs}
-%* Explain how I coded this basically
-[-] combine the different continuous attributes
-\subsection{TODO: UI mockups}
+\section{Static Cartesian Graphs}
+As can be seen in figure \ref{figure::ui::static_cartesian_graph} the coordinates for the songs directly map to the values for the metric for the axis. Clicking on a song will then render a line to the axis to show the exact value on the axis.
+\begin{figure}
+    \includegraphics[angle=0, scale=0.251]{UI_Static_Cartesian_Graphs.jpg}
+    \caption{Static Cartesian Graphs UI Mockup}
+    \label{figure::ui::static_cartesian_graph}
+\end{figure}
 
-\section{TODO: Dynamic Similarity Graph}
-[-] Each song is a node in the graph
-[-] Each song has multiple bidirectional weighted edges to each other song
-    [-] Discrete attributes/metadata: edge is overlap of discrete metric between song A and song B
-    [-] Continuous attributes/metadata: weight of edge is the 1-x, where x is a the difference between the values of Song A's acousticness and Song B's acousticness (for example)
-[-] When rendering the graph, songs are pulled closer together depending on strength of weight:
-    [-] continuous weight of 100\% - songs pulled as close together as possible
-[?] maybe have a toggle to turn off collisions? that way clusters that form might be more interesting or the graph never settles on a shape
-\subsection{TODO: UI mockup}
+\section{Dynamic Similarity Graph}
+\subsection{Building the Logical Dynamic Graph}
+\subsubsection{Discrete Metrics} For each discrete metric in tables \ref{table::attributes} and \ref{table::metadata} a query is made. All songs that have the same value for this metric have the relationship component \texttt{SameMetric(100)} added to each other (\texttt{Metric} is replaced by the metric that has been queried, such as key or album). A weight of 100 is added to make it easier to interact with the continuous edges mentioned below.
 
-\section{TODO: Audio Journeys}
-[-] Storing in Data:
-    [-] Specific relationship for full audio history: `History -listened-to-time-> Song'
-    [-] can also add how much of the song was listened to but this is out of scope, but easily addable to the relationship
-[-] viewing Audio Journeys
-    [-] Table/List view: sort by time, (what else?)
-    [-] Graph:
-        [-] new range slider that is the listened to time (not sure if this replaces the added at time slider)
-        [-] just show the fully history as a static line with arrows to indicate direction
-        [-] further research to find out when it stops being readable/legible (how many songs/ time period)
-\subsection{TODO: UI mockups}
+\subsubsection{Continuous Metrics} Each continuous metric is queried for. Then for each song, all other songs are looped through performing the following:\begin{itemize}
+    \item given song \texttt{A} and song \texttt{B}, find the difference between their values for the current continuous metric,
+    \item divide this difference by the maximum possible difference for the current continuous metric to get a percentage similarity
+    \item add a relation component, such as \texttt{A} --SimilarAcousticness(57.4\%)--\> \texttt{B} (the weight is the similarity percentage)
+\end{itemize}
 
-\section{TODO: Storyboards}%? How many do I have of these?
+\subsection{Rendering the Dynamic Graph}
+Firstly a song is selected at random. Then for each discrete relation component on this song, the target for the relation component is also rendered (along with the edge itself). Once all songs have been rendered with their discrete edges, each song adds its continuous edges to the graph.
+
+Songs are pulled closer together depending on the strength of the weight for each edge. A weight of 100\% would pull the songs as close together as possible. If there are multiple weights between two songs then their overall similarity is used to decide how close they are to each other.
+
+Each metric can be toggled to be inactive, meaning all edges for that metric are unrendered, with the song spheres moved to their new appropriate location based on the new overall weights of their edges.
+
+\begin{figure}[h]
+    \includegraphics[angle=0, scale=0.251]{UI_Dynamic_Similarity_Graph.jpg}
+    \caption{Dynamic Similarity Graph UI Mockup}
+    \label{}
+\end{figure}
+\pagebreak
+
+\section{Audio Journeys}
+Audio journeys are simply the listening history, present and future for a user. These are normally shown in a list format but can also be shown as a directional line as shown in figure \ref{figure::ui::audio_journey_as_line}:\begin{itemize}
+    \item Blue directional line: listening history of the user (limited either by number of songs or length of time)
+    \item Blue song sphere: the current song being listened to
+    \item Grey line: the upcoming songs in the queue
+    \item Grey shaded region: subset of queue that will be played in a random order
+\end{itemize}
+
+\begin{figure}
+    \includegraphics[angle=0, scale=0.1]{UI_Static_audio_journey.jpg}
+    \includegraphics[angle=0, scale=0.1]{UI_Dynamic_audio_journey.jpg}
+    \caption{Audio Journey on both Static and Dynamic Graph UI Mockup}
+    \label{figure::ui::audio_journey_as_line}
+\end{figure}
+
+The upcoming line can also be moved by the user to easily go through different songs or clusters of songs. To listen to a subset of songs in a random order, they can be marked with a random region, where those songs will all be played, but in a random order that can be shuffled by the user. The line is more curved to help distinguish it from the pre-existing straight lines in the graphs.
+
+%\section{TODO: Storyboards}%? How many do I have of these?

@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
-%%? 1st Draft In Progress
+%%? 1st Draft In Progress 2000 words
 %% ---------------------------------------------------------------- 
-\chapter{Development (1850 words)}
+\chapter{Development}
 \section{Chosen Techonology Stack}
 \subsection{Application Framework: Tauri vs Electron}
 Tauri and Electron are the two main frameworks for building native applications using web technologies. They both create an executable than can be run on any operating system. Electron bundles a version of Chromium into the executable, increasing the size of the application compared to Tauri, but resulting in a consistent experience across any OS. Tauri uses the default browser of the operating system, which means it is smaller in size, but more inconsistent. As the application will mainly be tested using Windows machines, this inconsistency is not an issue.
@@ -84,53 +84,46 @@ Diagram of the way I used the tauri API to effectively just access the flecs bac
 \subsection{Entity-Component Database Structure}
 Flecs has a concept of a world which is the data structure that stores all the entities and the components (amongst other things). To ensure efficient querying of these entities using their components, the entities are organised into multiple tables based on their archetype.
 
-Archetypes are the groupings of entities that have the same components. This decomposition allows for high query efficiency even when there are lost of different groups. 
+Archetypes are the groupings of entities that have the same components. This decomposition allows for high query efficiency even when there are lost of different groups. Figure \ref{figure::archetype_relationship} shows the different archetypes that the data was organised under. To help make these archetypes easier to query, the headers of each of these archetypes directly map to a tag component, that is a component without any data attached. Also note that whilst these archetypes have many entities, the history archetype only has one entity as it is specific to the user.
 
-\subsubsection{TODO EntRel Diagram}
 \begin{figure}
+    \includegraphics[angle=0, scale=0.85]{flecs_archetype_relationships_diagram.png}
     \caption{The Audyssey's Entities, Components and Relationships}
-    %todo entitiy relationship diagram of
-    % Song
-    % Artist
-    % Album
-    % Playlist
-    % Listening History (only one)
-    %? Spotify User (mainly for showing playlist creators and who added what songs)
+    \label{figure::archetype_relationship}
 \end{figure}
 
-Flecs allows for adding \texttt{Tag} components to entities, that is a component where there is no data associated with it. These tags were used to define the different archetypes that exist in the application.
-
-Note that the \texttt{MissingAttributes} component is deprecated as it was only required to the SoundCharts workflow.
-
-The only entity where there is one of is the listening history.
-%? The Spotify User entities are mainly to help track who created which playlist (for filtering) and to 
-
-\subsection{(TODO add attribute definitions) Echo Nest Attributes \& Spotify Metadata}%! Add definitions for all the attributes + How do I link these to the ECS components that I have mentioned before?
+\subsection{Echo Nest Attributes \& Spotify Metadata}%?How do I link these to the ECS components that I have mentioned before?
 %TC: ignore
-\begin{longtable}[c]{|c|c|c|p{5em}|p{5.5em}|}
-    \caption{The Echo Nest Attributes}\\%todo better caption
+\begin{longtable}[c]{|c|p{14.5em}|c|p{5em}|p{5.5em}|}
+    \caption{The Echo Nest Attributes \label{table::attributes}}\\%todo better caption
     \toprule
     \textbf{Attribute} & \textbf{Definition} & \textbf{Datatype} & \textbf{Possible Values} & \textbf{Continuous /Discrete} \\
     \midrule
     \endfirsthead
 
-    \textbf{Acousticness} & & \texttt{float} & \texttt{0}-\texttt{1} & \multirow{9}{*}{Continuous}\\*
-    \cmidrule{1-4}
-    \textbf{Danceability} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Energy} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Instrumentalness} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Liveness} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Loudness} & & \texttt{float} & \texttt{-60}-\texttt{0} & \\*\cmidrule{1-4}
-    \textbf{Speechiness} & & \texttt{float} & \texttt{0}-\texttt{1} & 
-    \\*\cmidrule{1-4}
-    \textbf{Valence} & & \texttt{float} & \texttt{0}-\texttt{1} & \\*\cmidrule{1-4}
-    \textbf{Tempo} & & \texttt{float} & \(\ge\)\texttt{0} & \\*
+    \textbf{Acousticness} & A confidence measure of whether the track is acoustic. 1.0 represents high confidence the track is acoustic. & \texttt{float} & \texttt{0}-\texttt{1} & Continuous\\*
     \midrule
-    \textbf{Key} & & \texttt{integer} & \texttt{None}/\texttt{C}/\texttt{C\#} /\texttt{D}/\texttt{D\#}/\texttt{E}/\texttt{F} /\texttt{F\#}/\texttt{G}/\texttt{G\#}/ \texttt{A}/\texttt{A\#}/\texttt{B} & \multirow{3}{*}{Discrete}\\*
+    \textbf{Danceability} & Describes how suitable a track is for     dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and verall regularity. A value of 1.0 is the most danceable. & \texttt{float} & \texttt{0}-\texttt{1} & Continuous\\*
     \cmidrule{1-4}
-    \textbf{Mode} & & \texttt{boolean} & \texttt{true}/\texttt{false} & \\*
+    \textbf{Energy} & Represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.& \texttt{float} & \texttt{0}-\texttt{1} & Continuous\\*
+    \midrule
+    \textbf{Instrumentalness} & Predicts whether a track contains no vocals. ”Ooh” and ”aah” sounds are treated as instrumental in this context. Rap or spoken word tracks are clearly ”vocal”. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks, but confidence is higher as the value approaches 1.0.& \texttt{float} & \texttt{0}-\texttt{1} & Continuous \\*
+    \midrule
+    \textbf{Liveness} & Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. A value above 0.8 provides strong likelihood that the track is live.& \texttt{float} & \texttt{0}-\texttt{1} & Continuous\\*
+    \cmidrule{1-5}
+    \textbf{Loudness} & The overall loudness of a track in decibels (dB). Loudness values are averaged across the entire track and are useful for comparing relative loudness of tracks. Loudness is the quality of a sound that is the primary psychological correlate of physical strength (amplitude). Values typically range between -60 and 0 db. & \texttt{float} & \texttt{-60}-\texttt{0} & Continuous\\*
+    \cmidrule{1-5}
+    \textbf{Speechiness} & Speechiness detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks. & \texttt{float} & \texttt{0}-\texttt{1} & 
+    \\*\cmidrule{1-5}
+    \textbf{Valence} & A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry). & \texttt{float} & \texttt{0}-\texttt{1} & Continuous\\*
+    \midrule{1-5}
+    \textbf{Tempo} & The overall estimated tempo of a track in beats per minute (BPM). In musical terminology, tempo is the speed or pace of a given piece and derives directly from the average beat duration. & \texttt{float} & \(\ge\)\texttt{0} & Continuous\\*
+    \midrule
+    \textbf{Key} & The key the track is in. Integers map to pitches using standard Pitch Class notation. E.g. 0 = C, and so on. If no key was detected, the value is -1. & \texttt{integer} & \texttt{None}/\texttt{C}/\texttt{C\#} /\texttt{D}/\texttt{D\#}/\texttt{E}/\texttt{F} /\texttt{F\#}/\texttt{G}/\texttt{G\#}/ \texttt{A}/\texttt{A\#}/\texttt{B} & \multirow{3}{*}{Discrete}\\*
     \cmidrule{1-4}
-    \textbf{Time Signature} & & \texttt{integer} & \texttt{3}/\texttt{4}/\texttt{5}/\texttt{6}/\texttt{7} & \\*
+    \textbf{Mode} & Mode indicates the modality (major or minor) of a track, the type of scale from which its melodic content is derived. Major is represented by 1 and minor is 0. & \texttt{boolean} & \texttt{true}/\texttt{false} & \\*
+    \cmidrule{1-4}
+    \textbf{Time Signature} & An estimated time signature. The time signature (meter) is a notational convention to specify how many beats are in each bar (or measure). The time signature ranges from 3 to 7 indicating time signatures of "3/4", to "7/4". & \texttt{integer} & \texttt{3}/\texttt{4}/\texttt{5}/\texttt{6}/\texttt{7} & \\*
     \midrule
     
 \end{longtable}
@@ -138,7 +131,7 @@ The only entity where there is one of is the listening history.
 
 %TC: ignore
 \begin{longtable}[c]{|c|p{7.5em}|p{7.5em}|p{5em}|p{5.5em}|}
-    \caption{Spotify's Metadata}\\%todo better caption
+    \caption{Spotify's Metadata \label{table::metadata}}\\%todo better caption
     \toprule
     \textbf{Metadata} & \textbf{Definition} & \textbf{Datatype} & \textbf{Possible Values} & \textbf{Continuous /Discrete} \\
     \midrule
@@ -165,8 +158,7 @@ The only entity where there is one of is the listening history.
 \end{longtable}
 %TC: endignore
 
-\section{TODO: Application State Flow (+ Diagram)}
-%todo Application state diagram
+\section{Application State Flow}
 \subsection{Spotify Authorisation}
 To gain a user-specific API access token, Spotify's OAuth authorisation flow was implemented based on this \href{https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow}{official guide}. This API token expires after an hour and requires sending another request to refresh this, however this mechanism was not implemented due to being needed. Once this access token has been retrieved and stored, the user's library can be loaded.
 
@@ -189,28 +181,49 @@ A full breakdown of this process can be found in \ref{appendix::Miro}, but here 
 
 \subsection{TODO: Main application yippee}
 The \texttt{ViewSelector} UI component acts as the way to switch between views: Table, Static and Dynamic.
-%todo insert picture of view selector
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{app_view_selector.png}
+    \caption{The UI Component for switching between views}
+\end{figure}
 
 \subsubsection{Table}
 To make the development process easier, a library was used to implement the table UI: \href{https://www.ag-grid.com/react-data-grid/}{ag-grid}. This library was chosen due to its extensive feature set and easy assimilation into the existing codebase.
-%todo insert picture of table
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.345]{app_table.png}
+    \caption{Implementation of the Table View}
+\end{figure}
 
-\subsubsection{TODO: Static Graphs}
-\paragraph{TODO: three.js Instanced Points}
-\paragraph{TODO: Draggable Range Sliders}
-\paragraph{TODO: Detailed Song Component}
+\subsubsection{Static Graphs}%todo screenshots of the program
+\paragraph{three.js Instanced Points}
+Each song has their attribute values fetched based on the current attributes assigned to the axes. These values are then normalised and scaled to the size of the axis so that their spatial position directly represents their attribute values. The songs are represented by 3D spheres with an arbitrary colour. Their opacity is not 100\% to make it easier to see the density of songs.
 
-\subsubsection{TODO: Dynamic Graph}
-To create the dynamic graph, a special set of components are used.
-- Each discrete metric is queried, then all songs found in this query have a \texttt{same\_metric} relationship added.
-- Each continuous metric is queried then each song loops through the other songs
-    - calculate difference between metric values
-    - divide this difference by the maximum possible difference to get a percentage similarity
-    - add Component: ---SimAcousticness(50\%)--> (for example)
+\paragraph{Draggable Attribute Range Sliders}
+These range sliders allow for zooming into the graph. Only the songs within the range of the left and right sliders are shown on the graph, as all other songs are greyed out and moved outside of the bounds of the axis. The sliders that are not attached to an axis can be dragged over to replace them: e.g. valence could be dragged to replace \_ in the y-axis slot.
 
-- There was not enough time to fully pseudocode how to actually render the graph and still being readable.
+Clicking any of the X, Y or Z buttons will result in that axis being turned off and and camera being locked to view the reamining two axes. If the Y-axis was turned off whilst the X-axis was inactive then the graph would switch to showing only the X and Z axes. Clicking an inactive axis will turn it back on, switching the graph view back to 3D.
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{app_attr_range_sliders.png}
+    \caption{Implementation of the Draggable Attribute Range Sliders}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{app_detailed_song.png}
+    \caption{Implementation of the Detailed Song Component}
+\end{figure}
 
-\section{TODO: Development Methodology/Process}
+\paragraph{Detailed Song Component}
+When a user clicks on a song sphere, a request is sent to the backend to get all the components for that song. These are then rendered as shown in figure \ref{}. The continuous metrics are rendered using a polar chart. Both key and mode have a specific colour background for each possible value.
+
+\begin{figure}[h]
+    \includegraphics[scale=0.45]{final_static_2d.png}
+    \includegraphics[scale=0.5]{final_static_3d.png}
+    \caption{The Static Cartesian Graph implementation for 2 and 3 axes}
+\end{figure}
+
+\section{Development Methodology/Process}
 %Wanted to be agile, actually was a waterful approach
 A participatory approach was taken for the development process of this application (the Audyssey). Two music streaming service users who were asked help the development of the Audyssey as a review team (by acting as potential customers).
 
@@ -219,8 +232,8 @@ The chosen members also both represented both ends of the listening queue contro
 \subsection{Design Review Meeting}
 The initial design elements (including requirements, UI) were presented to the review team to get their feedback. Each requirement and its associated UI design were discussed with the team with any significant feedback noted down. The team were quite happy with the design resources, however they did have comments on reducing scope and new features.
 
-\subsubsection{TODO: Reducing Scope}%todo
-%! so what? How did I reduce the intended scope based on this.
+\subsubsection{Reducing Scope}%todo reword/add more??
+After discussing the requirements during the meeting, the key takeaway was that the core features and novel approachs were the graph views and as such these should be prioritised over the other requirements.
 
 \subsubsection{Feature: Mixed Reality as a Medium for the Audyssey}
 One proposed feature/future work by the review team was the adaptation of the 3D graph views to a mixed reality device. This would make the graphs "easier to navigate and explore" but would be a lot harder to develop. As such this feature was classified as out of scope but a good potential avenue for future work.
