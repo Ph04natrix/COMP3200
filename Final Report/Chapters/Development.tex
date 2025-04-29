@@ -73,13 +73,13 @@ Exportify allows for the exporting of one's Spotify collection as csv files with
 
 A minor bug/issue with the Exportify process is that the explicit field was not correctly filled in, meaning that all values in the csv were left empty. How this affected the project is also detailed in the Project Retrospective chapter.
 
-\section{TODO: Architecture}%! what do I put here???
-Diagram of the way I used the tauri API to effectively just access the flecs backend. Although the way I sent data and received data was a bit clunky. Should I have made a trait that allowed things to work together well?
-
-[-] someone interacts with the react frontend, ts function calls \texttt{invoke("rust\_function")} by using tauri API
-[-] tauri finds the unique function with name \texttt{rust\_function} and runs that function
-[-] if that function needs to access the songs/collection a flecs query is created and run.
-[-] data is then sent back to the frontend via listening for events or as the callback to the frontend function that did the invoking
+\section{Architecture}
+The main application flow worked as follows\begin{itemize}
+    \item Frontend is interacted with, function calls \texttt{invoke("rust\_function")}
+    \item The Tauri API then sends a request to the backend to run the function that was invoked
+    \item If access to the databse is required then a query is created and run. Then for each entity within this query an event can be sent to the frontend or the data can be packed up and sent after the query has finished. Both methods use JSON to send data.
+    \item Frontend can now either use the data to or progress the UI
+\end{itemize}
 
 \subsection{Entity-Component Database Structure}
 Flecs has a concept of a world which is the data structure that stores all the entities and the components (amongst other things). To ensure efficient querying of these entities using their components, the entities are organised into multiple tables based on their archetype.
@@ -179,7 +179,7 @@ A full breakdown of this process can be found in \ref{appendix::Miro}, but here 
     \item Fill missing fields (this was not implemented during this setup stage, but was done on-demand when a user clicked on a song)
 \end{itemize}
 
-\subsection{TODO: Main application yippee}
+\subsection{Main Application}
 The \texttt{ViewSelector} UI component acts as the way to switch between views: Table, Static and Dynamic.
 \begin{figure}[h]
     \centering
