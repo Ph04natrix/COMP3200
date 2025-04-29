@@ -1,7 +1,7 @@
 %% ----------------------------------------------------------------
-%%? 1st Draft Completed
+%%? 2nd Draft Completed | Still some TODOs left
 %% ----------------------------------------------------------------
-\chapter{Testing and Results (1800 Words)}
+\chapter{Testing and Results (1300 Words)}
 \section{Data Collection}
 As the project was aiming to initially understand how people manage and use their digital music collections, then to see how these could be transformed using new concepts implemented with software, a more open approach was required.
 
@@ -170,68 +170,11 @@ Passive listeners also had issues with the shuffle feature of randomly creating 
 4 participants mentioned wording that indicated they understood their listening journey to have a direction which was sometimes reflected in the queue. 2 participants[Riya, Josh] mentioned that a factor deciding how they actively mentally change listening direction is when they are on a boundary region of their collection. "When I listen to this song, it has a sad part that'll make me want to listen to more sad songs instead of the direction the queue is currently heading in".
 
 %% ----------------------------------------------------------------
-\section{TODO: Application Feedback}%? is this needed in this section?
-Before, the interviews were aimed at undrestanding how the participants organised their digital music collection and how they build and listen to queues using this collection. Whilst using the applicatio, the interview changed to being more about gaining feedback on the usability of the system and each individual feature implemented. Any features that the participants felt would be useful (after interacting with the application) were explored in detail.
+\section{Partial Feedback on Unfinished Features}
+During the interviews participants were also shown the planned design for the dynamic graphs and listening journey features.
 
-As the participants interacted with the application they were asked for their feedback on the implemented features and the attributes:
-%% ----------------------------------------------------------------
-\subsection{Feedback: Attributes/Metadata}
-
-%% ----------------------------------------------------------------
-\subsubsection{Value Accuracy}
-2 participants disagreed with some of the attribute values for songs in their collection, noting that it did not align with what they expected.
-%! However, a lot of people were also like they agreed with it though
-
-%% ----------------------------------------------------------------
-\subsubsection{Attribute Opinions}
-%% ----------------------------------------------------------------
-\paragraph{Key, Mode, Time Signature}%todo
-Some cared, some didn't care.
-
-Overall these are more useful in the calculating similarity and also being able to be toggled off (although the toggle off is probably unnecessary as no-one said they actively didn't want it there)
-
-%% ----------------------------------------------------------------
-\paragraph{Attribute Rankings: Time above all else}%todo REWORD
-[Vedarth] noted that the time axis was easier to understand and more interested in as time/history is more familiar to them. [Casper] also noted that a sped up line of their audio history would be cool, also implying that time was a instinctively useful attribute
-
-\paragraph{Attribute Combinations: Overwhelmed with Choice}%todo REWORD
-Many participants[] noted that though specific combinations were interesting they were overwhelemed with trying to find specific combinations and weren't sure where to start or what to do.
-X participants agreed that they would like \textbf{customisable presets}, where they could be given combinations to look at that provide easily digestible insights. Using these combinations as a base, the users' could then explore to find their own preferred combinations.
-
-\paragraph{Distributions: Liked seeing ways of representing their Music Taste}%TODO
-
-\paragraph{Desired Feature: Ridge Plot of Histograms for Individual Histograms}%TODO
-
-\paragraph{Attribute: Extreme Ends}%todo FIX
-Liked seeing the extreme ends for each attribute (i.e. top 5) although this could be due to the fact that the table view made it easy to see this.
-1 participant[Casper] noted that these extreme ends would be useful for automatically creating high danceability playlists for example. There is alreay projects that can do this, though it does beg the question, if we start combing attributes, what sort of playlists would be created. %* However this is something that would of only really been able to check by using the dynamic graph and being able to toggle which attributes are affecting the graph.
-
-%% ----------------------------------------------------------------
-\subsection{Feedback: Graph Model}
-TODO NEXT
-
-\subsubsection{Graph-Based Suggestions}
-3 participants[] noted that they would appreciate seeing song suggestions that clearly show how they slot into their entire collection. Both the ridge plot and dynamic graph would be good for this as they both show the user's entire collection.
-
-\subsubsection{}{Graph Navigation Controls}
-Participants noted that the controls were good for navigating in the 2D graph. However, some particiapants[] felt that they would also like a 1st person style of controls, where they could fly through the space of songs. something akin to Minecraft's Creative Mode Controls
-%todo maybe put an image of what keys correspond to what for this new controls system
-
-\subsubsection{Song Identification}
-Due to time constraints, setting the colour of a song sphere was unfinished. To understand what would be the most preferable dimension to distinguish songs, participants were asked during the study, with the below responses:\begin{itemize}
-    \item by colour of\begin{itemize}
-        \item Artist = 1[]
-        \item Genre = 4[]
-        \item Mood/Vibe = 3[]
-        \item Discrete Metrics = 0, as participants felt that they would need to see it implemented to see if it would be useful
-    \end{itemize}
-    \item the image of the album the track belongs to (but only if there was enough visual space to render it)
-\end{itemize}
-
-\subsubsection{Dynamic Graph}
 All 6 participants[] noted that they would've liked to see their collection using the dynamic graph feature.
 
 All 4 of the participants[] who organised their collection using playlists also expressed interest in seeing how the potential clusters formed in the dynamic graph would map to their created playlists.
 
-\paragraph{Songs as Listening Focus Points}
 2 participants[] also noted that when they're listening they would like to be able to select songs as points to listen around (for queue generation and modification)
