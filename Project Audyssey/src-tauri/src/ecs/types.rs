@@ -6,7 +6,7 @@ use chrono::prelude::*;
 use crate::{
     api::{
         conversion::{MinimalAlbumObject, MinimalArtistObject},
-        soundcharts::SCGenreObject, spotify::{ImageObject, TrackObject},
+        spotify::{ImageObject, TrackObject},
     }, error::MyResult, AppState
 };
 
